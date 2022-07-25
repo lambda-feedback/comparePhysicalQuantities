@@ -1,4 +1,4 @@
-# -comparePhysicalQuantities-
+# - comparePhysicalQuantities -
 This is an experimental evaluation function with some dimensional analysis functionality.
 
 ## Inputs
@@ -44,56 +44,61 @@ Note that gram is used as a base unit instead of kilogram.
 SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
 Note that gram is used as a base unit instead of kilogram.
 
-| SI base unit | Dimension name      |
-|--------------|:--------------------|
-| yotta        | 10e24               |
-| zetta        | 10e21               |
-| exa'         | 10e18               |
-| peta         | 10e15               |
-| tera         | 10e12               |
-| giga         | 10e9                |
-| mega         | 10e6                |
-| kilo         | 10e3                |
-| hecto        | 10e2                |
-| deka         | 10e1                |
-| deci         | 10e-1               |
-| centi        | 10e-2               |
-| milli        | 10e-3               |
-| micro        | 10e-6               |
-| nano         | 10e-9               |
-| pico         | 10e-12              |
-| femto        | 10e-15              |
-| atto         | 10e-18              |
-| zepto        | 10e-21              |
-| yocto        | 10e-24              |
+| SI Prefix | Factor    |
+|-----------|:----------|
+| yotta     | $10^{24}  |
+| zetta     | $10^{21}  |
+| exa'      | $10^{18}  |
+| peta      | $10^{15}  |
+| tera      | $10^{12}  |
+| giga      | $10^{9}   |
+| mega      | $10^{6}   |
+| kilo      | $10^{3}   |
+| hecto     | $10^{2}   |
+| deka      | $10^{1}   |
+| deci      | $10^{-1}  |
+| centi     | $10^{-2}  |
+| milli     | $10^{-3}  |
+| micro     | $10^{-6}  |
+| nano      | $10^{-9}  |
+| pico      | $10^{-12} |
+| femto     | $10^{-15} |
+| atto      | $10^{-18} |
+| zepto     | $10^{-21} |
+| yocto     | $10^{-24} |
 
 #### Table: Derived SI units
 
 Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
+Note that degrees Celsius is omitted.
 
-| Unit name | Expressed in bade SI units                                                   |
-|-----------|:-----------------------------------------------------------------------------|
-| radian    | 1                                                                            |
-| steradian | 1                                                                            |
-| hertz     | $\text{second}^(-1)$                                                         |
-| newton    | $\text{metre}\text{kilo}\text{gram}\text{second}$                            |
-| pascal    | $\text{metre}^{-1}\text{kilogram}\text{second}^{-2}$                         |
-| joule     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2}$                     |
-| watt      | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}$                     |
-| coulomb   | $\text{secon}d\text{ampere}$                                                 |
-| volt      | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}\text{ampere}^{-1}$   |
-| farad     | $\text{metre}^{-2}\text{kilogram}^{-1}\text{second}^4\text{ampere}^2$        |
-| ohm       | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}\text{ampere}^{-2}$   |
-| siemens   | $\text{metre}^{-2}\text{kilo}\text{gram}^{-1}\text{second}^3\text{ampere}^2$ |
-| weber     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2\text{ampere}^{-1}$    |
-| tesla     | $\text{kilo}\text{gram}\text{second}^{-2\text{ampere}^{-1}$                  |
-| henry     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2}\text{ampere}^{-2}$   |
-| lumen     | $\text{candela}$                                                             |
-| lux       | $\text{metre}^{-2}\text{candela}$                                            |
-| becquerel | $\text{second}^{-1}$                                                         |
-| gray      | $\text{metre}^2\text{second}^{-2}$                                           |
-| sievert   | $\text{metre}^2\text{second}^{-2}$                                           |
-| katal     | $\text{mole}text{second}^{-1}$                                               |
+| Unit name | Expressed in base SI units                                                       |
+|-----------|:---------------------------------------------------------------------------------|
+| radian    | 1                                                                                |
+| steradian | 1                                                                                |
+| hertz     | $\text{second}^{-1}$                                                             |
+| newton    | $\text{metre}~\text{kilo}~\text{gram}~\text{second}$                             |
+| pascal    | $\text{metre}^{-1}~\text{kilogram}~\text{second}^{-2}$                           |
+| joule     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}$                      |
+| watt      | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}$                      |
+| coulomb   | $\text{second}~\text{ampere}$                                                    |
+| volt      | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}~\text{ampere}^{-1}$   |
+| farad     | $\text{metre}^{-2}~\text{kilogram}^{-1}~\text{second}^4~\text{ampere}^2$         |
+| ohm       | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}~\text{ampere}^{-2}$   |
+| siemens   | $\text{metre}^{-2}~\text{kilo}~\text{gram}^{-1}~\text{second}^3~\text{ampere}^2$ |
+| weber     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-1}$   |
+| tesla     | $\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-1}$                  |
+| henry     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-2}$   |
+| lumen     | $\text{candela}$                                                                 |
+| lux       | $\text{metre}^{-2}~\text{candela}$                                               |
+| becquerel | $\text{second}^{-1}$                                                             |
+| gray      | $\text{metre}^2~\text{second}^{-2}$                                              |
+| sievert   | $\text{metre}^2~\text{second}^{-2}$                                              |
+| katal     | $\text{mole}~\text{second}^{-1}$                                                 |
+
+### rtol
+
+Maximum relative error allowed when comparing expressions.
 
 ### comparison
 
@@ -110,10 +115,6 @@ Convert the expression to base SI units and checks that the answer and response 
 #### dimensions
 
 Checks that the answer and response have the same dimensions, does not compare the values.
-
-### rtol
-
-Maximum relative error allowed when comparing expressions.
 
 ## Outputs
 TODO

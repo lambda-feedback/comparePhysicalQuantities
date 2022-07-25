@@ -74,6 +74,9 @@ def convert_derived_SI_units_to_SI_base_units():
         ".split())
 
 def convert_common_units_to_SI():
+    """
+    Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+    """
     return ''.join("\
     ('min','(60*second)') \
     ('hour','(3600*second)') \

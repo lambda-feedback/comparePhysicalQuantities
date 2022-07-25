@@ -103,6 +103,21 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
+    def test_compare_quantities_with_rtol(self):
+        correct_results = []
+        incorrect_results = []
+        for k in [1,2,3]:
+            # Checks that sufficiently accurate responses are considered correct
+            body = {"response": "1"*(k+1)+"0"*(4-k)+"*deka*metre", "answer": "111111*metre", "rtol": "0."+"0"*k+"1"}
+            response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
+            correct_results.append(response.get("is_correct"))
+            # Checks that insufficiently accurate responses are considered wrong
+            body["response"] = "1"*k+"0"*(5-k)+"*metre"
+            response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
+            incorrect_results.append(response.get("is_correct"))
+
+        self.assertEqual(all(correct_results) and not any(incorrect_results), True)
+
 #REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in th code at the moment
 #    def test_compare_dimensions_with_sympy_unit_system(self):
 #        body = {"response": "2*d**2/t**2+0.5*v**2", "answer": "5*v**2", "comparison": "dimensions", "substitutions": "('d','(u.length)') ('t','(u.time)') ('v','(u.length/u.time)')"}
