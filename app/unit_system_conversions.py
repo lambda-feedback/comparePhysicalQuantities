@@ -44,22 +44,6 @@ def convert_SI_base_units_to_dimensions():
         ('candela','luminous_intensity')\
         ".split())
 
-def remove_SI_base_units(): 
-    """
-    Replaces all SI base units with 1.
-    SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
-    Note that gram is used as a base unit instead of kilogram.
-    """
-    return ''.join("\
-        ('metre',  'length') \
-        ('gram',   'mass') \
-        ('second', 'time') \
-        ('ampere', 'electric_current') \
-        ('kelvin', 'temperature') \
-        ('mole',   'amount_of_substance') \
-        ('candela','luminous_intensity')\
-        ".split())
-
 def convert_derived_SI_units_to_SI_base_units():
     """
     Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
@@ -73,11 +57,11 @@ def convert_derived_SI_units_to_SI_base_units():
         ('pascal',   '(metre**(-1)*kilogram*second**(-2))') \
         ('joule',    '(metre**2*kilo*gram*second**(-2))') \
         ('watt',     '(metre**2*kilo*gram*second**(-3))') \
-        ('coulomb ', '(second*ampere)') \
+        ('coulomb',  '(second*ampere)') \
         ('volt',     '(metre**2*kilo*gram*second**(-3)*ampere**(-1))') \
         ('farad',    '(metre**(-2)*(kilo*gram)**(-1)·second**4·ampere**2)') \
         ('ohm',      '(metre**2*kilo*gram*s**(-3)*ampere**(-2))') \
-        ('siemens',  '(metre**(-2)*kilo*gram**(-1)*second**3*A**2)') \
+        ('siemens',  '(metre**(-2)*kilo*gram**(-1)*second**3*ampere**2)') \
         ('weber',    '(metre**2*kilo*gram*second**(-2)*ampere**(-1))') \
         ('tesla',    '(kilo*gram*second**(-2)*ampere**(-1))') \
         ('henry',    '(metre**2*kilo*gram*second**(-2)*ampere**(-2))') \
