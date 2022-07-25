@@ -73,8 +73,6 @@ def evaluation_function(response, answer, params) -> dict:
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the answer") from e
 
-#    print(f"{ans.simplify()} : {res.simplify()}")
-
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
 
