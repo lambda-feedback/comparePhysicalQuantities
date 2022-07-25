@@ -45,7 +45,7 @@ Note that gram is used as a base unit instead of kilogram.
 SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
 
 | SI Prefix | Factor     | | SI Prefix | Factor     |
-|-----------|:-----------| |-----------|:-----------|
+|-----------|:-----------|-|-----------|:-----------|
 | yotta     | $10^{24}$  | | deci      | $10^{-1}$  |
 | zetta     | $10^{21}$  | | centi     | $10^{-2}$  |
 | exa'      | $10^{18}$  | | milli     | $10^{-3}$  |
