@@ -44,28 +44,28 @@ Note that gram is used as a base unit instead of kilogram.
 SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
 Note that gram is used as a base unit instead of kilogram.
 
-| SI base unit | Dimension name      |
-|--------------|:--------------------|
-| yotta        | 10e24               |
-| zetta        | 10e21               |
-| exa'         | 10e18               |
-| peta         | 10e15               |
-| tera         | 10e12               |
-| giga         | 10e9                |
-| mega         | 10e6                |
-| kilo         | 10e3                |
-| hecto        | 10e2                |
-| deka         | 10e1                |
-| deci         | 10e-1               |
-| centi        | 10e-2               |
-| milli        | 10e-3               |
-| micro        | 10e-6               |
-| nano         | 10e-9               |
-| pico         | 10e-12              |
-| femto        | 10e-15              |
-| atto         | 10e-18              |
-| zepto        | 10e-21              |
-| yocto        | 10e-24              |
+| SI Prefix | Factor    |
+|-----------|:----------|
+| yotta     | $10^{24}  |
+| zetta     | $10^{21}  |
+| exa'      | $10^{18}  |
+| peta      | $10^{15}  |
+| tera      | $10^{12}  |
+| giga      | $10^{9}   |
+| mega      | $10^{6}   |
+| kilo      | $10^{3}   |
+| hecto     | $10^{2}   |
+| deka      | $10^{1}   |
+| deci      | $10^{-1}  |
+| centi     | $10^{-2}  |
+| milli     | $10^{-3}  |
+| micro     | $10^{-6}  |
+| nano      | $10^{-9}  |
+| pico      | $10^{-12} |
+| femto     | $10^{-15} |
+| atto      | $10^{-18} |
+| zepto     | $10^{-21} |
+| yocto     | $10^{-24} |
 
 #### Table: Derived SI units
 
@@ -94,7 +94,11 @@ Note that degrees Celsius is omitted.
 | becquerel | $\text{second}^{-1}$                                                             |
 | gray      | $\text{metre}^2~\text{second}^{-2}$                                              |
 | sievert   | $\text{metre}^2~\text{second}^{-2}$                                              |
-| katal     | $\text{mole}~\text{second}^{-1}$                                                  |
+| katal     | $\text{mole}~\text{second}^{-1}$                                                 |
+
+### rtol
+
+Maximum relative error allowed when comparing expressions.
 
 ### comparison
 
@@ -111,10 +115,6 @@ Convert the expression to base SI units and checks that the answer and response 
 #### dimensions
 
 Checks that the answer and response have the same dimensions, does not compare the values.
-
-### rtol
-
-Maximum relative error allowed when comparing expressions.
 
 ## Outputs
 TODO

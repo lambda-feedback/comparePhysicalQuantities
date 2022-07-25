@@ -10,6 +10,8 @@ def evaluation_function(response, answer, params) -> dict:
 
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "rtol": 1e-12 }
     parameters.update(params)
+    if isinstance(parameters["rtol"],str):
+        parameters["rtol"] = eval(parameters["rtol"])
 
     list_of_substitutions_strings = parameters["substitutions"]
     if isinstance(list_of_substitutions_strings,str):
