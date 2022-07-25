@@ -67,34 +67,33 @@ Note that gram is used as a base unit instead of kilogram.
 | zepto        | 10e-21              |
 | yocto        | 10e-24              |
 
-#### Table: Base SI units
+#### Table: Derived SI units
 
-SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
-Note that gram is used as a base unit instead of kilogram.
+Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
 
-| Derived SI unit | Dimension name                                     |
-|-----------------|:---------------------------------------------------|
-| radian          | 1                                                  |
-| steradian       | 1                                                  |
-| hertz           | second^(-1)                                        |
-| newton          | metre*kilo*gram*second                             |
-| pascal          | metre**(-1)*kilogram*second**(-2)                  |
-| joule           | metre**2*kilo*gram*second**(-2)                    |
-| watt            | metre**2*kilo*gram*second**(-3)                    |
-| coulomb         | second*ampere                                      |
-| volt            | metre**2*kilo*gram*second**(-3)*ampere**(-1)       |
-| farad           | metre**(-2)*(kilo*gram)**(-1)·second**4·ampere**2) |
-| ohm             | metre**2*kilo*gram*s**(-3)*ampere**(-2)            |
-| siemens         | metre**(-2)*kilo*gram**(-1)*second**3*ampere**2    |
-| weber           | metre**2*kilo*gram*second**(-2)*ampere**(-1)       |
-| tesla           | kilo*gram*second**(-2)*ampere**(-1)                |
-| henry           | metre**2*kilo*gram*second**(-2)*ampere**(-2)       |
-| lumen           | candela                                            |
-| lux             | metre*(-2)*candela                                 |
-| becquerel       | second**(-1)                                       |
-| gray            | metre**2·second**(-2)                              |
-| sievert         | metre**2·second**(-2)                              |
-| katal           | second(-1)*mole                                    |
+| Unit name | Expressed in bade SI units                                                   |
+|-----------|:-----------------------------------------------------------------------------|
+| radian    | 1                                                                            |
+| steradian | 1                                                                            |
+| hertz     | $\text{second}^(-1)$                                                         |
+| newton    | $\text{metre}\text{kilo}\text{gram}\text{second}$                            |
+| pascal    | $\text{metre}^{-1}\text{kilogram}\text{second}^{-2}$                         |
+| joule     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2}$                     |
+| watt      | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}$                     |
+| coulomb   | $\text{secon}d\text{ampere}$                                                 |
+| volt      | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}\text{ampere}^{-1}$   |
+| farad     | $\text{metre}^{-2}\text{kilogram}^{-1}\text{second}^4\text{ampere}^2$        |
+| ohm       | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-3}\text{ampere}^{-2}$   |
+| siemens   | $\text{metre}^{-2}\text{kilo}\text{gram}^{-1}\text{second}^3\text{ampere}^2$ |
+| weber     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2\text{ampere}^{-1}$    |
+| tesla     | $\text{kilo}\text{gram}\text{second}^{-2\text{ampere}^{-1}$                  |
+| henry     | $\text{metre}^2\text{kilo}\text{gram}\text{second}^{-2}\text{ampere}^{-2}$   |
+| lumen     | $\text{candela}$                                                             |
+| lux       | $\text{metre}^{-2}\text{candela}$                                            |
+| becquerel | $\text{second}^{-1}$                                                         |
+| gray      | $\text{metre}^2\text{second}^{-2}$                                           |
+| sievert   | $\text{metre}^2\text{second}^{-2}$                                           |
+| katal     | $\text{mole}text{second}^{-1}$                                               |
 
 ### comparison
 
