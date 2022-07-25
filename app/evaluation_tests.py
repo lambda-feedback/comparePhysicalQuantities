@@ -48,56 +48,75 @@ class TestEvaluationFunction(unittest.TestCase):
         )
 
     def test_substitutions_replace_no_common_substrings(self):
-        body = {"response": "ab", "answer": "c", "substitutions": "('a','A') ('b','B') ('c','AB')"}
+        body = {"response": "ab", 
+                "answer": "c", 
+                "substitutions": "('a','A') ('b','B') ('c','AB')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_replacement(self):
-        body = {"response": "ab", "answer": "c", "substitutions": "('a','b') ('b','d') ('c','bd')"}
+        body = {"response": "ab", 
+                "answer": "c", 
+                "substitutions": "('a','b') ('b','d') ('c','bd')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_original(self):
-        body = {"response": "ab", "answer": "c", "substitutions": "('a','d') ('ab','e') ('c','e')"}
+        body = {"response": "ab", 
+                "answer": "c", 
+                "substitutions": "('a','d') ('ab','e') ('c','e')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_dimensions_with_substitution(self):
-        body = {"response": "2*d**2/t**2+0.5*v**2", "answer": "5*v**2", "comparison": "dimensions", "substitutions": "('d','(distance)') ('t','(time)') ('v','(distance/time)')"}
+        body = {"response": "2*d**2/t**2+0.5*v**2", 
+                "answer": "5*v**2", 
+                "comparison": "dimensions", 
+                "substitutions": "('d','(distance)') ('t','(time)') ('v','(distance/time)')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_quantities_with_substitutions(self):
-        body = {"response": "(d/t)**2/(3600**2)+v**2", "answer": "2*v**2", "substitutions": "('d','(km)') ('t','(s)') ('v','(km/h)') | ('k','1000*') ('h','(60*60*s)')"}
+        body = {"response": "(d/t)**2/(3600**2)+v**2", 
+                "answer": "2*v**2", 
+                "substitutions": "('d','(km)') ('t','(s)') ('v','(km/h)') | ('k','1000*') ('h','(60*60*s)')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_dimensions_with_defaults(self):
-        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", "answer": "2*v**2", "comparison": "dimensions", "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
+                "answer": "2*v**2", 
+                "comparison": "dimensions", 
+                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_quantities_with_defaults(self):
-        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", "answer": "2*v**2", "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
+                "answer": "2*v**2", 
+                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_quantities_with_defaults_exact(self):
-        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", "answer": "2*v**2", "comparison": "expressionExact", "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
+                "answer": "2*v**2", 
+                "comparison": "expressionExact", 
+                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
 
@@ -108,7 +127,9 @@ class TestEvaluationFunction(unittest.TestCase):
         incorrect_results = []
         for k in [1,2,3]:
             # Checks that sufficiently accurate responses are considered correct
-            body = {"response": "1"*(k+1)+"0"*(4-k)+"*deka*metre", "answer": "111111*metre", "rtol": "0."+"0"*k+"1"}
+            body = {"response": "1"*(k+1)+"0"*(4-k)+"*deka*metre", 
+                    "answer": "111111*metre", 
+                    "rtol": "0."+"0"*k+"1"}
             response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
             correct_results.append(response.get("is_correct"))
             # Checks that insufficiently accurate responses are considered wrong

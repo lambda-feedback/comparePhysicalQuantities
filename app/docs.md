@@ -27,6 +27,7 @@ Whenever units are used they must be written exactly as in the table below and u
 #### Table: Base SI units
 
 SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
+
 Note that gram is used as a base unit instead of kilogram.
 
 | SI base unit | Dimension name      |
@@ -42,59 +43,85 @@ Note that gram is used as a base unit instead of kilogram.
 #### Table: SI prefixes
 
 SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
-Note that gram is used as a base unit instead of kilogram.
 
-| SI Prefix | Factor    |
-|-----------|:----------|
-| yotta     | $10^{24}  |
-| zetta     | $10^{21}  |
-| exa'      | $10^{18}  |
-| peta      | $10^{15}  |
-| tera      | $10^{12}  |
-| giga      | $10^{9}   |
-| mega      | $10^{6}   |
-| kilo      | $10^{3}   |
-| hecto     | $10^{2}   |
-| deka      | $10^{1}   |
-| deci      | $10^{-1}  |
-| centi     | $10^{-2}  |
-| milli     | $10^{-3}  |
-| micro     | $10^{-6}  |
-| nano      | $10^{-9}  |
-| pico      | $10^{-12} |
-| femto     | $10^{-15} |
-| atto      | $10^{-18} |
-| zepto     | $10^{-21} |
-| yocto     | $10^{-24} |
+| SI Prefix | Factor     | | SI Prefix | Factor     |
+|-----------|:-----------| |-----------|:-----------|
+| yotta     | $10^{24}$  | | deci      | $10^{-1}$  |
+| zetta     | $10^{21}$  | | centi     | $10^{-2}$  |
+| exa'      | $10^{18}$  | | milli     | $10^{-3}$  |
+| peta      | $10^{15}$  | | micro     | $10^{-6}$  |
+| tera      | $10^{12}$  | | nano      | $10^{-9}$  |
+| giga      | $10^{9}$   | | pico      | $10^{-12}$ |
+| mega      | $10^{6}$   | | femto     | $10^{-15}$ |
+| kilo      | $10^{3}$   | | atto      | $10^{-18}$ |
+| hecto     | $10^{2}$   | | zepto     | $10^{-21}$ |
+| deka      | $10^{1}$   | | yocto     | $10^{-24}$ |
 
 #### Table: Derived SI units
 
 Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
+
 Note that degrees Celsius is omitted.
 
-| Unit name | Expressed in base SI units                                                       |
-|-----------|:---------------------------------------------------------------------------------|
-| radian    | 1                                                                                |
-| steradian | 1                                                                                |
-| hertz     | $\text{second}^{-1}$                                                             |
-| newton    | $\text{metre}~\text{kilo}~\text{gram}~\text{second}$                             |
-| pascal    | $\text{metre}^{-1}~\text{kilogram}~\text{second}^{-2}$                           |
-| joule     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}$                      |
-| watt      | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}$                      |
-| coulomb   | $\text{second}~\text{ampere}$                                                    |
-| volt      | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}~\text{ampere}^{-1}$   |
-| farad     | $\text{metre}^{-2}~\text{kilogram}^{-1}~\text{second}^4~\text{ampere}^2$         |
-| ohm       | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-3}~\text{ampere}^{-2}$   |
-| siemens   | $\text{metre}^{-2}~\text{kilo}~\text{gram}^{-1}~\text{second}^3~\text{ampere}^2$ |
-| weber     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-1}$   |
-| tesla     | $\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-1}$                  |
-| henry     | $\text{metre}^2~\text{kilo}~\text{gram}~\text{second}^{-2}~\text{ampere}^{-2}$   |
-| lumen     | $\text{candela}$                                                                 |
-| lux       | $\text{metre}^{-2}~\text{candela}$                                               |
-| becquerel | $\text{second}^{-1}$                                                             |
-| gray      | $\text{metre}^2~\text{second}^{-2}$                                              |
-| sievert   | $\text{metre}^2~\text{second}^{-2}$                                              |
-| katal     | $\text{mole}~\text{second}^{-1}$                                                 |
+Note that the function treats radians and steradians as dimensionless values.
+
+| Unit name | Expressed in base SI units                          |
+|-----------|:----------------------------------------------------|
+| radian    | 1                                                   |
+| steradian | 1                                                   |
+| hertz     | second$^{-1}$                                       |
+| newton    | metre kilogram second                               |
+| pascal    | metre$^{-1}$ kilogram second$^{-2}$                 |
+| joule     | metre$^2$ kilogram second$^{-2}$                    |
+| watt      | metre$^2$ kilogram second$^{-3}$                    |
+| coulomb   | second ampere                                       |
+| volt      | metre$^2$ kilogram second$^{-3}$ ampere$^{-1}$      |
+| farad     | metre$^{-2}$ kilogram$^{-1}$ second$^4$ ampere$^2$  |
+| ohm       | metre$^2$ kilogram second$^{-3}$ ampere$^{-2}$      |
+| siemens   | metre$^{-2}$ kilogram$^{-1}$ second$^3$ ampere$^2$  |
+| weber     | metre$^2$ kilogram second$^{-2}$ ampere$^{-1}$      |
+| tesla     | kilo gram second$^{-2}$ ampere$^{-1}$               |
+| henry     | metre$^2$ kilogram second$^{-2}$ ampere$^{-2}$      |
+| lumen     | candela                                             |
+| lux       | metre$^{-2}$ candela                                |
+| becquerel | second$^{-1}$                                       |
+| gray      | metre$^2$ second$^{-2}$                             |
+| sievert   | metre$^2$ second$^{-2}$                             |
+| katal     | mole second$^{-1}$                                  |
+
+#### Table: Common non-SI units
+
+Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+
+Note that the function treats angles, neper and bel as dimensionless values.
+
+| Unit name         | Expressed in SI units                         |
+|-------------------|:----------------------------------------------|
+| min               | 60 second                                     |
+| hour              | 3600 second                                   |
+| day               | 86400 second                                  |
+| angle_degree      | $\frac{\pi}{180}$                             |
+| angle_minute      | $\frac{\pi}{10800}$                           |
+| angle_second      | $\frac{\pi}{648000}$                          |
+| liter             | $10^{-3}$ metre$^3$                           |
+| metric_ton        | $10^3$ kilo gram                              |
+| neper             | 1                                             |
+| bel               | $\frac{1}{2} \ln(10)$                         |
+| electronvolt      | $1.60218 \cdot 10^{-19}$ joule                |
+| atomic_mass_unit  | $1.66054 \cdot 10^{-27}$ kilogram             |
+| astronomical_unit | $149597870700$ metre                          |
+| nautical_mile     | $1852$ metre                                  |
+| knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |
+| are               | $10^2$ metre$^2$                              |
+| hectare           | $10^4$ metre$^2$                              |
+| bar               | $10^5$ pascal                                 |
+| angstrom          | $10^{-10}$ metre                              |
+| barn              | $10^{-28}$ metre                              |
+| curie             | $3.7 \cdot 10^10$ becquerel                   |
+| roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
+| rad               | $10^{-2}$ gray                                |
+| rem               | $10^{-2}$ sievert                             |
+
 
 ### rtol
 
@@ -114,7 +141,7 @@ Convert the expression to base SI units and checks that the answer and response 
 
 #### dimensions
 
-Checks that the answer and response have the same dimensions, does not compare the values.
+Checks that the answer and response have the same dimensions, does not compare the values of the physical quantities.
 
 ## Outputs
 TODO
