@@ -78,30 +78,30 @@ def convert_common_units_to_SI():
     Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
     """
     return ''.join("\
-    ('min','(60*second)') \
-    ('hour','(3600*second)') \
-    ('day','(86400*second)') \
-    ('angle_degree','(pi/180)') \
-    ('angle_minute','(pi/10800)') \
-    ('angle_second','(pi/648000)') \
-    ('liter','(10**(-3)*metre**3)') \
-    ('metric_ton','(10**3*kilo*gram)') \
-    ('neper','(1)') \
-    ('bel','((1/2)*log(10))') \
-    ('electronvolt','(1.60218*10**(-19)*joule)') \
-    ('atomic_mass_unit','(1.66054*10**(-27)*kilo*gram)') \
+    ('min',              '(60*second)') \
+    ('hour',             '(3600*second)') \
+    ('day',              '(86400*second)') \
+    ('angle_degree',     '(pi/180)') \
+    ('angle_minute',     '(pi/10800)') \
+    ('angle_second',     '(pi/648000)') \
+    ('liter',            '(10**(-3)*metre**3)') \
+    ('metric_ton',       '(10**3*kilo*gram)') \
+    ('neper',            '(1)') \
+    ('bel',              '((1/2)*log(10))') \
+    ('electronvolt',     '(1.60218*10**(-19)*joule)') \
+    ('atomic_mass_unit', '(1.66054*10**(-27)*kilo*gram)') \
     ('astronomical_unit','(149597870700*metre)') \
-    ('nautical_mile','(1852*metre)') \
-    ('knot','((1852/3600)*metre/second)') \
-    ('are','(10**2*metre**2)') \
-    ('hectare','(10**4*metre**2)') \
-    ('bar','(10**5*pascal)') \
-    ('angstrom','(10**(-10)*metre)') \
-    ('barn','(10**(-28)*metre**2)') \
-    ('curie','(3.7*10**10*becquerel)') \
-    ('roentgen','(2.58*10**(-4)*kelvin/(kilo*gram))') \
-    ('rad','(10**(-2)*gray)') \
-    ('rem','(10**(-2)*sievert)')\
+    ('nautical_mile',    '(1852*metre)') \
+    ('knot',             '((1852/3600)*metre/second)') \
+    ('are',              '(10**2*metre**2)') \
+    ('hectare',          '(10**4*metre**2)') \
+    ('bar',              '(10**5*pascal)') \
+    ('angstrom',         '(10**(-10)*metre)') \
+    ('barn',             '(10**(-28)*metre**2)') \
+    ('curie',            '(3.7*10**10*becquerel)') \
+    ('roentgen',         '(2.58*10**(-4)*kelvin/(kilo*gram))') \
+    ('rad',              '(10**(-2)*gray)') \
+    ('rem',              '(10**(-2)*sievert)')\
     ".split())
 
 def convert_to_SI_base_units():

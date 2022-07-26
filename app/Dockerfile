@@ -12,6 +12,9 @@ RUN pip3 install -r requirements.txt
 COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
 
+# Copy additional files
+COPY unit_conversion_systems.py ./app/
+
 # Copy Documentation
 COPY docs.md ./app/
 
