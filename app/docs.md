@@ -24,6 +24,8 @@ Each quantity should be written on the form `('quantity name','(units)')` and al
 
 Whenever units are used they must be written exactly as in the left columns of tables given below (no short forms or single symbols) and units must be multiplied (or divided) with each other and quantities. 
 
+**NOTE:** Using units and predefined quantities at the same time in an answer or response can cause problems (especially if quantities are denoted using single characters). Ideally it should be clear that only predefined quantities or only units should be used from the question.
+
 If the `comparison` parameter is set `dimensions` it is not necessary to give exact units for each quantity but dimensions must be given instead. See tables below for available default dimensions.
 
 If the `comparison` parameter is set `buckinghamPi` then `quantities` should be set in a different way. See the detailed description of `buckinghamPi` further down.
@@ -212,3 +214,39 @@ Here a response area with input type `TEXT` and one grading parameter,`compariso
 `comparison` is set to `dimensions`.
 
 The answer is set two some expression with the right dimensions, e.g. `length**2/time**2`.
+
+## 2 Checking the value of an expression or a physical quantity
+
+This examples checks if your expression is equal to $2~\frac{\mathrm{kilometre}}{\mathrm{hour}}$.
+
+### a)
+
+Here an expression with predefined quantities is checked as exactly as possible. This is done with a TEXT response area with the following parameters:
+`quantities` is set to:
+```
+('d','(length)') ('t','(time)') ('v','(length/time)')
+```
+
+`comparison` is set to `expressionExact`.
+
+The response area answer is set to `2*v` but there are many other expressions that would work just as well. Note that we cannot write `2*kilo*metre/second` as respons or answer since the predefined quantity `t` will substitute the `t` in `metre` which results in unparseable input.
+
+### b)
+
+Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed absolute tolerance of $0.05 \frac{metre}{second}$ can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. **Note:** `atol` is always assumed to be given in the base SI units version of the expression. This is likely to change in future versions of the function.
+
+The `comparison` could also be set to `expression` but since this is the default it is not necessary.
+
+### c)
+
+Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relative tolerance of $0.05$ can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
+
+The `comparison` could also be set to `expression` but since this is the default it is not necessary.
+
+## 3 Checking if a set of quantities match the Buckingham pi theorem
+
+See example for context, see worked solution for a terse and probaly more obtuse than necessary solution.
+
+At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
+
+The neat part is that for this problem you do not need to define any quantities, you just set `comparison` to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example I used the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']`.

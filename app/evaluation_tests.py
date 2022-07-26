@@ -103,6 +103,11 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
+    def test_compare_quantities_with_defaults_simple(self):
+        body = {"response": "2*v", 
+                "answer": "2*(kilo*metre/hour)", 
+                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+
     def test_compare_quantities_with_defaults(self):
         body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
                 "answer": "2*v**2", 
@@ -173,11 +178,14 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(is_correct, True)
 
     def test_buckingham_pi(self):
+        # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
         answer = "['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']"
+        # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
         response = "['g*v**(-2)*h**3*l**3', 'g**2*v**(-4)*h**3*l']"
         params = {"comparison": "buckinghamPi"}
         result = evaluation_function(response, answer, params)
         correct_response_is_correct = result.get("is_correct")
+        # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
         response = "['h*l', 'h**2*l**2']"
         result = evaluation_function(response, answer, params)
         incorrect_response_is_incorrect = not result.get("is_correct")
