@@ -59,11 +59,6 @@ def evaluation_function(response, answer, params) -> dict:
             return {"is_correct": True}
         return {"is_correct": False}
 
-    try:
-        ans = parse_expr(answer)
-    except (SyntaxError, TypeError) as e:
-        raise Exception("SymPy was unable to parse the answer") from e
-
     list_of_substitutions_strings = parameters["substitutions"]
     if isinstance(list_of_substitutions_strings,str):
         list_of_substitutions_strings = [list_of_substitutions_strings]
@@ -117,12 +112,12 @@ def evaluation_function(response, answer, params) -> dict:
     try:
         res = parse_expr(response)
     except (SyntaxError, TypeError) as e:
-        raise Exception("SymPy was unable to parse the response") from e
+        raise Exception(f"SymPy was unable to parse the response {response}") from e
 
     try:
         ans = parse_expr(answer)
     except (SyntaxError, TypeError) as e:
-        raise Exception("SymPy was unable to parse the answer") from e
+        raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
@@ -130,7 +125,7 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["comparison"] == "dimensions":
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
         if is_correct:
-            return {"is_correct": True, "level": parameters["comparison"], **interp }
+            return {"is_correct": True, "comparison": parameters["comparison"], **interp }
 
     if parameters["comparison"] == "expression":
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
