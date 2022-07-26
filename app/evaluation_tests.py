@@ -103,6 +103,11 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
+    def test_compare_quantities_with_defaults_simple(self):
+        body = {"response": "2*v", 
+                "answer": "2*(kilo*metre/hour)", 
+                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+
     def test_compare_quantities_with_defaults(self):
         body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
                 "answer": "2*v**2", 
