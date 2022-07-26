@@ -117,7 +117,7 @@ Note that the function treats angles, neper and bel as dimensionless values.
 | bar               | $10^5$ pascal                                 |
 | angstrom          | $10^{-10}$ metre                              |
 | barn              | $10^{-28}$ metre                              |
-| curie             | $3.7 \cdot 10^10$ becquerel                   |
+| curie             | $3.7 \cdot 10^{10}$ becquerel                 |
 | roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
 | rad               | $10^{-2}$ gray                                |
 | rem               | $10^{-2}$ sievert                             |
