@@ -4,7 +4,7 @@ This is an **EXPERIMENTAL** evaluation function with some dimensional analysis f
 This function lacks nice GUI, can be quite brittle and will likely change significantly in the near future.
 
 ## Inputs
-All input parameters need to be supplied via the 'Advanced - raw parameters' panel.
+All input parameters need to be supplied via the **Grading parameters** panel.
 
 ### substitutions
 
@@ -22,7 +22,7 @@ String that lists all quantities that can be used in the answer and response.
 
 Each quantity should be written on the form `('quantity name','(units)')` and all pairs concatenated into a single string. See tables below for available default units.
 
-Whenever units are used they must be written exactly as in the tables given below and units must be multiplied (or divided) with each other and quantities. 
+Whenever units are used they must be written exactly as in the left columns of tables given below (no short forms or single symbols) and units must be multiplied (or divided) with each other and quantities. 
 
 If the `comparison` parameter is set `dimensions` it is not necessary to give exact units for each quantity but dimensions must be given instead. See tables below for available default dimensions.
 
@@ -184,7 +184,9 @@ Outputs vary depending on chosen comparison options. This is likely to change in
 
 ## Examples
 
-### 1.1 Checking the dimensions of an expression or physical quantity
+Implemented versions of these examples can be found in the module 'Examples: Evaluation Functions'.
+
+### 1 Checking the dimensions of an expression or physical quantity
 
 This example will check if the response has dimensions $\frac{\mathrm{length}^2}{\mathrm{time}^2}$.
 
