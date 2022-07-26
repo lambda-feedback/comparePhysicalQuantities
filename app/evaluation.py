@@ -9,7 +9,7 @@ def evaluation_function(response, answer, params) -> dict:
     try:
         from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
     except ImportError:
-        from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
+        from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
 
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "rtol": 1e-12 }
     parameters.update(params)
