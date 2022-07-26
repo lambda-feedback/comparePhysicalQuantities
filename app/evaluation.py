@@ -130,7 +130,7 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["comparison"] == "dimensions":
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
         if is_correct:
-            return {"is_correct": True, "level": parameters["comparison"], **interp }
+            return {"is_correct": True, "comparison": parameters["comparison"], **interp }
 
     if parameters["comparison"] == "expression":
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
