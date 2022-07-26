@@ -13,7 +13,7 @@ COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
 
 # Copy additional files
-COPY unit_systems_conversion.py ./app/
+COPY unit_system_conversions.py ./app/
 
 # Copy Documentation
 COPY docs.md ./app/
