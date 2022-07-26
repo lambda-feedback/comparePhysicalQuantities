@@ -242,3 +242,11 @@ The `comparison` could also be set to `expression` but since this is the default
 Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relative tolerance of $0.05$ can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
 The `comparison` could also be set to `expression` but since this is the default it is not necessary.
+
+## 3 Checking if a set of quantities match the Buckingham pi theorem
+
+See example for context, see worked solution for a terse and probaly more obtuse than necessary solution.
+
+At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
+
+The neat part is that for this problem you do not need to define any quantities, you just set `comparison` to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example I used the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']`.
