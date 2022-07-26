@@ -113,13 +113,12 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_quantities_with_defaults_exact(self):
-        body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
-                "answer": "2*v**2", 
-                "comparison": "expressionExact", 
-                "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
+        response = "(d/t)**2*((1/3.6)**2)+v**2"
+        answer = "2*v**2"
+        params = {"comparison": "expressionExact", 
+                  "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')"}
 
-        response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
-
+        response = evaluation_function(response, answer, params)
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_quantities_with_rtol(self):
@@ -127,17 +126,62 @@ class TestEvaluationFunction(unittest.TestCase):
         incorrect_results = []
         for k in [1,2,3]:
             # Checks that sufficiently accurate responses are considered correct
-            body = {"response": "1"*(k+1)+"0"*(4-k)+"*deka*metre", 
-                    "answer": "111111*metre", 
-                    "rtol": "0."+"0"*k+"1"}
-            response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
-            correct_results.append(response.get("is_correct"))
+            response = "1"*(k+1)+"0"*(4-k)+"*deka*metre"
+            answer = "111111*metre"
+            params = {"rtol": "0."+"0"*k+"1"}
+            result = evaluation_function(response, answer, params)
+            correct_results.append(result.get("is_correct"))
             # Checks that insufficiently accurate responses are considered wrong
-            body["response"] = "1"*k+"0"*(5-k)+"*metre"
-            response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
-            incorrect_results.append(response.get("is_correct"))
+            response = "1"*k+"0"*(5-k)+"*metre"
+            result = evaluation_function(response, answer, params)
+            incorrect_results.append(result.get("is_correct"))
 
         self.assertEqual(all(correct_results) and not any(incorrect_results), True)
+
+    def test_compare_quantities_with_atol(self):
+        answer = "1.0*metre"
+        response = "1.04*metre"
+        params = {"atol": "0.05"}
+        is_correct = bool(evaluation_function(response, answer, params).get("is_correct"))
+        response = "0.96*metre"
+        is_correct = bool(is_correct and evaluation_function(response, answer, params).get("is_correct"))
+        response = "1.06*metre"
+        is_correct = bool(is_correct and not evaluation_function(response, answer, params).get("is_correct"))
+        response = "0.94*metre"
+        is_correct = bool(is_correct and not evaluation_function(response, answer, params).get("is_correct"))
+
+        self.assertEqual(is_correct, True)
+
+    def test_compare_quantities_with_atol_and_rtol(self):
+        answer = "1.0*kilo*metre"
+        # Both absolute and relative error small enough
+        response = "1098*metre"
+        params = {"atol": "100", "rtol": "0.1"}
+        is_correct = bool(evaluation_function(response, answer, params).get("is_correct"))
+        # Both absolute and relative error too large
+        response = "1102*metre"
+        is_correct = bool(is_correct and not evaluation_function(response, answer, params).get("is_correct"))
+        # Absolute error small enough and relative error too large
+        response = "1098*metre"
+        params = {"atol": "100", "rtol": "0.05"}
+        is_correct = bool(is_correct and not evaluation_function(response, answer, params).get("is_correct"))
+        # Absolute error too large and relative error small enough
+        response = "1098*metre"
+        params = {"atol": "50", "rtol": "0.1"}
+        is_correct = bool(is_correct and not evaluation_function(response, answer, params).get("is_correct"))
+
+        self.assertEqual(is_correct, True)
+
+    def test_buckingham_pi(self):
+        answer = "['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']"
+        response = "['g*v**(-2)*h**3*l**3', 'g**2*v**(-4)*h**3*l']"
+        params = {"comparison": "buckinghamPi"}
+        result = evaluation_function(response, answer, params)
+        correct_response_is_correct = result.get("is_correct")
+        response = "['h*l', 'h**2*l**2']"
+        result = evaluation_function(response, answer, params)
+        incorrect_response_is_incorrect = not result.get("is_correct")
+        self.assertEqual(correct_response_is_correct and incorrect_response_is_incorrect, True)
 
 #REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in th code at the moment
 #    def test_compare_dimensions_with_sympy_unit_system(self):

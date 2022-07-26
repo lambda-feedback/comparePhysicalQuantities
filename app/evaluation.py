@@ -5,16 +5,64 @@ def evaluation_function(response, answer, params) -> dict:
 
     from math import pi, log
     from sympy.parsing.sympy_parser import parse_expr
-    from sympy import simplify, latex
+    from sympy import simplify, latex, Matrix
     try:
         from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
     except ImportError:
         from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
 
-    parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "rtol": 1e-12 }
+    default_rtol = 1e-12
+    parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression"}
     parameters.update(params)
-    if isinstance(parameters["rtol"],str):
-        parameters["rtol"] = eval(parameters["rtol"])
+
+    if parameters["comparison"] == "buckinghamPi":
+        response_strings = eval(response)
+        response_groups = []
+        for res in response_strings:
+            try:
+                expr = parse_expr(res)
+            except (SyntaxError, TypeError) as e:
+                raise Exception("SymPy was unable to parse the response") from e
+            response_groups.append(expr)
+        response_symbols = set()
+        for res in response_groups:
+            response_symbols = response_symbols.union(res.free_symbols)
+        answer_strings = eval(answer)
+        answer_groups = []
+        for ans in answer_strings:
+            try:
+                expr = parse_expr(ans)
+            except (SyntaxError, TypeError) as e:
+                raise Exception("SymPy was unable to parse the answer") from e
+            answer_groups.append(expr)
+        answer_exponents = []
+        answer_symbols = set()
+        for ans in answer_groups:
+            answer_symbols = answer_symbols.union(ans.free_symbols)
+        answer_symbols = list(answer_symbols)
+        # TODO: Check that symbols in res and ans match
+        for ans in answer_groups:
+            exponents = []
+            for symbol in answer_symbols:
+                exponents.append(ans.as_coeff_exponent(symbol)[1])
+            answer_exponents.append(exponents)
+        answer_matrix = Matrix(answer_exponents)
+        response_exponents = []
+        for res in response_groups:
+            exponents = []
+            for symbol in answer_symbols:
+                exponents.append(res.as_coeff_exponent(symbol)[1])
+            response_exponents.append(exponents)
+        response_matrix = Matrix(response_exponents)
+        enhanced_matrix = answer_matrix.row_join(response_matrix)
+        if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
+            return {"is_correct": True}
+        return {"is_correct": False}
+
+    try:
+        ans = parse_expr(answer)
+    except (SyntaxError, TypeError) as e:
+        raise Exception("SymPy was unable to parse the answer") from e
 
     list_of_substitutions_strings = parameters["substitutions"]
     if isinstance(list_of_substitutions_strings,str):
@@ -88,11 +136,21 @@ def evaluation_function(response, answer, params) -> dict:
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
         if ans.free_symbols == res.free_symbols:
             for symbol in ans.free_symbols:
-                ans.subs(symbol,1)
-                res.subs(symbol,1)
-        relative_error = abs(((ans-res)/ans).evalf())
-        has_correct_value = bool(relative_error < parameters["rtol"])
-        if has_correct_value and equal_up_to_multiplication:
+                ans = ans.subs(symbol,1)
+                res = res.subs(symbol,1)
+        if "atol" in parameters.keys():
+            error_below_atol = bool(abs((ans-res).evalf()) < float(parameters["atol"]))
+        else:
+            error_below_atol = True
+        if "rtol" in parameters.keys():
+            parameters["rtol"] = eval(parameters["rtol"])
+            error_below_rtol = bool(abs(((ans-res)/ans).evalf()) < parameters["rtol"])
+        else:
+            if "atol" in parameters.keys():
+                error_below_rtol = True
+            else:
+                error_below_rtol = bool(abs(((ans-res)/ans).evalf()) < default_rtol)
+        if error_below_atol and error_below_rtol and equal_up_to_multiplication:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp}
 
     if parameters["comparison"] == "expressionExact":
