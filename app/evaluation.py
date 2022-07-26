@@ -6,7 +6,10 @@ def evaluation_function(response, answer, params) -> dict:
     from math import pi, log
     from sympy.parsing.sympy_parser import parse_expr
     from sympy import simplify, latex
-    from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
+    try:
+        from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
+    except ImportError:
+        from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
 
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "rtol": 1e-12 }
     parameters.update(params)
