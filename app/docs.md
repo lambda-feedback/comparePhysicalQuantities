@@ -6,7 +6,7 @@ This function lacks nice GUI, can be quite brittle and will likely change signif
 ## Inputs
 All input parameters need to be supplied via the **Grading parameters** panel.
 
-### substitutions
+### `substitutions`
 
 String that lists all substitutions that should be done to the answer and response inputs before processing.
 
@@ -245,6 +245,15 @@ The `comparison` could also be set to `expression` but since this is the default
 
 ## 3 Checking if a set of quantities match the Buckingham pi theorem
 
+### a)
+
+In this example the task is: Given $U$, $L$ and $\nu$, suggest a dimensionless group.
+
+For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer. **Remark:** This means that the algorithm does not in any way check that the stated answer is dimensionless, ensuring that that is left to the problem author.
+
+For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and answer set to `['U*L/nu']`. Note that even though there is only one expression it still needs to written like a python list. It is also not necessary to use this specific answer, any example of a correct dimensionless group should work.
+
+### b)
 See example for context, see worked solution for a terse and probaly more obtuse than necessary solution.
 
 At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
