@@ -20,7 +20,7 @@ def evaluation_function(response, answer, params) -> dict:
         response_groups = []
         for res in response_strings:
             try:
-                expr = parse_expr(res)
+                expr = parse_expr(res).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the response") from e
             response_groups.append(expr)
@@ -31,7 +31,7 @@ def evaluation_function(response, answer, params) -> dict:
         answer_groups = []
         for ans in answer_strings:
             try:
-                expr = parse_expr(ans)
+                expr = parse_expr(ans).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the answer") from e
             answer_groups.append(expr)
@@ -39,8 +39,9 @@ def evaluation_function(response, answer, params) -> dict:
         answer_symbols = set()
         for ans in answer_groups:
             answer_symbols = answer_symbols.union(ans.free_symbols)
+        if not answer_symbols == response_symbols:
+            return {"is_correct": False}
         answer_symbols = list(answer_symbols)
-        # TODO: Check that symbols in res and ans match
         for ans in answer_groups:
             exponents = []
             for symbol in answer_symbols:
@@ -54,7 +55,7 @@ def evaluation_function(response, answer, params) -> dict:
                 exponents.append(res.as_coeff_exponent(symbol)[1])
             response_exponents.append(exponents)
         response_matrix = Matrix(response_exponents)
-        enhanced_matrix = answer_matrix.row_join(response_matrix)
+        enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
             return {"is_correct": True}
         return {"is_correct": False}
