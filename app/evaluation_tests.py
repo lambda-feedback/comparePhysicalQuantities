@@ -177,11 +177,35 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(is_correct, True)
 
-    def test_buckingham_pi(self):
+    def test_buckingham_pi_one_group(self):
+        answer = "['U*L/nu']"
+        params = {"comparison": "buckinghamPi"}
+        correct_responses = ["['U*L/nu']",
+                             "['L*U/nu']",
+                             "['nu/U/L']",
+                             "['(U*L/nu)**2']",
+                             "['2*U*L/nu']"]
+        incorrect_responses = ["['U*L/n/u']",
+                               "['1']",
+                               "['U*L*nu']",
+                               "['A*U*L/nu']",
+                               "['A']",
+                               "['U/nu']",
+                               "['U*L']"]
+        is_correct = True
+        for response in correct_responses:
+            result = evaluation_function(response, answer, params)
+            is_correct = result.get("is_correct") and is_correct
+        for response in incorrect_responses:
+            result = evaluation_function(response, answer, params)
+            is_correct = (not result.get("is_correct")) and is_correct
+        self.assertEqual(is_correct, True)
+
+    def test_buckingham_pi_two_groups(self):
         # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
         answer = "['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']"
         # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
-        response = "['g*v**(-2)*h**3*l**3', 'g**2*v**(-4)*h**3*l']"
+        response = "['g*v**(-2)*h**3*l**2', 'g**2*v**(-4)*h**3*l']"
         params = {"comparison": "buckinghamPi"}
         result = evaluation_function(response, answer, params)
         correct_response_is_correct = result.get("is_correct")
@@ -189,6 +213,10 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "['h*l', 'h**2*l**2']"
         result = evaluation_function(response, answer, params)
         incorrect_response_is_incorrect = not result.get("is_correct")
+        # This does not correspond to any consistent values of p1, p2, q1 and q2
+        response = "['g**1*v**2*h**3*l**4', 'g**4*v**3*h**2*l**1']"
+        result = evaluation_function(response, answer, params)
+        incorrect_response_is_incorrect = (not result.get("is_correct")) and incorrect_response_is_incorrect
         self.assertEqual(correct_response_is_correct and incorrect_response_is_incorrect, True)
 
 #REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in th code at the moment
