@@ -53,7 +53,7 @@ def convert_derived_SI_units_to_SI_base_units():
         ('radian',   '1') \
         ('steradian','1') \
         ('hertz',    '(second**(-1))') \
-        ('newton',   '(metre*kilo*gram*second^(-2))') \
+        ('newton',   '(metre*kilo*gram*second**(-2))') \
         ('pascal',   '(metre**(-1)*kilogram*second**(-2))') \
         ('joule',    '(metre**2*kilo*gram*second**(-2))') \
         ('watt',     '(metre**2*kilo*gram*second**(-3))') \
