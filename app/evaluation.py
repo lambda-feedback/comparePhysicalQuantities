@@ -80,9 +80,7 @@ def evaluation_function(response, answer, params) -> dict:
 #            if answer == response:
 #                return {"is_correct": True, "level": params["comparison"]}
 
-    if isinstance(list_of_substitutions_strings,str):
-        list_of_substitutions_strings = [list_of_substitutions_strings]
-    elif not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
+    if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
     for subs_strings in list_of_substitutions_strings:
@@ -97,7 +95,7 @@ def evaluation_function(response, answer, params) -> dict:
             except (SyntaxError, TypeError) as e:
                 raise Exception("List of substitutions not written correctly.")
             index = subs_strings.find('(',index_match+1)
-            if index > -1 and subs_strings.find('|',index_match+1,index-1) > -1:
+            if index > -1 and subs_strings.find('|',index_match,index) > -1:
                 # Substitutions are sorted so that the longest possible part of the original string will be substituted in each step
                 sub_substitutions.sort(key=lambda x: -len(x[0]))
                 substitutions.append(sub_substitutions)
