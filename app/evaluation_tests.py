@@ -93,6 +93,25 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
+    def test_compare_quantities_with_substitutions_short_form(self):
+        derived_units = "('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')"
+        prefixes = "('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
+        milli_fix = "('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')"
+        substitutions = derived_units+"|"+milli_fix+"|"+prefixes
+        params = {"substitutions": substitutions}
+        answer = "1.23*W"
+        is_correct = True
+        response = "123*c*W"
+        is_correct = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        response = "0.00123*k*W"
+        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        response = "1.23*J/s"
+        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        response = "1.23*k*g*N"
+        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        self.assertEqual(is_correct, True)
+
+
     def test_compare_dimensions_with_defaults(self):
         body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
                 "answer": "2*v**2", 
