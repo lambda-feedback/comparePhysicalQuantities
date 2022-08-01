@@ -1,7 +1,7 @@
 # - comparePhysicalQuantities -
 This is an **EXPERIMENTAL** evaluation function with some dimensional analysis functionality.
 
-This function lacks nice GUI, can be quite brittle and will likely change significantly in the near future.
+This function lacks a nice GUI, can be quite brittle, and will likely change significantly in the near future.
 
 ## Inputs
 All input parameters need to be supplied via the **Grading parameters** panel.
@@ -10,9 +10,9 @@ All input parameters need to be supplied via the **Grading parameters** panel.
 
 String that lists all substitutions that should be done to the answer and response inputs before processing.
 
-Each substitution should be written on the form `('original string','substitution string')` and all pairs concatenated into a single string. Substitutions can be grouped by adding `|` between two substitutions. Then all substitutions before `|` will be performed before the substitutions after `|`.
+Each substitution should be written in the form `('original string','substitution string')` and all pairs concatenated into a single string. Substitutions can be grouped by adding `|` between two substitutions. Then all substitutions before `|` will be performed before the substitutions after `|`.
 
-The input can contain an arbitrary number of substitutions and `|`.
+The input can contain an arbitrary number of substitutions and `|` symbols.
 
 Note that using substitutions will replace all default definitions of quantities and dimensions.
 
@@ -20,19 +20,19 @@ Note that using substitutions will replace all default definitions of quantities
 
 String that lists all quantities that can be used in the answer and response.
 
-Each quantity should be written on the form `('quantity name','(units)')` and all pairs concatenated into a single string. See tables below for available default units.
+Each quantity should be written in the form `('quantity name','(units)')` and all pairs concatenated into a single string. See tables below for available default units.
 
-Whenever units are used they must be written exactly as in the left columns of tables given below (no short forms or single symbols) and units must be multiplied (or divided) with each other and quantities. 
+Whenever units are used they must be written exactly as in the left columns of the tables given below (no short forms or single-character symbols) and units must be multiplied (or divided) by each other, as well as any accompanying quantities. 
 
-**NOTE:** Using units and predefined quantities at the same time in an answer or response can cause problems (especially if quantities are denoted using single characters). Ideally it should be clear that only predefined quantities or only units should be used from the question.
+**NOTE:** Using units and predefined quantities at the same time in an answer or response can cause problems (especially if quantities are denoted using single characters). Ideally it should be clear that either predefined quantities, or units should only be used from the question.
 
-If the `comparison` parameter is set `dimensions` it is not necessary to give exact units for each quantity but dimensions must be given instead. See tables below for available default dimensions.
+If the `comparison` parameter is set to `dimensions`, it is not necessary to give exact units for each quantity, but the dimensions must be given instead. See tables below for available default dimensions.
 
-If the `comparison` parameter is set `buckinghamPi` then `quantities` should be set in a different way. See the detailed description of `buckinghamPi` further down.
+If the `comparison` parameter is set to `buckinghamPi`, then `quantities` should be set in a different way. See the detailed description of `buckinghamPi` further down.
 
 #### Table: Base SI units
 
-SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
+SI base units taken from Table 1 of https://physics.nist.gov/cuu/Units/units.html
 
 Note that gram is used as a base unit instead of kilogram.
 
@@ -48,7 +48,7 @@ Note that gram is used as a base unit instead of kilogram.
 
 #### Table: SI prefixes
 
-SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
+SI base units taken from Table 5 of https://physics.nist.gov/cuu/Units/prefixes.html
 
 | SI Prefix | Factor     | | SI Prefix | Factor     |
 |-----------|:-----------|-|-----------|:-----------|
@@ -65,7 +65,7 @@ SI base units taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.htm
 
 #### Table: Derived SI units
 
-Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
+Derived SI units taken from Table 3 of https://physics.nist.gov/cuu/Units/units.html
 
 Note that degrees Celsius is omitted.
 
@@ -97,7 +97,7 @@ Note that the function treats radians and steradians as dimensionless values.
 
 #### Table: Common non-SI units
 
-Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+Commonly used non-SI units taken from Table 6 and 7 of https://physics.nist.gov/cuu/Units/outside.html
 
 Note that the function treats angles, neper and bel as dimensionless values.
 
@@ -154,7 +154,7 @@ If `comparison` is not specified it defaults to `expression`.
 
 Converts the expression to base SI units and checks that the units are the same and that the value of the answer and response is sufficienty close.
 
-How big the difference between the value of the answer and the value of the response is decided by the `rtol` and `atol` parameters. If neither `atol` nor `rtol` is specified the function will allow a relative error of $10^{-12}$. If `atol` is specified its value will be interpreted as the maximum allowed absolute error. If `rtol` is specified its value will be interpreted as the maximum allowed relative error. If both `atol` and `rtol` the function will check both the absolute and relative error.
+How big the difference is between the value of the answer and the value of the response is decided by the `rtol` and `atol` parameters. If neither `atol` nor `rtol` is specified the function will allow a relative error of $10^{-12}$. If `atol` is specified its value will be interpreted as the maximum allowed absolute error. If `rtol` is specified its value will be interpreted as the maximum allowed relative error. If both `atol` and `rtol` the function will check both the absolute and relative error.
 
 #### `expressionExact`
 
@@ -162,7 +162,7 @@ Converts the expression to base SI units and checks that the answer and response
 
 #### `dimensions`
 
-Checks that the answer and response have the same dimensions, does not compare the values of the physical quantities.
+Checks that the answer and response have the same dimensions, but does not compare the values of the physical quantities.
 
 With this option the quantities (specified by the `quantities` parameter) can be given either dimension only, or units.
 
@@ -229,7 +229,7 @@ Here an expression with predefined quantities is checked as exactly as possible.
 
 `comparison` is set to `expressionExact`.
 
-The response area answer is set to `2*v` but there are many other expressions that would work just as well. Note that we cannot write `2*kilo*metre/second` as respons or answer since the predefined quantity `t` will substitute the `t` in `metre` which results in unparseable input.
+The response area answer is set to `2*v` but there are many other expressions that would work just as well. Note that we cannot write `2*kilo*metre/second` as response or answer since the predefined quantity `t` will substitute the `t` in `metre` which results in unparseable input.
 
 ### b)
 
@@ -254,7 +254,7 @@ For this problem we do not need to predefine any quantities and give exact dimen
 For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and answer set to `['U*L/nu']`. Note that even though there is only one expression it still needs to written like a python list. It is also not necessary to use this specific answer, any example of a correct dimensionless group should work.
 
 ### b)
-See example for context, see worked solution for a terse and probaly more obtuse than necessary solution.
+See example for context, see worked solution for a terse and probably more obtuse than necessary solution.
 
 At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
 
