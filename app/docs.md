@@ -206,6 +206,14 @@ Here a response area with input type `TEXT` and two grading parameters, `quantit
 
 The answer is set two some expression with the right dimensions, e.g. `v**2`.
 
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`(d/t)**2+v**2`
+`5*v**2`
+`d**2/t**2`
+`d**2*t**(-2)`
+`d/t*v`
+
+
 ### b)
 Checking the dimensions of a quantity directly, i.e. the dimensions of an expression of the form `number*units`, no predefined quantities are necessary.
 
@@ -214,6 +222,11 @@ Here a response area with input type `TEXT` and one grading parameter,`compariso
 `comparison` is set to `dimensions`.
 
 The answer is set two some expression with the right dimensions, e.g. `length**2/time**2`.
+
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`metre**2/second**2`
+`(centi*metre)**2/hour**2`
+`246*ohm/(kilo*gram)*coulomb**2/second`
 
 ## 2 Checking the value of an expression or a physical quantity
 
@@ -231,17 +244,46 @@ Here an expression with predefined quantities is checked as exactly as possible.
 
 The response area answer is set to `2*v` but there are many other expressions that would work just as well. Note that we cannot write `2*kilo*metre/second` as response or answer since the predefined quantity `t` will substitute the `t` in `metre` which results in unparseable input.
 
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`2000/3600*d/t`
+`1/1.8*d/t`
+`v+1/3.6*d/t`
+
 ### b)
 
-Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed absolute tolerance of $0.05 \frac{metre}{second}$ can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. **Note:** `atol` is always assumed to be given in the base SI units version of the expression. This is likely to change in future versions of the function.
+Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed absolute tolerance of $0.05 \frac{metre}{second}$ can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
-The `comparison` could also be set to `expression` but since this is the default it is not necessary.
+**Note:** `atol` is always assumed to be given in the base SI units version of the expression. This is likely to change in future versions of the function.
+
+The `comparison` parameter could also be set to `expression` but since this is the default it is not necessary.
+
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`0.556*metre/second`
+`0.560*metre/second`
+`0.6*metre/second`
+`2*kilo*metre/hour`
+`1.9*kilo*metre/hour`
+`2.1*kilo*metre/hour`
+
+In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
+`0.61*metre/second`
+`2.2*kilo*metre/hour`
 
 ### c)
 
 Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relative tolerance of $0.05$ can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
-The `comparison` could also be set to `expression` but since this is the default it is not necessary.
+The `comparison` parameter could also be set to `expression` but since this is the default it is not necessary.
+
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`2.08*kilo*metre/hour`
+`0.533*metre/second`
+
+
+In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
+`2.11*kilo*metre/hour`
+`0.522*metre/second`
+
 
 ## 3 Checking if a set of quantities match the Buckingham pi theorem
 
@@ -249,13 +291,119 @@ The `comparison` could also be set to `expression` but since this is the default
 
 In this example the task is: Given $U$, $L$ and $\nu$, suggest a dimensionless group.
 
-For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer. **Remark:** This means that the algorithm does not in any way check that the stated answer is dimensionless, ensuring that that is left to the problem author.
+For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer. 
+
+**Note:** This means that the algorithm does not in any way check that the stated answer is dimensionless, ensuring that that is left to the problem author.
 
 For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and answer set to `['U*L/nu']`. Note that even though there is only one expression it still needs to written like a python list. It is also not necessary to use this specific answer, any example of a correct dimensionless group should work.
 
 ### b)
+
 See example for context, see worked solution for a terse and probably more obtuse than necessary solution.
 
 At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
 
 The neat part is that for this problem you do not need to define any quantities, you just set `comparison` to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example I used the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']`.
+
+## 4 Using the evaluation function for things other than it's intended purpose
+
+In this problem we use `substitutions` to define costum units in different ways.
+
+### a)
+
+Here a problem is constructed with answer $1.23$ watt where the short form symbol (e.g. $1.23$ W) can be used for the answer.
+
+Here the `substitutions` parameter will be set in such a way that the short form symbols for some SI units can be used. This is somewhat complicated since there are ambiguities in the meanings of the short symbols. Only an illustrative subset of the SI units will be implemented.
+
+Note that using `substitutions` this way means that the default SI units can no longer be used.
+
+The short form symbols in the table below will be implemented.
+
+| Unit or prefix | Symbol |
+|----------------|:-------|
+| metre          | m      |
+| gram           | g      |
+| second         | s      |
+| newton         | N      |
+| watt           | W      |
+| joule          | J      |
+| pascal         | Pa     |
+| mega           | M      |
+| kilo           | k      |
+| hecto          | h      |
+| deka           | da     |
+| deci           | d      |
+| centi          | c      |
+| milli          | m      |
+| micro          | mu     |
+
+There are three SI base units and four derived SI units in the table. One way to define an appropriate set of substitution is to start with converting the derived SI units into base SI units. For instance the string `('W','(J/s)')|('J','(N*m)')('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')` will first substitute watts with joules per second, then substitutes joules and pascals to with expressions involving newtons and metres, and finally substitutes newtons with an expression only invovling base SI units. note the `|` placed in the strring to ensure that the substitutions are done in the correct order.
+
+Next note that both metre and milli use the symbol m. This ambiguity can be resolved by extending the table with extra symbols where milli is already applied to the base SI units.
+
+| Unit or prefix | Symbol |
+|----------------|:-------|
+| metre          | m      |
+| gram           | g      |
+| second         | s      |
+| millimetre     | mm     |
+| milligram      | mg     |
+| millisecond    | ms     |
+| mega           | M      |
+| kilo           | k      |
+| hecto          | h      |
+| deka           | da     |
+| deci           | d      |
+| centi          | c      |
+| micro          | mu     |
+
+The string `('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')` defines the substitutions corresponding to these extra table symbols. The remaining prefixes do not cause any collisions so defining their substitutions is straightforward `('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')`.
+
+Thus the entire sequence of substitutions can be defined by joining the different substitution strings into a single string with appropriately placed `|`. This gives the grading parameter:
+```json
+"substitutions":"('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')|('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')|('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
+```
+
+Setting the answer of the question to be `1.23*W` gives the desired answer.
+
+In the example given in the example problem set, the following responses are tested and evaluated as correct:
+`1.23*W`
+`123*c*W`
+`0.00000123*M*W`
+`0.00123*k*W`
+`0.0123*h*W`
+`0.123*da*W`
+`12.3*d*W`
+`123*c*W`
+`1230*mW`
+`1230000*mu*W`
+`1.23*J/s`
+`1.23*N*m/s`
+`1.23*Pa*m**3/s`
+
+### b)
+
+In this problem currencies will be us as units, and thus the quantities will no longer be physical.
+
+Here the `substitutions` parameter will be set so that the evaluation function can be used to compare. Note that using `substitutions` this way means that the default SI units can no longer be used.
+
+The following exchange rates (from Bank of England 1 August 2022) will be used:
+
+| Currency | Exchange rate |
+|----------|:--------------|
+| $1$ EUR  | $1.1957$ GBP  |
+| $1$ USD  | $1.2283$ GBP  |
+| $1$ CNY  | $8.3104$ GBP  |
+| $1$ INR  | $96.943$ GBP  |
+
+To compare prices written in different currencies a reference currency needs to be chosen. In this case GBP will be used. To substitute other currencies for their corresponding value in GBP the following grading parameter can be used:
+```json
+"substitutions":"('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
+```
+Since these conversion are not exact and for practical purposes prices are often not gives with more than two decimals of precision we also want to set the absolute tolerance, `atol`, to $0.05$.
+
+In the example given in the example problem set, the answer set to `10*GBP` and the following responses are tested and evaluated as correct:
+`11.96*EUR`
+`12.28*USD`
+`83.10*CNY`
+`969.43*INR`

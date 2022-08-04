@@ -96,21 +96,48 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_compare_quantities_with_substitutions_short_form(self):
         derived_units = "('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')"
         prefixes = "('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
-        milli_fix = "('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')"
-        substitutions = derived_units+"|"+milli_fix+"|"+prefixes
+        milli_fix = "('mW','10**(-3)*W') ('mJ','10**(-3)*J') ('mPa','10**(-3)*Pa') ('mN','10**(-3)*N') ('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')"
+        substitutions = milli_fix+"|"+derived_units+"|"+prefixes
         params = {"substitutions": substitutions}
         answer = "1.23*W"
-        is_correct = True
         response = "123*c*W"
-        is_correct = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "0.00000123*M*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
         response = "0.00123*k*W"
-        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "0.0123*h*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "0.123*da*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "12.3*d*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "123*c*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "1230*mW"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "1230000*mu*W"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
         response = "1.23*J/s"
-        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
-        response = "1.23*k*g*N"
-        result = is_correct and evaluation_function(response, answer, params).get("is_correct")
-        self.assertEqual(is_correct, True)
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "1.23*N*m/s"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "1.23*Pa*m**3/s"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
 
+    def test_compare_costs_in_different_currencies_with_substitutions(self):
+        # Based on Bank of England daily spot rates 01-08-2022
+        currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
+        params = {"substitutions": currencies, "atol": "0.005"}
+        answer = "10.00*GBP"
+        response = "11.96*EUR"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "12.28*USD"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "83.10*CNY"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
+        response = "969.43*INR"
+        self.assertEqual(evaluation_function(response, answer, params).get("is_correct"), True)
 
     def test_compare_dimensions_with_defaults(self):
         body = {"response": "(d/t)**2*((1/3.6)**2)+v**2", 
