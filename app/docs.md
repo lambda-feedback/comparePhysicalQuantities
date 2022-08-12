@@ -5,6 +5,8 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 
 **Note:** This function cannot handle short form symbols for units, all units names must be written out in lower/case letter. For example `10 Nm` or `10 Newton metre` will not be handled correctly, but `10 newton metre` will.
 
+**Note:** Prefixes have lower precedence exponentiation, e.g. `10 cm**2` will be interpreted as `10*10^(-2) `
+
 **Note:** This function allows omitting `*` and using `^` instead of `**` if the grading parameter `strict_syntax` is set to false. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as a list in the grading parameter `symbols`.
 
 ## Inputs
@@ -213,12 +215,15 @@ The answer is set two some expression with the right dimensions, e.g. `v**2`.
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units and single character symbols are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`(d/t)**2+v**2`
-`5*v**2`
-`d**2/t**2`
-`d**2*t**(-2)`
-`d/t*v`
 
+| Strict syntax     | Relaxed syntax  |
+|-------------------|:----------------|
+| `v**2`            | `v^2`           |
+| `5*v**2`          | `5v^2`          |
+| `(d/t)**2+v**2`   | `(d/t)^2+v^2`   |
+| `d**2/t**2`       | `d^2/t^2`       |
+| `d**2*t**(-2)`    | `d^2 t^(-2)`    |
+| `d/t*v`           | `vd/t`          |
 
 ### b)
 Checking the dimensions of a quantity directly, i.e. the dimensions of an expression of the form `number*units`, no predefined quantities are necessary.
@@ -232,9 +237,13 @@ The answer is set two some expression with the right dimensions, e.g. `length**2
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`metre**2/second**2`
-`(centi*metre)**2/hour**2`
-`246*ohm/(kilo*gram)*coulomb**2/second`
+
+| Strict syntax                           | Relaxed syntax                        |
+|-----------------------------------------|:--------------------------------------|
+| `metre**2/second**2`                    | `metre^2/second^2`                    |
+| `(centi*metre)**2/hour**2`              | `(centimetre)^2/hour^2`               |
+| `246*ohm/(kilo*gram)*coulomb**2/second` | `246 ohm/(kilogram) coulomb^2/second` |
+
 
 ## 2 Checking the value of an expression or a physical quantity
 
@@ -255,9 +264,13 @@ The response area answer is set to `2*v` but there are many other expressions th
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units and single character symbols are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`2000/3600*d/t`
-`1/1.8*d/t`
-`v+1/3.6*d/t`
+
+| Strict syntax   | Relaxed syntax  |
+|-----------------|:----------------|
+| `2*v`           | `2v`            |
+| `2000/3600*d/t` | `2000/3600 d/t` |
+| `1/1.8*d/t`     | `d/(1.8t)`      |
+| `v+1/3.6*d/t`   | `v+d/(3.6t)`    |
 
 ### b)
 
@@ -270,18 +283,25 @@ The `comparison` parameter could also be set to `expression` but since this is t
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`0.556*metre/second`
-`0.560*metre/second`
-`0.6*metre/second`
-`2*kilo*metre/hour`
-`1.9*kilo*metre/hour`
-`2.1*kilo*metre/hour`
+
+| Strict syntax         | Relaxed syntax       |
+|-----------------------|:---------------------|
+| `0.556*metre/second`  | `0.556 metre/second` |
+| `0.560*metre/second`  | `0.560 metre/second` |
+| `0.6*metre/second`    | `0.6 metre/second`   |
+| `2*kilo*metre/hour`   | `2 kilometre/hour`   |
+| `1.9*kilo*metre/hour` | `1.9 kilometre/hour` |
+| `2.1*kilo*metre/hour` | `2.1 kilometre/hour` |
 
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
-`0.61*metre/second`
-`2.2*kilo*metre/hour`
+
+| Strict syntax         | Relaxed syntax       |
+|-----------------------|:---------------------|
+| `0.61*metre/second`   | `0.61 metre/second`  |
+| `2.2*kilo*metre/hour` | `2.2 kilometre/hour` |
+
 
 ### c)
 
@@ -290,14 +310,20 @@ Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relat
 The `comparison` parameter could also be set to `expression` but since this is the default it is not necessary.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`2.08*kilo*metre/hour`
-`0.533*metre/second`
+
+| Strict syntax          | Relaxed syntax        |
+|------------------------|:----------------------|
+| `0.533*metre/second`   | `0.533 metre/second`  |
+| `2.08*kilo*metre/hour` | `2.08 kilometre/hour` |
 
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units are expected in the answer we will not set the grading parameter `symbols`.
 
 In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
-`2.11*kilo*metre/hour`
-`0.522*metre/second`
+
+| Strict syntax          | Relaxed syntax        |
+|------------------------|:----------------------|
+| `0.522*metre/second`   | `0.522 metre/second`  |
+| `2.11*kilo*metre/hour` | `2.11 kilometre/hour` |
 
 ## 3 Checking if a set of quantities match the Buckingham pi theorem
 
@@ -362,6 +388,9 @@ Next note that both metre and milli use the symbol m. This ambiguity can be reso
 | second         | s      |
 | millimetre     | mm     |
 | milligram      | mg     |
+| milliwatt      | mW     |
+| millinewton    | mN     |
+| millipascal    | mPa    |
 | millisecond    | ms     |
 | mega           | M      |
 | kilo           | k      |
@@ -371,31 +400,39 @@ Next note that both metre and milli use the symbol m. This ambiguity can be reso
 | centi          | c      |
 | micro          | mu     |
 
-The string `('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')` defines the substitutions corresponding to these extra table symbols. The remaining prefixes do not cause any collisions so defining their substitutions is straightforward `('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')`. **Note:** the parenthesis around the substitutions for the prefixes help avoiding some parsing problems that can be difficult to predict.
+The string 
+```
+('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')
+```
+defines the substitutions corresponding to these extra table symbols. The remaining prefixes do not cause any collisions so defining their substitutions is straightforward `('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')`. **Note:** the parenthesis around the substitutions for the prefixes help avoiding some parsing problems that can be difficult to predict.
 
-Thus the entire sequence of substitutions can be defined by joining the different substitution strings into a single string with appropriately placed `|`. This gives the grading parameter:
+Thus the entire sequence of substitutions can be defined by joining the different substitution strings into a single string with appropriately placed `|`. The substitutions need to be ordered such that the SI units with milliprefixes are substituted first, then other SI units, then the remaining prefixes.
+
+This gives the grading parameter:
 ```json
-"substitutions":"('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')|('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')|('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
+"substitutions":"('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')|('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')|('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
 ```
 
-With default settings it is required to put `*` (or `/`) between each part of the response and answer. By setting the grading parameter `strict_syntax` to false the `*` can be omitted and `^` can be used instead of `**`. To ensure that this works correctly it is necessary to list the multicharacter symbols that are expected to appear in the answer and response in the grading parameter `symbols`. For this example this means setting `symbols` to `Pa,da,mu,mg,mm,ms`.
+With default settings it is required to put `*` (or `/`) between each part of the response and answer. By setting the grading parameter `strict_syntax` to false the `*` can be omitted and `^` can be used instead of `**`. To ensure that this works correctly it is necessary to list the multicharacter symbols that are expected to appear in the answer and response in the grading parameter `symbols`. For this example this means setting `symbols` to `mPa,Pa,da,mu,mg,mm,mW,mN,ms`.
 
 Setting the answer of the question to be `1.23*W` gives the desired answer.
 
 In the example given in the example problem set, the following responses are tested and evaluated as correct:
-`1.23*W`
-`123*c*W`
-`0.00000123*M*W`
-`0.00123*k*W`
-`0.0123*h*W`
-`0.123*da*W`
-`12.3*d*W`
-`123*c*W`
-`1230*mW`
-`1230000*mu*W`
-`1.23*J/s`
-`1.23*N*m/s`
-`1.23*Pa*m**3/s`
+| Strict syntax  | Relaxed syntax  |
+|----------------|:----------------|
+`1.23*W`         | `1.23 W`        |
+`123*c*W`        | `123 cW`        |
+`0.00000123*M*W` | `0.00000123 MW` |
+`0.00123*k*W`    | `0.00123 kW`    |
+`0.0123*h*W`     | `0.0123 hW`     |
+`0.123*da*W`     | `0.123 daW`     |
+`12.3*d*W`       | `12.3 dW`       |
+`123*c*W`        | `123 cW`        |
+`1230*mW`        | `1230 mW`       |
+`1230000*mu*W`   | `1230000 muW`   |
+`1.23*J/s`       | `1.23 J/s`      |
+`1.23*N*m/s`     | `1.23 Nm/s`     |
+`1.23*Pa*m**3/s` | `1.23 Pam^3/s`  |
 
 ### b)
 
@@ -421,7 +458,10 @@ Since these conversion are not exact and for practical purposes prices are often
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. By setting the grading parameter `strict_syntax` to false the `*` can be omitted and `^` can be used instead of `**`. To ensure that this works correctly it is necessary to list the multicharacter symbols that are expected to appear in the answer and response in the grading parameter `symbols`. For this example this means setting `symbols` to `EUR,USD,CNY,INR`.
 
 In the example given in the example problem set, the answer set to `10*GBP` and the following responses are tested and evaluated as correct:
-`11.96*EUR`
-`12.28*USD`
-`83.10*CNY`
-`969.43*INR`
+
+| Strict syntax | Relaxed syntax |
+|---------------|:---------------|
+| `11.96*EUR`   | `11.96 EUR`    |
+| `12.28*USD`   | `12.28 USD`    |
+| `83.10*CNY`   | `83.10 CNY`    |
+| `969.43*INR`  | `969.43 INR`   |

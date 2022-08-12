@@ -137,19 +137,19 @@ class TestEvaluationFunction(unittest.TestCase):
         prefixes = "('M','(10**6)') ('k','(10**3)') ('h','(10**2)') ('da','(10**1)') ('d','(10**(-1))') ('c','(10**(-2))') ('mu','(10**(-6))')"
         milli_fix = "('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')"
         substitutions = milli_fix+"|"+derived_units+"|"+prefixes
-        params = {"substitutions": substitutions, "strict_syntax": False, "symbols": "Pa,da,mu"}
+        params = {"substitutions": substitutions, "strict_syntax": False, "symbols": "mPa,Pa,da,mu,mg,mm,mW,mN,ms"}
         answer = "1.23*W"
         responses = ["123*c*W",
-#                     "0.00000123*M*W",
-#                     "0.00123*k*W",
-#                     "0.0123*h*W",
-#                     "0.123*da*W",
-#                     "12.3*d*W",
-#                     "123*c*W",
-#                     "1230*mW",
-#                     "1230000*mu*W",
-#                     "1.23*J/s",
-#                     "1.23*N*m/s",
+                     "0.00000123*M*W",
+                     "0.00123*k*W",
+                     "0.0123*h*W",
+                     "0.123*da*W",
+                     "12.3*d*W",
+                     "123*c*W",
+                     "1230*mW",
+                     "1230000*mu*W",
+                     "1.23*J/s",
+                     "1.23*N*m/s",
                      "1.23*Pa*m**3/s"]
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
