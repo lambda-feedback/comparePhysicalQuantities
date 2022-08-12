@@ -2,31 +2,38 @@
 #   only K, no other temperature scales included
 #   angles measures, bel an neper are all treated as identical dimensionless units
 
+def names_of_prefixes_base_SI_units_and_dimensions():
+    return ('yotta','zetta','exa','peta','tera','giga','mega','kilo','hecto','deka',
+            'deci','centi','milli','micro','nano','pico','femto','atto','zepto','yocto',
+            'metre','gram','second','ampere','kelvin','mole','candela',
+            'length','mass','time','electric_current','temperature','amount_of_substance','luminous_intensity')
+
+
 def remove_SI_prefixes():
     """
     Prefixes taken from Table 5 https://physics.nist.gov/cuu/Units/prefixes.html
     """
     return ''.join("\
-        ('yotta','10**24') \
-        ('zetta','10**21') \
-        ('exa',  '10**18') \
-        ('peta', '10**15') \
-        ('tera', '10**12') \
-        ('giga', '10**9 ') \
-        ('mega', '10**6 ') \
-        ('kilo', '10**3 ') \
-        ('hecto','10**2 ') \
-        ('deka', '10**1 ') \
-        ('deci', '10**(-1) ') \
-        ('centi','10**(-2) ') \
-        ('milli','10**(-3) ') \
-        ('micro','10**(-6) ') \
-        ('nano', '10**(-9) ') \
-        ('pico', '10**(-12)') \
-        ('femto','10**(-15)') \
-        ('atto', '10**(-18)') \
-        ('zepto','10**(-21)') \
-        ('yocto','10**(-24)')\
+        ('yotta','(10**24)') \
+        ('zetta','(10**21)') \
+        ('exa',  '(10**18)') \
+        ('peta', '(10**15)') \
+        ('tera', '(10**12)') \
+        ('giga', '(10**9) ') \
+        ('mega', '(10**6) ') \
+        ('kilo', '(10**3) ') \
+        ('hecto','(10**2) ') \
+        ('deka', '(10**1) ') \
+        ('deci', '(10**(-1)) ') \
+        ('centi','(10**(-2)) ') \
+        ('milli','(10**(-3)) ') \
+        ('micro','(10**(-6)) ') \
+        ('nano', '(10**(-9)) ') \
+        ('pico', '(10**(-12))') \
+        ('femto','(10**(-15))') \
+        ('atto', '(10**(-18))') \
+        ('zepto','(10**(-21))') \
+        ('yocto','(10**(-24))')\
         ".split())
 
 def convert_SI_base_units_to_dimensions(): 
@@ -50,8 +57,8 @@ def convert_derived_SI_units_to_SI_base_units():
     Note that degrees Celsius is omitted.
     """
     return ''.join("\
-        ('radian',   '1') \
-        ('steradian','1') \
+        ('radian',   '(1)') \
+        ('steradian','(1)') \
         ('hertz',    '(second**(-1))') \
         ('newton',   '(metre*kilo*gram*second**(-2))') \
         ('pascal',   '(metre**(-1)*kilogram*second**(-2))') \
@@ -67,7 +74,7 @@ def convert_derived_SI_units_to_SI_base_units():
         ('henry',    '(metre**2*kilo*gram*second**(-2)*ampere**(-2))') \
         ('lumen',    '(candela)') \
         ('lux',      '(metre**(-2)*candela)') \
-        ('becquerel', '(second**(-1))') \
+        ('becquerel','(second**(-1))') \
         ('gray',     '(metre**2*second**(-2))') \
         ('sievert',  '(metre**2*second**(-2))') \
         ('katal',    '(second(-1)*mole)')\

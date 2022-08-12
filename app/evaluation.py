@@ -1,26 +1,38 @@
+from math import pi, log
+from sympy.parsing.sympy_parser import parse_expr, _token_splittable, split_symbols_custom
+from sympy.parsing.sympy_parser import T as parser_transformations
+from sympy import simplify, latex, Matrix
+
+try:
+    from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions, names_of_prefixes_base_SI_units_and_dimensions
+except ImportError:
+    from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions, names_of_prefixes_base_SI_units_and_dimensions
+
 def evaluation_function(response, answer, params) -> dict:
     """
-    Funtion that compares two physical quantities.
+    Funtion that provides some basic dimensional analysis functionality.
     """
 
-    from math import pi, log
-    from sympy.parsing.sympy_parser import parse_expr
-    from sympy import simplify, latex, Matrix
-    try:
-        from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
-    except ImportError:
-        from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions
-
     default_rtol = 1e-12
-    parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression"}
+    parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "strict_syntax": True}
     parameters.update(params)
+
+    if "substitutions" in params.keys():
+        unsplittable_symbols = tuple()
+    else:
+        unsplittable_symbols = names_of_prefixes_base_SI_units_and_dimensions()
+
+    if "symbols" in parameters.keys():
+        unsplittable_symbols += tuple(parameters["symbols"].split(','))
+
+    do_transformations = not parameters["strict_syntax"]
 
     if parameters["comparison"] == "buckinghamPi":
         response_strings = eval(response)
         response_groups = []
         for res in response_strings:
             try:
-                expr = parse_expr(res).simplify()
+                expr = parse_expression(res,do_transformations,unsplittable_symbols).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the response") from e
             response_groups.append(expr)
@@ -31,7 +43,7 @@ def evaluation_function(response, answer, params) -> dict:
         answer_groups = []
         for ans in answer_strings:
             try:
-                expr = parse_expr(ans).simplify()
+                expr = parse_expression(ans,do_transformations,unsplittable_symbols).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the answer") from e
             answer_groups.append(expr)
@@ -109,12 +121,12 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expr(response)
+        res = parse_expression(response,do_transformations,unsplittable_symbols)
     except (SyntaxError, TypeError) as e:
         raise Exception(f"SymPy was unable to parse the response {response}") from e
 
     try:
-        ans = parse_expr(answer)
+        ans = parse_expression(answer,do_transformations,unsplittable_symbols)
     except (SyntaxError, TypeError) as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
@@ -199,3 +211,10 @@ def substitute(string, substitutions):
             string[k] = substitutions[elem][1]
 
     return "".join(string)
+
+def parse_expression(expr,do_transformations,unsplittable_symbols):
+    if do_transformations:
+        transformations = parser_transformations[0:4,6,8]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+    else:
+        transformations = parser_transformations[0:4]
+    return parse_expr(expr,transformations=transformations)
