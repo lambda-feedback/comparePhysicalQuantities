@@ -82,7 +82,7 @@ Note that the function treats radians and steradians as dimensionless values.
 | radian    | 1                                                   |
 | steradian | 1                                                   |
 | hertz     | second$^{-1}$                                       |
-| newton    | metre kilogram second                               |
+| newton    | metre kilogram second$^{-2}$                        |
 | pascal    | metre$^{-1}$ kilogram second$^{-2}$                 |
 | joule     | metre$^2$ kilogram second$^{-2}$                    |
 | watt      | metre$^2$ kilogram second$^{-3}$                    |
