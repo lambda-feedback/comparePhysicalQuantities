@@ -56,18 +56,18 @@ Note that gram is used as a base unit instead of kilogram.
 
 SI base units taken from Table 5 of https://physics.nist.gov/cuu/Units/prefixes.html
 
-| SI Prefix | Factor     | | SI Prefix | Factor     |
-|-----------|:-----------|-|-----------|:-----------|
-| yotta     | $10^{24}$  | | deci      | $10^{-1}$  |
-| zetta     | $10^{21}$  | | centi     | $10^{-2}$  |
-| exa'      | $10^{18}$  | | milli     | $10^{-3}$  |
-| peta      | $10^{15}$  | | micro     | $10^{-6}$  |
-| tera      | $10^{12}$  | | nano      | $10^{-9}$  |
-| giga      | $10^{9}$   | | pico      | $10^{-12}$ |
-| mega      | $10^{6}$   | | femto     | $10^{-15}$ |
-| kilo      | $10^{3}$   | | atto      | $10^{-18}$ |
-| hecto     | $10^{2}$   | | zepto     | $10^{-21}$ |
-| deka      | $10^{1}$   | | yocto     | $10^{-24}$ |
+| SI Prefix | Factor       | SI Prefix | Factor     |
+|-----------|:-------------|-----------|:-----------|
+| yotta     | \(10^{24}\)  | deci      | \(10^{-1}\)  |
+| zetta     | \(10^{21}\)  | centi     | \(10^{-2}\)  |
+| exa'      | \(10^{18}\)  | milli     | \(10^{-3}\)  |
+| peta      | \(10^{15}\)  | micro     | \(10^{-6}\)  |
+| tera      | \(10^{12}\)  | nano      | \(10^{-9}\)  |
+| giga      | \(10^{9}\)   | pico      | \(10^{-12}\) |
+| mega      | \(10^{6}\)   | femto     | \(10^{-15}\) |
+| kilo      | \(10^{3}\)   | atto      | \(10^{-18}\) |
+| hecto     | \(10^{2}\)   | zepto     | \(10^{-21}\) |
+| deka      | \(10^{1}\)   | yocto     | \(10^{-24}\) |
 
 #### Table: Derived SI units
 
@@ -77,29 +77,29 @@ Note that degrees Celsius is omitted.
 
 Note that the function treats radians and steradians as dimensionless values.
 
-| Unit name | Expressed in base SI units                          |
-|-----------|:----------------------------------------------------|
-| radian    | 1                                                   |
-| steradian | 1                                                   |
-| hertz     | second$^{-1}$                                       |
-| newton    | metre kilogram second                               |
-| pascal    | metre$^{-1}$ kilogram second$^{-2}$                 |
-| joule     | metre$^2$ kilogram second$^{-2}$                    |
-| watt      | metre$^2$ kilogram second$^{-3}$                    |
-| coulomb   | second ampere                                       |
-| volt      | metre$^2$ kilogram second$^{-3}$ ampere$^{-1}$      |
-| farad     | metre$^{-2}$ kilogram$^{-1}$ second$^4$ ampere$^2$  |
-| ohm       | metre$^2$ kilogram second$^{-3}$ ampere$^{-2}$      |
-| siemens   | metre$^{-2}$ kilogram$^{-1}$ second$^3$ ampere$^2$  |
-| weber     | metre$^2$ kilogram second$^{-2}$ ampere$^{-1}$      |
-| tesla     | kilo gram second$^{-2}$ ampere$^{-1}$               |
-| henry     | metre$^2$ kilogram second$^{-2}$ ampere$^{-2}$      |
-| lumen     | candela                                             |
-| lux       | metre$^{-2}$ candela                                |
-| becquerel | second$^{-1}$                                       |
-| gray      | metre$^2$ second$^{-2}$                             |
-| sievert   | metre$^2$ second$^{-2}$                             |
-| katal     | mole second$^{-1}$                                  |
+| Unit name | Expressed in base SI units                                 |
+|-----------|:-----------------------------------------------------------|
+| radian    | 1                                                          |
+| steradian | 1                                                          |
+| hertz     | second\(^{-1}\)                                            |
+| newton    | metre kilogram second\(^{-2}\)                             |
+| pascal    | metre\(^{-1}\) kilogram second\(^{-2}\)                    |
+| joule     | metre\(^2\) kilogram second\(^{-2}\)                       |
+| watt      | metre\(^2\) kilogram second\(^{-3}\)                       |
+| coulomb   | second ampere                                              |
+| volt      | metre\(^2\) kilogram second\(^{-3}\) ampere\(^{-1}\)       |
+| farad     | metre\(^{-2}\) kilogram\(^{-1}\) second\(^4\) ampere\(^2\) |
+| ohm       | metre\(^2\) kilogram second\(^{-3}\) ampere\(^{-2}\)       |
+| siemens   | metre\(^{-2}\) kilogram\(^{-1}\) second\(^3\) ampere\(^2\) |
+| weber     | metre\(^2\) kilogram second\(^{-2}\) ampere\(^{-1}\)       |
+| tesla     | kilo gram second\(^{-2}\) ampere\(^{-1}\)                  |
+| henry     | metre\(^2\) kilogram second\(^{-2}\) ampere\(^{-2}\)       |
+| lumen     | candela                                                    |
+| lux       | metre\(^{-2}\) candela                                     |
+| becquerel | second\(^{-1}\)                                            |
+| gray      | metre\(^2\) second\(^{-2}\)                                |
+| sievert   | metre\(^2\) second\(^{-2}\)                                |
+| katal     | mole second\(^{-1}\)                                       |
 
 #### Table: Common non-SI units
 
@@ -107,32 +107,32 @@ Commonly used non-SI units taken from Table 6 and 7 of https://physics.nist.gov/
 
 Note that the function treats angles, neper and bel as dimensionless values.
 
-| Unit name         | Expressed in SI units                         |
-|-------------------|:----------------------------------------------|
-| min               | 60 second                                     |
-| hour              | 3600 second                                   |
-| day               | 86400 second                                  |
-| angle_degree      | $\frac{\pi}{180}$                             |
-| angle_minute      | $\frac{\pi}{10800}$                           |
-| angle_second      | $\frac{\pi}{648000}$                          |
-| liter             | $10^{-3}$ metre$^3$                           |
-| metric_ton        | $10^3$ kilo gram                              |
-| neper             | 1                                             |
-| bel               | $\frac{1}{2} \ln(10)$                         |
-| electronvolt      | $1.60218 \cdot 10^{-19}$ joule                |
-| atomic_mass_unit  | $1.66054 \cdot 10^{-27}$ kilogram             |
-| astronomical_unit | $149597870700$ metre                          |
-| nautical_mile     | $1852$ metre                                  |
-| knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |
-| are               | $10^2$ metre$^2$                              |
-| hectare           | $10^4$ metre$^2$                              |
-| bar               | $10^5$ pascal                                 |
-| angstrom          | $10^{-10}$ metre                              |
-| barn              | $10^{-28}$ metre                              |
-| curie             | $3.7 \cdot 10^{10}$ becquerel                 |
-| roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
-| rad               | $10^{-2}$ gray                                |
-| rem               | $10^{-2}$ sievert                             |
+| Unit name         | Expressed in SI units                             |
+|-------------------|:--------------------------------------------------|
+| min               | 60 second                                         |
+| hour              | 3600 second                                       |
+| day               | 86400 second                                      |
+| angle_degree      | \(\frac{\pi}{180}\)                               |
+| angle_minute      | \(\frac{\pi}{10800}\)                             |
+| angle_second      | \(\frac{\pi}{648000}\)                            |
+| liter             | \(10^{-3}\) metre\(^3\)                           |
+| metric_ton        | \(10^3\) kilo gram                                |
+| neper             | 1                                                 |
+| bel               | \(\frac{1}{2} \ln(10)\)                           |
+| electronvolt      | \(1.60218 \cdot 10^{-19}\) joule                  |
+| atomic_mass_unit  | \(1.66054 \cdot 10^{-27}\) kilogram               |
+| astronomical_unit | \(149597870700\) metre                            |
+| nautical_mile     | \(1852\) metre                                    |
+| knot              | \(\frac{1852}{3600}\) metre second\(^{-1}\)       |
+| are               | \(10^2\) metre\(^2\)                              |
+| hectare           | \(10^4\) metre\(^2\)                              |
+| bar               | \(10^5\) pascal                                   |
+| angstrom          | \(10^{-10}\) metre                                |
+| barn              | \(10^{-28}\) metre                                |
+| curie             | \(3.7 \cdot 10^{10}\) becquerel                   |
+| roentgen          | \(2.58 \cdot 10^{-4}\) kelvin (kilogram)\(^{-1}\) |
+| rad               | \(10^{-2}\) gray                                  |
+| rem               | \(10^{-2}\) sievert                               |
 
 
 ### `rtol`
@@ -160,7 +160,7 @@ If `comparison` is not specified it defaults to `expression`.
 
 Converts the expression to base SI units and checks that the units are the same and that the value of the answer and response is sufficienty close.
 
-How big the difference is between the value of the answer and the value of the response is decided by the `rtol` and `atol` parameters. If neither `atol` nor `rtol` is specified the function will allow a relative error of $10^{-12}$. If `atol` is specified its value will be interpreted as the maximum allowed absolute error. If `rtol` is specified its value will be interpreted as the maximum allowed relative error. If both `atol` and `rtol` the function will check both the absolute and relative error.
+How big the difference is between the value of the answer and the value of the response is decided by the `rtol` and `atol` parameters. If neither `atol` nor `rtol` is specified the function will allow a relative error of \(10^{-12}\). If `atol` is specified its value will be interpreted as the maximum allowed absolute error. If `rtol` is specified its value will be interpreted as the maximum allowed relative error. If both `atol` and `rtol` the function will check both the absolute and relative error.
 
 #### `expressionExact`
 
@@ -196,7 +196,7 @@ Implemented versions of these examples can be found in the module 'Examples: Eva
 
 ### 1 Checking the dimensions of an expression or physical quantity
 
-This example will check if the response has dimensions $\frac{\mathrm{length}^2}{\mathrm{time}^2}$.
+This example will check if the response has dimensions \(\frac{\mathrm{length}^2}{\mathrm{time}^2}\).
 
 #### a)
 To check an expression there needs to be some predefined quantities that can be used in the expression. Since only dimensions will be checked units are not necessary (but could be used as well).
@@ -225,7 +225,7 @@ In the example given in the example problem set, the following responses are tes
 | `d**2*t**(-2)`    | `d^2 t^(-2)`    |
 | `d/t*v`           | `vd/t`          |
 
-### b)
+#### b)
 Checking the dimensions of a quantity directly, i.e. the dimensions of an expression of the form `number*units`, no predefined quantities are necessary.
 
 Here a response area with input type `TEXT` and one grading parameter,`comparison`, will be used.
@@ -245,11 +245,11 @@ In the example given in the example problem set, the following responses are tes
 | `246*ohm/(kilo*gram)*coulomb**2/second` | `246 ohm/(kilogram) coulomb^2/second` |
 
 
-## 2 Checking the value of an expression or a physical quantity
+### 2 Checking the value of an expression or a physical quantity
 
-This examples checks if your expression is equal to $2~\frac{\mathrm{kilometre}}{\mathrm{hour}}$.
+This examples checks if your expression is equal to \(2~\frac{\mathrm{kilometre}}{\mathrm{hour}}\).
 
-### a)
+#### a)
 
 Here an expression with predefined quantities is checked as exactly as possible. This is done with a TEXT response area with the following parameters:
 `quantities` is set to:
@@ -272,9 +272,9 @@ In the example given in the example problem set, the following responses are tes
 | `1/1.8*d/t`     | `d/(1.8t)`      |
 | `v+1/3.6*d/t`   | `v+d/(3.6t)`    |
 
-### b)
+#### b)
 
-Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed absolute tolerance of $0.05 \frac{metre}{second}$ can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
+Checking if a quantity is equal to \(2~\frac{kilometre}{hour}\) with a fixed absolute tolerance of \(0.05 \frac{metre}{second}\) can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
 **Note:** `atol` is always assumed to be given in the base SI units version of the expression. This is likely to change in future versions of the function.
 
@@ -303,9 +303,9 @@ In the example given in the example problem set, the following responses are tes
 | `2.2*kilo*metre/hour` | `2.2 kilometre/hour` |
 
 
-### c)
+#### c)
 
-Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relative tolerance of $0.05$ can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
+Checking if a quantity is equal to \(2~\frac{kilometre}{hour}\) with a fixed relative tolerance of \(0.05\) can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
 The `comparison` parameter could also be set to `expression` but since this is the default it is not necessary.
 
@@ -325,19 +325,19 @@ In the example given in the example problem set, the following responses are tes
 | `0.522*metre/second`   | `0.522 metre/second`  |
 | `2.11*kilo*metre/hour` | `2.11 kilometre/hour` |
 
-## 3 Checking if a set of quantities match the Buckingham pi theorem
+### 3 Checking if a set of quantities match the Buckingham pi theorem
 
-### a)
+#### a)
 
-In this example the task is: Given $U$, $L$ and $\nu$, suggest a dimensionless group.
+In this example the task is: Given \(U\), \(L\) and \(\nu\), suggest a dimensionless group.
 
-For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer. 
+For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as \(\pi\)) are quantities and that there are no other quantities that should appear in the answer. 
 
 **Note:** This means that the algorithm does not in any way check that the stated answer is dimensionless, ensuring that that is left to the problem author.
 
 For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and answer set to `['U*L/nu']`. Note that even though there is only one expression it still needs to written like a python list. It is also not necessary to use this specific answer, any example of a correct dimensionless group should work.
 
-### b)
+#### b)
 
 See example for context, see worked solution for a terse and probably more obtuse than necessary solution.
 
@@ -345,13 +345,13 @@ At the time of writing it was 3 weeks ago that I promised Peter I would properly
 
 The neat part is that for this problem you do not need to define any quantities, you just set `comparison` to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example I used the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']`.
 
-## 4 Using the evaluation function for things other than it's intended purpose
+### 4 Using the evaluation function for things other than it's intended purpose
 
 In this problem we use `substitutions` to define costum units in different ways.
 
-### a)
+#### a)
 
-Here a problem is constructed with answer $1.23$ watt where the short form symbol (e.g. $1.23$ W) can be used for the answer.
+Here a problem is constructed with answer \(1.23\) watt where the short form symbol (e.g. \(1.23\) W) can be used for the answer.
 
 Here the `substitutions` parameter will be set in such a way that the short form symbols for some SI units can be used. This is somewhat complicated since there are ambiguities in the meanings of the short symbols. Only an illustrative subset of the SI units will be implemented.
 
@@ -434,7 +434,7 @@ In the example given in the example problem set, the following responses are tes
 `1.23*N*m/s`     | `1.23 Nm/s`     |
 `1.23*Pa*m**3/s` | `1.23 Pam^3/s`  |
 
-### b)
+#### b)
 
 In this problem currencies will be us as units, and thus the quantities will no longer be physical.
 
@@ -442,18 +442,18 @@ Here the `substitutions` parameter will be set so that the evaluation function c
 
 The following exchange rates (from Bank of England 1 August 2022) will be used:
 
-| Currency | Exchange rate |
-|----------|:--------------|
-| $1$ EUR  | $1.1957$ GBP  |
-| $1$ USD  | $1.2283$ GBP  |
-| $1$ CNY  | $8.3104$ GBP  |
-| $1$ INR  | $96.943$ GBP  |
+| Currency   | Exchange rate   |
+|------------|:----------------|
+| \(1\) EUR  | \(1.1957\) GBP  |
+| \(1\) USD  | \(1.2283\) GBP  |
+| \(1\) CNY  | \(8.3104\) GBP  |
+| \(1\) INR  | \(96.943\) GBP  |
 
 To compare prices written in different currencies a reference currency needs to be chosen. In this case GBP will be used. To substitute other currencies for their corresponding value in GBP the following grading parameter can be used:
 ```json
 "substitutions":"('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
 ```
-Since these conversion are not exact and for practical purposes prices are often not gives with more than two decimals of precision we also want to set the absolute tolerance, `atol`, to $0.05$.
+Since these conversion are not exact and for practical purposes prices are often not gives with more than two decimals of precision we also want to set the absolute tolerance, `atol`, to \(0.05\).
 
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. By setting the grading parameter `strict_syntax` to false the `*` can be omitted and `^` can be used instead of `**`. To ensure that this works correctly it is necessary to list the multicharacter symbols that are expected to appear in the answer and response in the grading parameter `symbols`. For this example this means setting `symbols` to `EUR,USD,CNY,INR`.
 
