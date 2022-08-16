@@ -3,14 +3,16 @@ This is an **EXPERIMENTAL** evaluation function with some dimensional analysis f
 
 This function lacks a nice GUI, can be quite brittle, and will likely change significantly in the near future.
 
-**Note:** This function cannot handle short form symbols for units, all units names must be written out in lower/case letter. For example `10 Nm` or `10 Newton metre` will not be handled correctly, but `10 newton metre` will.
+**Note:** This function cannot handle short form symbols for units, all units names must be written out in lower/case letter. For example `10*Nm` or `10*Newton*metre` will not be handled correctly, but `10*newton*metre` will.
 
-**Note:** Prefixes have lower precedence exponentiation, e.g. `10 cm**2` will be interpreted as `10*10^(-2) `
+**Note:** Prefixes have lower precedence exponentiation, e.g. `10*cm**2` will be interpreted as `10*10^(-2)*metre**2` rather than `10*(10^(-2)*metre)**2`.
 
 **Note:** This function allows omitting `*` and using `^` instead of `**` if the grading parameter `strict_syntax` is set to false. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as a list in the grading parameter `symbols`.
 
 ## Inputs
 All input parameters need to be supplied via the **Grading parameters** panel.
+
+There are seven parameters that can be set: `substitutions`, `quantities`, `strict_syntax`, `symbols`, `rtol`, `atol` and `comparison`.
 
 ### `substitutions`
 
@@ -134,6 +136,17 @@ Note that the function treats angles, neper and bel as dimensionless values.
 | rad               | $10^{-2}$ gray                                |
 | rem               | $10^{-2}$ sievert                             |
 
+### `strict_syntax`
+
+If `strict_syntax` is set to true then the answer and response must have `*` or `/` between each part of the expressions and exponentiation must be done using `**`, e.g. `10*kilo*metre/second**2` is accepted but `10 kilometre/second^2` is not.
+
+If `strict_syntax` is set to false, then `*` can be omitted and `^` used instead of `**`. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as a list in the grading parameter `symbols`.
+
+By default `strict_syntax` is set to true.
+
+### `symbols`
+
+If the function is expected to examine an expression and `strict_syntax` is set to false, all multicharacter symbols that are expected to appear in the answer or response should be listed (separated by commas) should be listed here.
 
 ### `rtol`
 
@@ -176,7 +189,10 @@ With this option the quantities (specified by the `quantities` parameter) can be
 
 Checks that the set of quantities in the response matches the set of quantities in the sense given by the Buckingham Pi theorem.
 
-Note that when this options is chosen the `quantities` parameter should be set differently. It should be written as a list of products of quantities in python notation, see the example "Using the buckinghamPi comparison" below.
+There are three different ways of supplying this function with the necessary information.
+- In the answer, supply a list of groups on the form `['` first group `','` second group `','` ... `','` last group `']`. Note that if there is only one group it still needs to be written as a list `['` group `']`. When used this way the function assumes that the given list is correct and contains at least the minimum number of groups.
+- In the `quantities` parameter, supply a list of what the dimensions for each quantity is and set answer to `-`. The function will then compute a list of sufficiently many independen dimensionless quantities and compare to the response.
+- In the `quantities` parameter, supply a list of what the dimensions for each quantity is and in the answer, supply a list of groups as in the first option. The function will then check that the supplied answer is dimensionless and has a sufficient number of independent groups before comparing it to the response.
 
 ## Outputs
 Outputs vary depending on chosen comparison options. This is likely to change in near future. Below is the minimum common set of outputs.
@@ -225,7 +241,7 @@ In the example given in the example problem set, the following responses are tes
 | `d**2*t**(-2)`    | `d^2 t^(-2)`    |
 | `d/t*v`           | `vd/t`          |
 
-### b)
+#### b)
 Checking the dimensions of a quantity directly, i.e. the dimensions of an expression of the form `number*units`, no predefined quantities are necessary.
 
 Here a response area with input type `TEXT` and one grading parameter,`comparison`, will be used.
@@ -245,11 +261,11 @@ In the example given in the example problem set, the following responses are tes
 | `246*ohm/(kilo*gram)*coulomb**2/second` | `246 ohm/(kilogram) coulomb^2/second` |
 
 
-## 2 Checking the value of an expression or a physical quantity
+### 2 Checking the value of an expression or a physical quantity
 
 This examples checks if your expression is equal to $2~\frac{\mathrm{kilometre}}{\mathrm{hour}}$.
 
-### a)
+#### a)
 
 Here an expression with predefined quantities is checked as exactly as possible. This is done with a TEXT response area with the following parameters:
 `quantities` is set to:
@@ -272,7 +288,7 @@ In the example given in the example problem set, the following responses are tes
 | `1/1.8*d/t`     | `d/(1.8t)`      |
 | `v+1/3.6*d/t`   | `v+d/(3.6t)`    |
 
-### b)
+#### b)
 
 Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed absolute tolerance of $0.05 \frac{metre}{second}$ can be done with a TEXT response area with `atol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
@@ -303,7 +319,7 @@ In the example given in the example problem set, the following responses are tes
 | `2.2*kilo*metre/hour` | `2.2 kilometre/hour` |
 
 
-### c)
+#### c)
 
 Checking if a quantity is equal to $2~\frac{kilometre}{hour}$ with a fixed relative tolerance of $0.05$ can be done with a TEXT response area with `rtol` set to `0.05` and the answer set to `2*kilo*metre/hour`. 
 
@@ -325,31 +341,40 @@ In the example given in the example problem set, the following responses are tes
 | `0.522*metre/second`   | `0.522 metre/second`  |
 | `2.11*kilo*metre/hour` | `2.11 kilometre/hour` |
 
-## 3 Checking if a set of quantities match the Buckingham pi theorem
+### 3 Checking if a set of quantities match the Buckingham pi theorem
 
-### a)
+#### a)
 
 In this example the task is: Given $U$, $L$ and $\nu$, suggest a dimensionless group.
 
-For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer. 
+For this problem we do not need to predefine any quantities and give exact dimensions. The algorithm assumes that all symbols in the answer (that are not numbers or predefined constants such as $\pi$) are quantities and that there are no other quantities that should appear in the answer.
 
 **Note:** This means that the algorithm does not in any way check that the stated answer is dimensionless, ensuring that that is left to the problem author.
 
 For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and answer set to `['U*L/nu']`. Note that even though there is only one expression it still needs to written like a python list. It is also not necessary to use this specific answer, any example of a correct dimensionless group should work.
 
-### b)
+#### b)
 
-See example for context, see worked solution for a terse and probably more obtuse than necessary solution.
+In this example the task is:
+Suppose we are studying water waves that move under the influence of gravity. We suppose that the variables of interest are the acceleration in free fall $g$, the velocity of the wave $v$, the height of the wave $h$ and the wave length $\ell$. We also suppose that they are related by a dimensionally consistent equation $f(g,v,h,l) = 0$. Determine the minimum number of dimensionless $\pi$-variables needed to describe this problem according to the Buckingham pi-theorem and give one example of possible expressions for the dimensionless quantities.
 
-At the time of writing it was 3 weeks ago that I promised Peter I would properly write down how this worked. Hopefully I will do that soon.
+For this problem two dimensionless groups are needed, see the worked solution for a terse solution that gives the general form of the dimensionless quantities.
 
-The neat part is that for this problem you do not need to define any quantities, you just set `comparison` to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example I used the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']`.
+For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']` was used (this corresponds to $p_1 = 1$, $p_2 = 2$, $q_1 = 3$, $q_2 = 4$ in the worked solution).
 
-## 4 Using the evaluation function for things other than it's intended purpose
+#### c)
+
+In this example the task is: Given $U$, $L$, $\nu$ and $f$, determine the necessary number of dimensionless groups and give one example of possible expressions for them.
+
+This task is similar to example a) with two significant differences. First, adding $f$ means that there are now two groups required, and second the problem will constructed by defining the quantities and let the function compute the rest on its own instead of supplying a reference example.
+
+For this example a TEXT response area is used with `comparison` set to `buckinghamPi`, `quantities` set to `('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')` and `answer` set to `-`.
+
+### 4 Using the evaluation function for things other than it's intended purpose
 
 In this problem we use `substitutions` to define costum units in different ways.
 
-### a)
+#### a)
 
 Here a problem is constructed with answer $1.23$ watt where the short form symbol (e.g. $1.23$ W) can be used for the answer.
 
@@ -434,7 +459,7 @@ In the example given in the example problem set, the following responses are tes
 `1.23*N*m/s`     | `1.23 Nm/s`     |
 `1.23*Pa*m**3/s` | `1.23 Pam^3/s`  |
 
-### b)
+#### b)
 
 In this problem currencies will be us as units, and thus the quantities will no longer be physical.
 
