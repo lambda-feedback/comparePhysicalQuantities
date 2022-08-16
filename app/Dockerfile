@@ -16,7 +16,8 @@ COPY evaluation_tests.py ./app/
 COPY unit_system_conversions.py ./app/
 
 # Copy Documentation
-COPY docs.md ./app/
+COPY docs/dev.md ./app/docs/dev.md
+COPY docs/user.md ./app/docs/user.md
 
 # Set permissions so files and directories can be accessed on AWS
 RUN chmod 644 $(find . -type f)

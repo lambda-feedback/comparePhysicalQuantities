@@ -1,4 +1,4 @@
-# - comparePhysicalQuantities -
+# ComparePhysicalQuantities
 This is an **EXPERIMENTAL** evaluation function with some dimensional analysis functionality.
 
 This function lacks a nice GUI, can be quite brittle, and will likely change significantly in the near future.
