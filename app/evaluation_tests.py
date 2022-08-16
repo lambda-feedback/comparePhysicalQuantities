@@ -259,7 +259,82 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "['g**1*v**2*h**3*l**4', 'g**4*v**3*h**2*l**1']"
         self.assertEqual_input_variations(response, answer, params, False)
 
-#REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in th code at the moment
+    def test_buckingham_pi_two_groups_with_quantities(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False,
+                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
+                  "symbols": "nu"}
+        answer = "['U*L/nu', 'f*L/U']"
+        response = "['U*L/nu', 'nu/(f*L**2)']"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_buckingham_pi_two_groups_with_quantities_no_answer(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False,
+                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
+                  "symbols": "nu"}
+        answer = "-"
+        response = "['U*L/nu', 'nu/(f*L**2)']"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_buckingham_pi_two_groups_with_quantities_not_dimensionless(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False,
+                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
+                  "symbols": "nu"}
+        answer = "['f*U*L/nu', 'f*L/U']"
+        response = "['U*L/nu', 'nu/(f*L**2)']"
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            response,
+            answer,
+            params,
+        )
+        answer = "['U*L/nu', 'f*L/U']"
+        response = "['U*L/nu', 'U*nu/(f*L**2)']"
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            response,
+            answer,
+            params,
+        )
+
+    def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_answer(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False,
+                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
+                  "symbols": "nu"}
+        answer = "['U*L/nu']"
+        response = "['U*L/nu', 'nu/(f*L**2)']"
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            response,
+            answer,
+            params,
+        )
+        answer = "['U*L/nu', '(U*L/nu)**2']"
+        response = "['U*L/nu', 'nu/(f*L**2)']"
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            response,
+            answer,
+            params,
+        )
+
+    def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_response(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False,
+                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
+                  "symbols": "nu"}
+        answer = "['U*L/nu', 'f*L/U']"
+        response = "['U*L/nu', '(U*L/nu)**2']"
+        self.assertEqual_input_variations(response, answer, params, False)
+
+#REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in the code at the moment
 #    def test_compare_dimensions_with_sympy_unit_system(self):
 #        body = {"response": "2*d**2/t**2+0.5*v**2", "answer": "5*v**2", "comparison": "dimensions", "substitutions": "('d','(u.length)') ('t','(u.time)') ('v','(u.length/u.time)')"}
 #

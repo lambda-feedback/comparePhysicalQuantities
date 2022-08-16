@@ -28,6 +28,7 @@ def evaluation_function(response, answer, params) -> dict:
     do_transformations = not parameters["strict_syntax"]
 
     if parameters["comparison"] == "buckinghamPi":
+        # Parse expressions for groups in response and answer
         response_strings = eval(response)
         response_groups = []
         for res in response_strings:
@@ -36,10 +37,10 @@ def evaluation_function(response, answer, params) -> dict:
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the response") from e
             response_groups.append(expr)
-        response_symbols = set()
-        for res in response_groups:
-            response_symbols = response_symbols.union(res.free_symbols)
-        answer_strings = eval(answer)
+        if answer == "-":
+            answer_strings = []
+        else:
+            answer_strings = eval(answer)
         answer_groups = []
         for ans in answer_strings:
             try:
@@ -47,26 +48,86 @@ def evaluation_function(response, answer, params) -> dict:
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the answer") from e
             answer_groups.append(expr)
-        answer_exponents = []
-        answer_symbols = set()
-        for ans in answer_groups:
-            answer_symbols = answer_symbols.union(ans.free_symbols)
-        if not answer_symbols == response_symbols:
-            return {"is_correct": False}
-        answer_symbols = list(answer_symbols)
-        for ans in answer_groups:
-            exponents = []
-            for symbol in answer_symbols:
-                exponents.append(ans.as_coeff_exponent(symbol)[1])
-            answer_exponents.append(exponents)
-        answer_matrix = Matrix(answer_exponents)
-        response_exponents = []
-        for res in response_groups:
-            exponents = []
-            for symbol in answer_symbols:
-                exponents.append(res.as_coeff_exponent(symbol)[1])
-            response_exponents.append(exponents)
-        response_matrix = Matrix(response_exponents)
+
+        # Find what different symbols for quantities there are
+        if "quantities" in parameters.keys():
+            quantities_strings = parameters["quantities"]
+            quantities = []
+            index = quantities_strings.find("(")
+            while index > -1:
+                index_match = find_matching_parenthesis(quantities_strings,index)
+                try:
+                    quantity_strings = eval(quantities_strings[index+1:index_match])
+                    quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols),quantity_strings))
+                    quantities.append(quantity)
+                except (SyntaxError, TypeError) as e:
+                    raise Exception("List of quantities not written correctly.")
+                index = quantities_strings.find('(',index_match+1)
+            response_symbols = list(map(lambda x: x[0], quantities))
+            answer_symbols = response_symbols
+
+            # Check how many dimensionless groups are needed
+            dimension_symbols = set()
+            for quantity in quantities:
+                dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
+            quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
+            number_of_groups = len(quantities)-quantity_matrix.rank()
+
+            if answer_groups == []:
+                # Compute answer groups
+                nullspace_basis = quantity_matrix.T.nullspace()
+                answer_groups = [1]*number_of_groups
+                for i in range(0,len(answer_groups)):
+                    for j in range(0,len(quantities)):
+                        answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
+
+            # Analyse dimensions of answers and responses
+            answer_dimensions = []
+            for group in answer_groups:
+                dimension = group
+                for quantity in quantities:
+                    dimension = dimension.subs(quantity[0],quantity[1])
+                answer_dimensions.append(dimension.simplify())
+            
+            # Check that answers are dimensionless
+            for k,dimension in enumerate(answer_dimensions):
+                if not dimension.is_constant():
+                    raise Exception(f"Answer {answer_groups[k][0]} is not dimensionless.")
+            
+            # Check that there is a sufficient number of independent groups in the answer
+            answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+            if answer_matrix.rank() < number_of_groups:
+                raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
+
+            # Check that responses are dimensionless
+            response_dimensions = []
+            for group in response_groups:
+                dimension = group
+                for quantity in quantities:
+                    dimension = dimension.subs(quantity[0],quantity[1])
+                response_dimensions.append(dimension.simplify())
+            for k,dimension in enumerate(response_dimensions):
+                if not dimension.is_constant():
+                    raise Exception(f"Response {response_groups[k][0]} is not dimensionless.")
+
+            # Check that there is a sufficient number of independent groups in the response
+            response_matrix = get_exponent_matrix(response_groups,response_symbols)
+            if answer_matrix.rank() < number_of_groups:
+                return {"is_correct": False}
+        else:
+            response_symbols = set()
+            for res in response_groups:
+                response_symbols = response_symbols.union(res.free_symbols)
+            answer_symbols = set()
+            for ans in answer_groups:
+                answer_symbols = answer_symbols.union(ans.free_symbols)
+            if not answer_symbols == response_symbols:
+                return {"is_correct": False}
+            answer_symbols = list(answer_symbols)
+
+        # Extract exponents from answers and responses and compare matrix ranks
+        answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
+        response_matrix = get_exponent_matrix(response_groups,response_symbols)
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
             return {"is_correct": True}
@@ -218,3 +279,12 @@ def parse_expression(expr,do_transformations,unsplittable_symbols):
     else:
         transformations = parser_transformations[0:4]
     return parse_expr(expr,transformations=transformations)
+
+def get_exponent_matrix(expressions,symbols):
+    exponents_list = []
+    for expression in expressions:
+        exponents = []
+        for symbol in symbols:
+            exponents.append(expression.as_coeff_exponent(symbol)[1])
+        exponents_list.append(exponents)
+    return Matrix(exponents_list)
