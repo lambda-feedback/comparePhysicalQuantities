@@ -80,6 +80,7 @@ def evaluation_function(response, answer, params) -> dict:
                 for i in range(0,len(answer_groups)):
                     for j in range(0,len(quantities)):
                         answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
+
             # Analyse dimensions of answers and responses
             answer_dimensions = []
             for group in answer_groups:
