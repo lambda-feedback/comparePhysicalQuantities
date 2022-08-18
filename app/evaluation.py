@@ -197,7 +197,7 @@ def evaluation_function(response, answer, params) -> dict:
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
 
-    if parameters["comparison"] == "dimensions":    
+    if parameters["comparison"] == "dimensions":
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
         if is_correct:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp }
