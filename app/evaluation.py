@@ -22,7 +22,7 @@ def evaluation_function(response, answer, params) -> dict:
         unsplittable_symbols = names_of_prefixes_base_SI_units_and_dimensions()
 
     if "input_symbols" in params.keys():
-        unsplittable_symbols += params["input_symbols"]
+        unsplittable_symbols += tuple(params["input_symbols"])
 
     if "symbols" in parameters.keys():
         unsplittable_symbols += tuple(parameters["symbols"].split(','))
