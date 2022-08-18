@@ -22,6 +22,9 @@ def evaluation_function(response, answer, params) -> dict:
     else:
         unsplittable_symbols = names_of_prefixes_base_SI_units_and_dimensions()
 
+    if "input_symbols" in params.keys():
+        unsplittable_symbols += params["input_symbols"]
+
     if "symbols" in parameters.keys():
         unsplittable_symbols += tuple(parameters["symbols"].split(','))
 
@@ -266,6 +269,37 @@ def substitute(string, substitutions):
                     new_string.append(part[j:len(part)])
         if len(new_string) >= len(string):
             string = new_string
+
+    for k, elem in enumerate(string):
+        if isinstance(elem,int):
+            string[k] = substitutions[elem][1]
+
+    return "".join(string)
+
+def split_and_mark(string, mark):
+    if isinstance(string,str):
+        string = [string]
+
+    new_string = []
+    for part in string:
+        if not isinstance(part, str):
+            new_string.append(part)
+        else:
+            mark_locations = []
+            i = part.find(pair[0])
+            while i > -1:
+                mark_locations.append(i)
+                i = part.find(pair[0],i+1)
+            j = 0
+            for i in substitution_locations:
+                if i > 0:
+                    new_string.append(part[j:i])
+                new_string.append(k)
+                j = i + len(pair[0])
+            if j < len(part):
+                new_string.append(part[j:len(part)])
+    if len(new_string) >= len(string):
+        string = new_string
 
     for k, elem in enumerate(string):
         if isinstance(elem,int):
