@@ -37,13 +37,13 @@ def list_of_SI_base_unit_dimensions():
     Note that gram is used as a base unit instead of kilogram.
     """
     list = [
-        ('metre',  '(length)'),
-        ('gram',   '(mass)'),
-        ('second', '(time)'),
-        ('ampere', '(electric_current)'),
-        ('kelvin', '(temperature)'),
-        ('mole',   '(amount_of_substance)'),
-        ('candela','(luminous_intensity)'),
+        ('metre',  'length'),
+        ('gram',   'mass'),
+        ('second', 'time'),
+        ('ampere', 'electric_current'),
+        ('kelvin', 'temperature'),
+        ('mole',   'amount_of_substance'),
+        ('candela','luminous_intensity'),
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -116,17 +116,18 @@ def names_of_prefixes_base_SI_units_and_dimensions():
     return tuple(x[0] for x in list_of_SI_prefixes())+tuple(x[0] for x in list_of_SI_base_unit_dimensions())+tuple(x[1] for x in list_of_SI_base_unit_dimensions())
 
 def remove_SI_prefixes():
-    return "".join("('"+x[0]+","+x[1]+"')" for x in list_of_SI_prefixes())
+    return "".join("('"+x[0]+"','"+x[1]+"')" for x in list_of_SI_prefixes())
 
 def convert_SI_base_units_to_dimensions(): 
-    return "".join("('"+x[0]+","+x[1]+"')" for x in list_of_SI_base_unit_dimensions())
+    return "".join("('"+x[0]+"','"+x[1]+"')" for x in list_of_SI_base_unit_dimensions())
 
 def convert_derived_SI_units_to_SI_base_units():
-    return "".join("('"+x[0]+","+x[1]+"')" for x in list_of_derived_SI_units_in_SI_base_units())
+    return "".join("('"+x[0]+"','"+x[1]+"')" for x in list_of_derived_SI_units_in_SI_base_units())
 
 def convert_common_units_to_SI():
     test = 2
-    return "".join(map(lambda x: "('"+x[0]+","+x[1]+"')",list_of_common_units_in_SI()))
+    return "".join(map(lambda x: "('"+x[0]+"','"+x[1]+"')",list_of_common_units_in_SI()))
 
 def convert_to_SI_base_units():
+    test = [convert_common_units_to_SI(), convert_derived_SI_units_to_SI_base_units(), remove_SI_prefixes()]
     return [convert_common_units_to_SI(), convert_derived_SI_units_to_SI_base_units(), remove_SI_prefixes()]

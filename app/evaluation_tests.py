@@ -26,13 +26,13 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def assertEqual_input_variations(self, response, answer, params, value):
+        result = evaluation_function(response, answer, params)
         variation_definitions = [lambda x : x.replace('**','^'),
                                  lambda x : x.replace('**','^').replace('*',' '),
                                  lambda x : x.replace('**','^').replace('*','')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
-            result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), value)
             if (response_variation != response) or (answer_variation != answer):
                 result = evaluation_function(response_variation, answer, params)
@@ -159,7 +159,7 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "symbols": "GBP,EUR,USD,CNY,INR",2022-08-18 17:09:32
+                  "symbols": "GBP,EUR,USD,CNY,INR",
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -171,7 +171,7 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "input_symbols": "GBP,EUR,USD,CNY,INR",
+                  "input_symbols": ('GBP','EUR','USD','CNY','INR'),
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]

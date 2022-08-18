@@ -159,15 +159,15 @@ def evaluation_function(response, answer, params) -> dict:
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
+    substitutions = []
     for subs_strings in list_of_substitutions_strings:
         # Parsing list of substitutions
-        substitutions = []
         sub_substitutions = []
         index = subs_strings.find('(')
         while index > -1:
             index_match = find_matching_parenthesis(subs_strings,index)
             try:
-                sub_substitutions.append(eval(subs_strings[index+1:index_match]))
+                sub_substitutions.append(eval(subs_strings[index:index_match+1]))
             except (SyntaxError, TypeError) as e:
                 raise Exception("List of substitutions not written correctly.")
             index = subs_strings.find('(',index_match+1)
@@ -179,9 +179,9 @@ def evaluation_function(response, answer, params) -> dict:
         sub_substitutions.sort(key=lambda x: -len(x[0]))
         substitutions.append(sub_substitutions)
 
-        for sub in substitutions:
-            answer = substitute(answer, sub)
-            response = substitute(response, sub)
+    for sub in substitutions:
+        answer = substitute(answer, sub)
+        response = substitute(response, sub)
 
     # Safely try to parse answer and response into symbolic expressions
     try:
@@ -197,7 +197,7 @@ def evaluation_function(response, answer, params) -> dict:
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
 
-    if parameters["comparison"] == "dimensions":
+    if parameters["comparison"] == "dimensions":    
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
         if is_correct:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp }
