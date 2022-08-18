@@ -1,5 +1,4 @@
-from math import pi, log
-from sympy.parsing.sympy_parser import parse_expr, _token_splittable, split_symbols_custom
+from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix
 
@@ -209,7 +208,7 @@ def evaluation_function(response, answer, params) -> dict:
                 ans = ans.subs(symbol,1)
                 res = res.subs(symbol,1)
         if "atol" in parameters.keys():
-            error_below_atol = bool(abs((ans-res).evalf()) < float(parameters["atol"]))
+            error_below_atol = bool(abs(float(ans-res)) < float(parameters["atol"]))
         else:
             error_below_atol = True
         if "rtol" in parameters.keys():
@@ -269,37 +268,6 @@ def substitute(string, substitutions):
                     new_string.append(part[j:len(part)])
         if len(new_string) >= len(string):
             string = new_string
-
-    for k, elem in enumerate(string):
-        if isinstance(elem,int):
-            string[k] = substitutions[elem][1]
-
-    return "".join(string)
-
-def split_and_mark(string, mark):
-    if isinstance(string,str):
-        string = [string]
-
-    new_string = []
-    for part in string:
-        if not isinstance(part, str):
-            new_string.append(part)
-        else:
-            mark_locations = []
-            i = part.find(pair[0])
-            while i > -1:
-                mark_locations.append(i)
-                i = part.find(pair[0],i+1)
-            j = 0
-            for i in substitution_locations:
-                if i > 0:
-                    new_string.append(part[j:i])
-                new_string.append(k)
-                j = i + len(pair[0])
-            if j < len(part):
-                new_string.append(part[j:len(part)])
-    if len(new_string) >= len(string):
-        string = new_string
 
     for k, elem in enumerate(string):
         if isinstance(elem,int):
