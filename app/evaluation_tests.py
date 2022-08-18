@@ -159,7 +159,19 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "symbols": "GBP,EUR,USD,CNY,INR",
+                  "symbols": "GBP,EUR,USD,CNY,INR",2022-08-18 17:09:32
+                  "strict_syntax": False}
+        answer = "10.00*GBP"
+        responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_compare_costs_in_different_currencies_with_substitutions_and_input_symbols(self):
+        # Based on Bank of England daily spot rates 01-08-2022
+        currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
+        params = {"substitutions": currencies,
+                  "atol": "0.005",
+                  "input_symbols": "GBP,EUR,USD,CNY,INR",
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
