@@ -11,7 +11,7 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Funtion that provides some basic dimensional analysis functionality.
     """
-    feedback = {"feedback": f"{answer} {response} {params}"}
+    feedback = {} #{"feedback": f"{answer} {response} {params}"}
     default_rtol = 1e-12
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "strict_syntax": True}
     parameters.update(params)
@@ -132,8 +132,9 @@ def evaluation_function(response, answer, params) -> dict:
             if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
                 return {"is_correct": True, **feedback}
             return {"is_correct": False, **feedback}
-    except:
-        raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
+    except Exception as e:
+        #raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
+        raise e
 
     list_of_substitutions_strings = parameters["substitutions"]
     if isinstance(list_of_substitutions_strings,str):
