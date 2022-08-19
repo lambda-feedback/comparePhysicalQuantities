@@ -27,6 +27,7 @@ def evaluation_function(response, answer, params) -> dict:
 
     try:
         if parameters["comparison"] == "buckinghamPi":
+            raise Exception(f"{answer} {response} {params}")
             # Parse expressions for groups in response and answer
             response_strings = response.split(',')
             response_groups = []
