@@ -122,7 +122,7 @@ def evaluation_function(response, answer, params) -> dict:
                 for ans in answer_groups:
                     answer_symbols = answer_symbols.union(ans.free_symbols)
                 if not answer_symbols == response_symbols:
-                    return {"is_correct": False, "feedback": **feedback}
+                    return {"is_correct": False, **feedback}
                 answer_symbols = list(answer_symbols)
     
             # Extract exponents from answers and responses and compare matrix ranks
