@@ -96,7 +96,7 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "5*v**2"
         params = { "comparison": "dimensions",
                    "substitutions": "('d','(distance)') ('t','(time)') ('v','(distance/time)')",
-                   "symbols": "distance,time",
+                   "input_symbols": ['distance','time'],
                    "strict_syntax": False}
 
         self.assertEqual_input_variations(response, answer, params, True)
@@ -137,7 +137,8 @@ class TestEvaluationFunction(unittest.TestCase):
         prefixes = "('M','(10**6)') ('k','(10**3)') ('h','(10**2)') ('da','(10**1)') ('d','(10**(-1))') ('c','(10**(-2))') ('mu','(10**(-6))')"
         milli_fix = "('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')"
         substitutions = milli_fix+"|"+derived_units+"|"+prefixes
-        params = {"substitutions": substitutions, "strict_syntax": False, "symbols": "mPa,Pa,da,mu,mg,mm,mW,mN,ms"}
+        params = {"substitutions": substitutions, "strict_syntax": False,
+                  "input_symbols": ['mPa','Pa','da','mu','mg','mm','mW','mN','ms']}
         answer = "1.23*W"
         responses = ["123*c*W",
                      "0.00000123*M*W",
@@ -159,7 +160,7 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "symbols": "GBP,EUR,USD,CNY,INR",
+                  "input_symbols": ['GBP','EUR','USD','CNY','INR'],
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -238,7 +239,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_buckingham_pi_one_group(self):
         answer = "['U*L/nu']"
-        params = {"comparison": "buckinghamPi", "symbols": "U,L,nu", "strict_syntax": False}
+        params = {"comparison": "buckinghamPi", "input_symbols": ['U','L','nu'], "strict_syntax": False}
         correct_responses = ["['U*L/nu']",
                              "['L*U/nu']",
                              "['nu/U/L']",
@@ -275,7 +276,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "symbols": "nu"}
+                  "input_symbols": ['U','L','nu','f']}
         answer = "['U*L/nu', 'f*L/U']"
         response = "['U*L/nu', 'nu/(f*L**2)']"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -284,7 +285,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "symbols": "nu"}
+                  "input_symbols": ['U','L','nu','f']}
         answer = "-"
         response = "['U*L/nu', 'nu/(f*L**2)']"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -293,7 +294,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "symbols": "nu"}
+                  "input_symbols": ['U','L','nu','f']}
         answer = "['f*U*L/nu', 'f*L/U']"
         response = "['U*L/nu', 'nu/(f*L**2)']"
         self.assertRaises(
@@ -317,7 +318,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "symbols": "nu"}
+                  "input_symbols": ['U','L','nu','f']}
         answer = "['U*L/nu']"
         response = "['U*L/nu', 'nu/(f*L**2)']"
         self.assertRaises(
@@ -341,7 +342,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "symbols": "nu"}
+                  "input_symbols": ['U','L','nu','f']}
         answer = "['U*L/nu', 'f*L/U']"
         response = "['U*L/nu', '(U*L/nu)**2']"
         self.assertEqual_input_variations(response, answer, params, False)

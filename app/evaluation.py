@@ -24,9 +24,6 @@ def evaluation_function(response, answer, params) -> dict:
     if "input_symbols" in params.keys():
         unsplittable_symbols += tuple(params["input_symbols"])
 
-    if "symbols" in parameters.keys():
-        unsplittable_symbols += tuple(parameters["symbols"].split(','))
-
     do_transformations = not parameters["strict_syntax"]
 
     if parameters["comparison"] == "buckinghamPi":
