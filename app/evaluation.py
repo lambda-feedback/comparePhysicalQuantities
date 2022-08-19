@@ -11,7 +11,6 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Funtion that provides some basic dimensional analysis functionality.
     """
-
     default_rtol = 1e-12
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "strict_syntax": True}
     parameters.update(params)
@@ -26,111 +25,114 @@ def evaluation_function(response, answer, params) -> dict:
 
     do_transformations = not parameters["strict_syntax"]
 
-    if parameters["comparison"] == "buckinghamPi":
-        # Parse expressions for groups in response and answer
-        response_strings = response.split(',')
-        response_groups = []
-        for res in response_strings:
-            try:
-                expr = parse_expression(res,do_transformations,unsplittable_symbols).simplify()
-            except (SyntaxError, TypeError) as e:
-                raise Exception("SymPy was unable to parse the response") from e
-            response_groups.append(expr)
-        if answer == "-":
-            answer_strings = []
-        else:
-            answer_strings = answer.split(',')
-        answer_groups = []
-        for ans in answer_strings:
-            try:
-                expr = parse_expression(ans,do_transformations,unsplittable_symbols).simplify()
-            except (SyntaxError, TypeError) as e:
-                raise Exception("SymPy was unable to parse the answer") from e
-            answer_groups.append(expr)
-
-        # Find what different symbols for quantities there are
-        if "quantities" in parameters.keys():
-            quantities_strings = parameters["quantities"]
-            quantities = []
-            index = quantities_strings.find("(")
-            while index > -1:
-                index_match = find_matching_parenthesis(quantities_strings,index)
+    try:
+        if parameters["comparison"] == "buckinghamPi":
+            # Parse expressions for groups in response and answer
+            response_strings = response.split(',')
+            response_groups = []
+            for res in response_strings:
                 try:
-                    quantity_strings = eval(quantities_strings[index+1:index_match])
-                    quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols),quantity_strings))
-                    quantities.append(quantity)
+                    expr = parse_expression(res,do_transformations,unsplittable_symbols).simplify()
                 except (SyntaxError, TypeError) as e:
-                    raise Exception("List of quantities not written correctly.")
-                index = quantities_strings.find('(',index_match+1)
-            response_symbols = list(map(lambda x: x[0], quantities))
-            answer_symbols = response_symbols
-
-            # Check how many dimensionless groups are needed
-            dimension_symbols = set()
-            for quantity in quantities:
-                dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
-            quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
-            number_of_groups = len(quantities)-quantity_matrix.rank()
-
-            if answer_groups == []:
-                # Compute answer groups
-                nullspace_basis = quantity_matrix.T.nullspace()
-                answer_groups = [1]*number_of_groups
-                for i in range(0,len(answer_groups)):
-                    for j in range(0,len(quantities)):
-                        answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
-
-            # Analyse dimensions of answers and responses
-            answer_dimensions = []
-            for group in answer_groups:
-                dimension = group
+                    raise Exception("SymPy was unable to parse the response") from e
+                response_groups.append(expr)
+            if answer == "-":
+                answer_strings = []
+            else:
+                answer_strings = answer.split(',')
+            answer_groups = []
+            for ans in answer_strings:
+                try:
+                    expr = parse_expression(ans,do_transformations,unsplittable_symbols).simplify()
+                except (SyntaxError, TypeError) as e:
+                    raise Exception("SymPy was unable to parse the answer") from e
+                answer_groups.append(expr)
+    
+            # Find what different symbols for quantities there are
+            if "quantities" in parameters.keys():
+                quantities_strings = parameters["quantities"]
+                quantities = []
+                index = quantities_strings.find("(")
+                while index > -1:
+                    index_match = find_matching_parenthesis(quantities_strings,index)
+                    try:
+                        quantity_strings = eval(quantities_strings[index+1:index_match])
+                        quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols),quantity_strings))
+                        quantities.append(quantity)
+                    except (SyntaxError, TypeError) as e:
+                        raise Exception("List of quantities not written correctly.")
+                    index = quantities_strings.find('(',index_match+1)
+                response_symbols = list(map(lambda x: x[0], quantities))
+                answer_symbols = response_symbols
+    
+                # Check how many dimensionless groups are needed
+                dimension_symbols = set()
                 for quantity in quantities:
-                    dimension = dimension.subs(quantity[0],quantity[1])
-                answer_dimensions.append(dimension.simplify())
-            
-            # Check that answers are dimensionless
-            for k,dimension in enumerate(answer_dimensions):
-                if not dimension.is_constant():
-                    raise Exception(f"Answer {answer_groups[k][0]} is not dimensionless.")
-            
-            # Check that there is a sufficient number of independent groups in the answer
-            answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
-            if answer_matrix.rank() < number_of_groups:
-                raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
-
-            # Check that responses are dimensionless
-            response_dimensions = []
-            for group in response_groups:
-                dimension = group
-                for quantity in quantities:
-                    dimension = dimension.subs(quantity[0],quantity[1])
-                response_dimensions.append(dimension.simplify())
-            for k,dimension in enumerate(response_dimensions):
-                if not dimension.is_constant():
-                    raise Exception(f"Response {response_groups[k][0]} is not dimensionless.")
-
-            # Check that there is a sufficient number of independent groups in the response
+                    dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
+                quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
+                number_of_groups = len(quantities)-quantity_matrix.rank()
+    
+                if answer_groups == []:
+                    # Compute answer groups
+                    nullspace_basis = quantity_matrix.T.nullspace()
+                    answer_groups = [1]*number_of_groups
+                    for i in range(0,len(answer_groups)):
+                        for j in range(0,len(quantities)):
+                            answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
+    
+                # Analyse dimensions of answers and responses
+                answer_dimensions = []
+                for group in answer_groups:
+                    dimension = group
+                    for quantity in quantities:
+                        dimension = dimension.subs(quantity[0],quantity[1])
+                    answer_dimensions.append(dimension.simplify())
+                
+                # Check that answers are dimensionless
+                for k,dimension in enumerate(answer_dimensions):
+                    if not dimension.is_constant():
+                        raise Exception(f"Answer {answer_groups[k][0]} is not dimensionless.")
+                
+                # Check that there is a sufficient number of independent groups in the answer
+                answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+                if answer_matrix.rank() < number_of_groups:
+                    raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
+    
+                # Check that responses are dimensionless
+                response_dimensions = []
+                for group in response_groups:
+                    dimension = group
+                    for quantity in quantities:
+                        dimension = dimension.subs(quantity[0],quantity[1])
+                    response_dimensions.append(dimension.simplify())
+                for k,dimension in enumerate(response_dimensions):
+                    if not dimension.is_constant():
+                        raise Exception(f"Response {response_groups[k][0]} is not dimensionless.")
+    
+                # Check that there is a sufficient number of independent groups in the response
+                response_matrix = get_exponent_matrix(response_groups,response_symbols)
+                if answer_matrix.rank() < number_of_groups:
+                    return {"is_correct": False}
+            else:
+                response_symbols = set()
+                for res in response_groups:
+                    response_symbols = response_symbols.union(res.free_symbols)
+                answer_symbols = set()
+                for ans in answer_groups:
+                    answer_symbols = answer_symbols.union(ans.free_symbols)
+                if not answer_symbols == response_symbols:
+                    return {"is_correct": False}
+                answer_symbols = list(answer_symbols)
+    
+            # Extract exponents from answers and responses and compare matrix ranks
+            answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
-            if answer_matrix.rank() < number_of_groups:
-                return {"is_correct": False}
-        else:
-            response_symbols = set()
-            for res in response_groups:
-                response_symbols = response_symbols.union(res.free_symbols)
-            answer_symbols = set()
-            for ans in answer_groups:
-                answer_symbols = answer_symbols.union(ans.free_symbols)
-            if not answer_symbols == response_symbols:
-                return {"is_correct": False}
-            answer_symbols = list(answer_symbols)
-
-        # Extract exponents from answers and responses and compare matrix ranks
-        answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
-        response_matrix = get_exponent_matrix(response_groups,response_symbols)
-        enhanced_matrix = answer_matrix.col_join(response_matrix)
-        if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-            return {"is_correct": True}
-        return {"is_correct": False}
+            enhanced_matrix = answer_matrix.col_join(response_matrix)
+            if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
+                return {"is_correct": True}
+            return {"is_correct": False}
+    except:
+        raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
 
     list_of_substitutions_strings = parameters["substitutions"]
     if isinstance(list_of_substitutions_strings,str):

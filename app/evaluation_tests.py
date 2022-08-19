@@ -252,7 +252,6 @@ class TestEvaluationFunction(unittest.TestCase):
                                "A",
                                "U/nu",
                                "U*L"]
-        is_correct = True
         for response in correct_responses:
             self.assertEqual_input_variations(response, answer, params, True)
         for response in incorrect_responses:
@@ -289,6 +288,8 @@ class TestEvaluationFunction(unittest.TestCase):
                   "input_symbols": ['U','L','nu','f']}
         answer = "-"
         response = "U*L/nu, nu/(f*L**2)"
+        self.assertEqual_input_variations(response, answer, params, True)
+        response = "U*L/nu, f*L/U"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_buckingham_pi_two_groups_with_quantities_not_dimensionless(self):
