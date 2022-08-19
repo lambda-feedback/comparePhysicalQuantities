@@ -27,7 +27,6 @@ def evaluation_function(response, answer, params) -> dict:
 
     try:
         if parameters["comparison"] == "buckinghamPi":
-            raise Exception(f"{answer} {response} {params}")
             # Parse expressions for groups in response and answer
             response_strings = response.split(',')
             response_groups = []
@@ -113,7 +112,7 @@ def evaluation_function(response, answer, params) -> dict:
                 # Check that there is a sufficient number of independent groups in the response
                 response_matrix = get_exponent_matrix(response_groups,response_symbols)
                 if answer_matrix.rank() < number_of_groups:
-                    return {"is_correct": False}
+                    return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
             else:
                 response_symbols = set()
                 for res in response_groups:
@@ -122,7 +121,7 @@ def evaluation_function(response, answer, params) -> dict:
                 for ans in answer_groups:
                     answer_symbols = answer_symbols.union(ans.free_symbols)
                 if not answer_symbols == response_symbols:
-                    return {"is_correct": False}
+                    return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
                 answer_symbols = list(answer_symbols)
     
             # Extract exponents from answers and responses and compare matrix ranks
@@ -130,7 +129,7 @@ def evaluation_function(response, answer, params) -> dict:
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             enhanced_matrix = answer_matrix.col_join(response_matrix)
             if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-                return {"is_correct": True}
+                return {"is_correct": True, "feedback": f"{answer} {response} {params}"}
             return {"is_correct": False}
     except:
         raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
