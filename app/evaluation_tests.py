@@ -238,20 +238,20 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, False)
 
     def test_buckingham_pi_one_group(self):
-        answer = "['U*L/nu']"
+        answer = "U*L/nu"
         params = {"comparison": "buckinghamPi", "input_symbols": ['U','L','nu'], "strict_syntax": False}
-        correct_responses = ["['U*L/nu']",
-                             "['L*U/nu']",
-                             "['nu/U/L']",
-                             "['(U*L/nu)**2']",
-                             "['2*U*L/nu']"]
-        incorrect_responses = ["['U*L/n/u']",
-                               "['1']",
-                               "['U*L*nu']",
-                               "['A*U*L/nu']",
-                               "['A']",
-                               "['U/nu']",
-                               "['U*L']"]
+        correct_responses = ["U*L/nu",
+                             "L*U/nu",
+                             "nu/U/L",
+                             "(U*L/nu)**2",
+                             "2*U*L/nu"]
+        incorrect_responses = ["U*L/n/u",
+                               "1",
+                               "U*L*nu",
+                               "A*U*L/nu",
+                               "A",
+                               "U/nu",
+                               "U*L"]
         is_correct = True
         for response in correct_responses:
             self.assertEqual_input_variations(response, answer, params, True)
@@ -259,17 +259,18 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual_input_variations(response, answer, params, False)
 
     def test_buckingham_pi_two_groups(self):
+        params = {"comparison": "buckinghamPi", "strict_syntax": False,
+                  "input_symbols": ['g','v','h','l']}
         # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
-        answer = "['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']"
+        answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
         # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
-        response = "['g*v**(-2)*h**3*l**2', 'g**2*v**(-4)*h**3*l']"
-        params = {"comparison": "buckinghamPi", "strict_syntax": False}
+        response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
         self.assertEqual_input_variations(response, answer, params, True)
         # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
-        response = "['h*l', 'h**2*l**2']"
+        response = "h*l, h**2*l**2"
         self.assertEqual_input_variations(response, answer, params, False)
         # This does not correspond to any consistent values of p1, p2, q1 and q2
-        response = "['g**1*v**2*h**3*l**4', 'g**4*v**3*h**2*l**1']"
+        response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
         self.assertEqual_input_variations(response, answer, params, False)
 
     def test_buckingham_pi_two_groups_with_quantities(self):
@@ -277,8 +278,8 @@ class TestEvaluationFunction(unittest.TestCase):
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
                   "input_symbols": ['U','L','nu','f']}
-        answer = "['U*L/nu', 'f*L/U']"
-        response = "['U*L/nu', 'nu/(f*L**2)']"
+        answer = "U*L/nu, f*L/U"
+        response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_buckingham_pi_two_groups_with_quantities_no_answer(self):
@@ -287,7 +288,7 @@ class TestEvaluationFunction(unittest.TestCase):
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
                   "input_symbols": ['U','L','nu','f']}
         answer = "-"
-        response = "['U*L/nu', 'nu/(f*L**2)']"
+        response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_buckingham_pi_two_groups_with_quantities_not_dimensionless(self):
@@ -295,8 +296,8 @@ class TestEvaluationFunction(unittest.TestCase):
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
                   "input_symbols": ['U','L','nu','f']}
-        answer = "['f*U*L/nu', 'f*L/U']"
-        response = "['U*L/nu', 'nu/(f*L**2)']"
+        answer = "f*U*L/nu, f*L/U"
+        response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
             Exception,
             evaluation_function,
@@ -304,8 +305,8 @@ class TestEvaluationFunction(unittest.TestCase):
             answer,
             params,
         )
-        answer = "['U*L/nu', 'f*L/U']"
-        response = "['U*L/nu', 'U*nu/(f*L**2)']"
+        answer = "U*L/nu, f*L/U"
+        response = "U*L/nu, U*nu/(f*L**2)"
         self.assertRaises(
             Exception,
             evaluation_function,
@@ -319,8 +320,8 @@ class TestEvaluationFunction(unittest.TestCase):
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
                   "input_symbols": ['U','L','nu','f']}
-        answer = "['U*L/nu']"
-        response = "['U*L/nu', 'nu/(f*L**2)']"
+        answer = "U*L/nu"
+        response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
             Exception,
             evaluation_function,
@@ -328,8 +329,8 @@ class TestEvaluationFunction(unittest.TestCase):
             answer,
             params,
         )
-        answer = "['U*L/nu', '(U*L/nu)**2']"
-        response = "['U*L/nu', 'nu/(f*L**2)']"
+        answer = "U*L/nu, (U*L/nu)**2"
+        response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
             Exception,
             evaluation_function,
@@ -343,8 +344,8 @@ class TestEvaluationFunction(unittest.TestCase):
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
                   "input_symbols": ['U','L','nu','f']}
-        answer = "['U*L/nu', 'f*L/U']"
-        response = "['U*L/nu', '(U*L/nu)**2']"
+        answer = "U*L/nu, f*L/U"
+        response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
 
 #REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in the code at the moment

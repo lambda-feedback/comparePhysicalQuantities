@@ -28,7 +28,7 @@ def evaluation_function(response, answer, params) -> dict:
 
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
-        response_strings = eval(response)
+        response_strings = response.split(',')
         response_groups = []
         for res in response_strings:
             try:
@@ -39,7 +39,7 @@ def evaluation_function(response, answer, params) -> dict:
         if answer == "-":
             answer_strings = []
         else:
-            answer_strings = eval(answer)
+            answer_strings = answer.split(',')
         answer_groups = []
         for ans in answer_strings:
             try:
