@@ -11,6 +11,7 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Funtion that provides some basic dimensional analysis functionality.
     """
+    feedback = {"feedback": f"{answer} {response} {params}"}
     default_rtol = 1e-12
     parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "strict_syntax": True}
     parameters.update(params)
@@ -112,7 +113,7 @@ def evaluation_function(response, answer, params) -> dict:
                 # Check that there is a sufficient number of independent groups in the response
                 response_matrix = get_exponent_matrix(response_groups,response_symbols)
                 if answer_matrix.rank() < number_of_groups:
-                    return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
+                    return {"is_correct": False, **feedback}
             else:
                 response_symbols = set()
                 for res in response_groups:
@@ -121,7 +122,7 @@ def evaluation_function(response, answer, params) -> dict:
                 for ans in answer_groups:
                     answer_symbols = answer_symbols.union(ans.free_symbols)
                 if not answer_symbols == response_symbols:
-                    return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
+                    return {"is_correct": False, "feedback": **feedback}
                 answer_symbols = list(answer_symbols)
     
             # Extract exponents from answers and responses and compare matrix ranks
@@ -129,8 +130,8 @@ def evaluation_function(response, answer, params) -> dict:
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             enhanced_matrix = answer_matrix.col_join(response_matrix)
             if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-                return {"is_correct": True, "feedback": f"{answer} {response} {params}"}
-            return {"is_correct": False}
+                return {"is_correct": True, **feedback}
+            return {"is_correct": False, **feedback}
     except:
         raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
 
@@ -198,7 +199,7 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["comparison"] == "dimensions":
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
         if is_correct:
-            return {"is_correct": True, "comparison": parameters["comparison"], **interp }
+            return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
     if parameters["comparison"] == "expression":
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
@@ -219,15 +220,15 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 error_below_rtol = bool(abs(((ans-res)/ans).evalf()) < default_rtol)
         if error_below_atol and error_below_rtol and equal_up_to_multiplication:
-            return {"is_correct": True, "comparison": parameters["comparison"], **interp}
+            return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
     if parameters["comparison"] == "expressionExact":
         # Here nsimplify is used to transform float to rationals since some unit conversions are not exact and answers and responses might contain decimal values
         is_correct = (res.nsimplify()-ans.nsimplify()).simplify() == 0
         if is_correct:
-            return {"is_correct": True, "comparison": parameters["comparison"], **interp}
+            return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
-    return {"is_correct": False, **interp}
+    return {"is_correct": False, **interp, **feedback}
 
 def find_matching_parenthesis(string,index):
     depth = 0
