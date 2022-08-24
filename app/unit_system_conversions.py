@@ -64,7 +64,7 @@ def list_of_derived_SI_units_in_SI_base_units():
         ('coulomb',   'C',   '(second*ampere)'),
         ('volt',      'V',   '(metre**2*kilo*gram*second**(-3)*ampere**(-1))'),
         ('farad',     'F',   '(metre**(-2)*(kilo*gram)**(-1)*second**4*ampere**2)'),
-        ('ohm',       'ohm', '(metre**2*kilo*gram*second**(-3)*ampere**(-2))'),
+        ('ohm',       'O', '(metre**2*kilo*gram*second**(-3)*ampere**(-2))'),
         ('siemens',   'S',   '(metre**(-2)*kilo*gram**(-1)*second**3*ampere**2)'),
         ('weber',     'Wb',  '(metre**2*kilo*gram*second**(-2)*ampere**(-1))'),
         ('tesla',     'T',   '(kilo*gram*second**(-2)*ampere**(-1))'),
@@ -115,19 +115,25 @@ def names_of_prefixes_base_SI_units_and_dimensions():
 
 def convert_short_forms():
     units = list_of_SI_base_unit_dimensions()\
-           +list_of_derived_SI_units_in_SI_base_units()\
-           +list_of_common_units_in_SI()
-    convert_short_forms_list = [(x[0],x[0]) for x in list_of_SI_prefixes()]+[(x[1],x[0]) for x in units]
+           +list_of_derived_SI_units_in_SI_base_units()
+    protect_long_forms = [(x[0],x[0]) for x in units]\
+                        +[(x[0],x[0]) for x in list_of_common_units_in_SI()]\
+                        +[(x[2],x[2]) for x in list_of_SI_base_unit_dimensions()]\
+                        +[(x[0],x[0]) for x in list_of_SI_prefixes()]
+    protect_long_forms.sort(key=lambda x: -len(x[0]))
+    collision_fixes = []
     for prefix in list_of_SI_prefixes():
         for unit in units:
-            convert_short_forms_list.append((prefix[1]+unit[0],     prefix[0]+"*"+unit[0]))
-            convert_short_forms_list.append((prefix[1]+"*"+unit[0], prefix[0]+"*"+unit[0]))
-            convert_short_forms_list.append((prefix[1]+" "+unit[0], prefix[0]+"*"+unit[0]))
-            convert_short_forms_list.append((prefix[1]+unit[1],     prefix[0]+"*"+unit[0]))
-            convert_short_forms_list.append((prefix[1]+"*"+unit[1], prefix[0]+"*"+unit[0]))
-            convert_short_forms_list.append((prefix[1]+" "+unit[1], prefix[0]+"*"+unit[0]))
+            #convert_short_forms_list.append((prefix[1]+unit[0],     prefix[0]+"*"+unit[0]))
+            #convert_short_forms_list.append((prefix[1]+"*"+unit[0], prefix[0]+"*"+unit[0]))
+            #convert_short_forms_list.append((prefix[1]+" "+unit[0], prefix[0]+"*"+unit[0]))
+            collision_fixes.append((prefix[1]+unit[1],     prefix[0]+"*"+unit[0]))
+            collision_fixes.append((prefix[1]+"*"+unit[1], prefix[0]+"*"+unit[0]))
+            collision_fixes.append((prefix[1]+" "+unit[1], prefix[0]+"*"+unit[0]))
+    collision_fixes.sort(key=lambda x: -len(x[0]))
+    convert_short_forms_list = [(x[1],x[0]) for x in units]
     convert_short_forms_list.sort(key=lambda x: -len(x[0]))
-    return [(x[0],x[0]) for x in units]+[(x[2],x[2]) for x in list_of_SI_base_unit_dimensions()]+convert_short_forms_list
+    return protect_long_forms+collision_fixes+convert_short_forms_list
 
 def convert_to_SI_base_units():
     return [[(x[0],x[2]) for x in list_of_common_units_in_SI()],\
