@@ -102,14 +102,34 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_compare_dimensions_with_defaults(self):
+        answer = "length**2/time**2"
+        params = { "comparison": "dimensions",
+                   "strict_syntax": False}
+        responses = ["metre**2/second**2",
+                     "(centi*metre)**2/hour**2",
+                     "246*ohm/(kilo*gram)*coulomb**2/second"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_compare_dimensions_with_defaults(self):
+        answer = "length**2/time**2"
+        params = { "comparison": "dimensions",
+                   "strict_syntax": False}
+        responses = ["m**2/s**2",
+                     "(c*m)**2/hour**2",
+                     "246*O/(k*g)*C**2/s"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+
     def test_short_form_of_units(self):
-        # NOTE: It is known that short forms does not always work, it will take time before this improves
+        # NOTE: Short forms for common units are not allowed
         params = {"strict_syntax": False}
         prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
         prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
         m = len(prefixes_long_forms)
-        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI())]
-        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI())]
+        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
+        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
         n = len(long_forms)
         k = 0
         incorrect = []
@@ -117,17 +137,18 @@ class TestEvaluationFunction(unittest.TestCase):
         for i in range(0,n):
             for a in range(0,m):
                 answer = prefixes_long_forms[a]+"*"+long_forms[i]
-                response = prefixes_short_forms[a]+short_forms[i]
-                k += 1
-                try:
-                    result = evaluation_function(response, answer, params)
-                except:
-                    errors.append((answer,response))
-                    continue
-                if not result.get("is_correct"):
-                    incorrect.append((answer,response))
-        #print(f"{len(incorrect)}/{k} {len(errors)}/{k}")
-        self.assertEqual(len(errors)+len(incorrect) < 150, True)
+                for prod in ["*"," ",""]:
+                    response = prefixes_short_forms[a]+prod+short_forms[i]
+                    k += 1
+                    try:
+                        result = evaluation_function(response, answer, params)
+                    except:
+                        errors.append((answer,response))
+                        continue
+                    if not result.get("is_correct"):
+                        incorrect.append((answer,response))
+        #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
+        self.assertEqual(len(errors)+len(incorrect), 0)
 
     def test_compare_quantities_with_substitutions(self):
         response = "(d/t)**2/(3600**2)+v**2"
@@ -416,14 +437,6 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
-
-#REMARK: Test for version that uses sympy's unit system to check dimensions, this is not used in the code at the moment
-#    def test_compare_dimensions_with_sympy_unit_system(self):
-#        body = {"response": "2*d**2/t**2+0.5*v**2", "answer": "5*v**2", "comparison": "dimensions", "substitutions": "('d','(u.length)') ('t','(u.time)') ('v','(u.length/u.time)')"}
-#
-#        response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
-#
-#        self.assertEqual(response.get("is_correct"), True)
 
 if __name__ == "__main__":
     unittest.main()

@@ -143,16 +143,6 @@ def evaluation_function(response, answer, params) -> dict:
     if "quantities" in parameters.keys():
         list_of_substitutions_strings = [parameters["quantities"]]+list_of_substitutions_strings
 
-# REMARK: Version that uses sympys unit system to compare dimensions 
-# not currently in use but might be useful for a future versions
-#    if "comparison" in params.keys():
-#        if params["comparison"] == "dimensions":
-#            import sympy.physics.units as u
-#            answer = eval(answer)
-#            response = eval(response)
-#            if answer == response:
-#                return {"is_correct": True, "level": params["comparison"]}
-
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
