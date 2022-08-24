@@ -3,9 +3,9 @@ from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix
 
 try:
-    from .unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions, names_of_prefixes_base_SI_units_and_dimensions
+    from .unit_system_conversions import convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_base_SI_units_and_dimensions
 except ImportError:
-    from unit_system_conversions import convert_to_SI_base_units, convert_SI_base_units_to_dimensions, names_of_prefixes_base_SI_units_and_dimensions
+    from unit_system_conversions import convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_base_SI_units_and_dimensions
 
 def evaluation_function(response, answer, params) -> dict:
     """
@@ -13,16 +13,16 @@ def evaluation_function(response, answer, params) -> dict:
     """
     feedback = {} #{"feedback": f"{answer} {response} {params}"}
     default_rtol = 1e-12
-    parameters = {"substitutions": convert_to_SI_base_units(), "comparison": "expression", "strict_syntax": True}
-    parameters.update(params)
-
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
     else:
         unsplittable_symbols = names_of_prefixes_base_SI_units_and_dimensions()
 
     if "input_symbols" in params.keys():
-        unsplittable_symbols += tuple(params["input_symbols"])
+        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
+
+    parameters = {"comparison": "expression", "strict_syntax": True}
+    parameters.update(params)
 
     do_transformations = not parameters["strict_syntax"]
 
@@ -92,7 +92,7 @@ def evaluation_function(response, answer, params) -> dict:
                 # Check that answers are dimensionless
                 for k,dimension in enumerate(answer_dimensions):
                     if not dimension.is_constant():
-                        raise Exception(f"Answer {answer_groups[k][0]} is not dimensionless.")
+                        raise Exception(f"Answer {answer_groups[k]} is not dimensionless.")
                 
                 # Check that there is a sufficient number of independent groups in the answer
                 answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
@@ -108,7 +108,7 @@ def evaluation_function(response, answer, params) -> dict:
                     response_dimensions.append(dimension.simplify())
                 for k,dimension in enumerate(response_dimensions):
                     if not dimension.is_constant():
-                        raise Exception(f"Response {response_groups[k][0]} is not dimensionless.")
+                        raise Exception(f"Response {response_groups[k]} is not dimensionless.")
     
                 # Check that there is a sufficient number of independent groups in the response
                 response_matrix = get_exponent_matrix(response_groups,response_symbols)
@@ -136,15 +136,12 @@ def evaluation_function(response, answer, params) -> dict:
         #raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
         raise e
 
-    list_of_substitutions_strings = parameters["substitutions"]
+    list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
         list_of_substitutions_strings = [list_of_substitutions_strings]
 
     if "quantities" in parameters.keys():
         list_of_substitutions_strings = [parameters["quantities"]]+list_of_substitutions_strings
-
-    if parameters["comparison"] == "dimensions":
-        list_of_substitutions_strings = list_of_substitutions_strings+[convert_SI_base_units_to_dimensions()]
 
 # REMARK: Version that uses sympys unit system to compare dimensions 
 # not currently in use but might be useful for a future versions
@@ -178,6 +175,17 @@ def evaluation_function(response, answer, params) -> dict:
                 sub_substitutions = []
         sub_substitutions.sort(key=lambda x: -len(x[0]))
         substitutions.append(sub_substitutions)
+
+    if "substitutions" not in parameters.keys():
+        if "quantities" in parameters.keys():
+            substitutions += convert_to_SI_base_units()
+        else:
+            substitutions += convert_to_SI_base_units_short_form()
+        if parameters["comparison"] == "dimensions":
+            if "quantities" in parameters.keys():
+                substitutions += convert_SI_base_units_to_dimensions()
+            else:
+                substitutions += convert_SI_base_units_to_dimensions_short_form()
 
     for sub in substitutions:
         answer = substitute(answer, sub)

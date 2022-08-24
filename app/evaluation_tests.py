@@ -2,9 +2,10 @@ import unittest
 
 try:
     from .evaluation import evaluation_function
+    from .unit_system_conversions import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_common_units_in_SI
 except ImportError:
     from evaluation import evaluation_function
-
+    from unit_system_conversions import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_common_units_in_SI
 
 class TestEvaluationFunction(unittest.TestCase):
     """
@@ -27,13 +28,13 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def assertEqual_input_variations(self, response, answer, params, value):
         result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), value)
         variation_definitions = [lambda x : x.replace('**','^'),
                                  lambda x : x.replace('**','^').replace('*',' '),
                                  lambda x : x.replace('**','^').replace('*','')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
-            self.assertEqual(result.get("is_correct"), value)
             if (response_variation != response) or (answer_variation != answer):
                 result = evaluation_function(response_variation, answer, params)
                 self.assertEqual(result.get("is_correct"), value)
@@ -96,10 +97,37 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "5*v**2"
         params = { "comparison": "dimensions",
                    "substitutions": "('d','(distance)') ('t','(time)') ('v','(distance/time)')",
-                   "input_symbols": ['distance','time'],
+                   "input_symbols": [['distance',[]],['time',[]]],
                    "strict_syntax": False}
 
         self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_short_form_of_units(self):
+        # NOTE: It is known that short forms does not always work, it will take time before this improves
+        params = {"strict_syntax": False}
+        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
+        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
+        m = len(prefixes_long_forms)
+        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI())]
+        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI())]
+        n = len(long_forms)
+        k = 0
+        incorrect = []
+        errors = []
+        for i in range(0,n):
+            for a in range(0,m):
+                answer = prefixes_long_forms[a]+"*"+long_forms[i]
+                response = prefixes_short_forms[a]+short_forms[i]
+                k += 1
+                try:
+                    result = evaluation_function(response, answer, params)
+                except:
+                    errors.append((answer,response))
+                    continue
+                if not result.get("is_correct"):
+                    incorrect.append((answer,response))
+        #print(f"{len(incorrect)}/{k} {len(errors)}/{k}")
+        self.assertEqual(len(errors)+len(incorrect) < 150, True)
 
     def test_compare_quantities_with_substitutions(self):
         response = "(d/t)**2/(3600**2)+v**2"
@@ -137,8 +165,7 @@ class TestEvaluationFunction(unittest.TestCase):
         prefixes = "('M','(10**6)') ('k','(10**3)') ('h','(10**2)') ('da','(10**1)') ('d','(10**(-1))') ('c','(10**(-2))') ('mu','(10**(-6))')"
         milli_fix = "('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')"
         substitutions = milli_fix+"|"+derived_units+"|"+prefixes
-        params = {"substitutions": substitutions, "strict_syntax": False,
-                  "input_symbols": ['mPa','Pa','da','mu','mg','mm','mW','mN','ms']}
+        params = {"substitutions": substitutions, "strict_syntax": False}
         answer = "1.23*W"
         responses = ["123*c*W",
                      "0.00000123*M*W",
@@ -160,7 +187,7 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "input_symbols": ['GBP','EUR','USD','CNY','INR'],
+                  "input_symbols": [['GBP',[]],['EUR',[]],['USD',[]],['CNY',[]],['INR',[]]],
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -172,7 +199,7 @@ class TestEvaluationFunction(unittest.TestCase):
         currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "input_symbols": ['GBP','EUR','USD','CNY','INR'],
+                  "input_symbols": [['GBP',[]],['EUR',[]],['USD',[]],['CNY',[]],['INR',[]]],
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -209,6 +236,19 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "1"*k+"0"*(5-k)+"*metre"
             self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_compare_quantities_with_rtol_short_form(self):
+        correct_results = []
+        incorrect_results = []
+        for k in [1,2,3]:
+            # Checks that sufficiently accurate responses are considered correct
+            response = "1"*(k+1)+"0"*(4-k)+"*da*m"
+            answer = "111111*m"
+            params = {"rtol": "0."+"0"*k+"1", "strict_syntax": False}
+            self.assertEqual_input_variations(response, answer, params, True)
+            # Checks that insufficiently accurate responses are considered wrong
+            response = "1"*k+"0"*(5-k)+"*m"
+            self.assertEqual_input_variations(response, answer, params, False)
+
     def test_compare_quantities_with_atol(self):
         answer = "1.0*metre"
         params = {"atol": "0.05", "strict_syntax": False}
@@ -216,6 +256,16 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
         responses = ["1.06*metre", "0.94*metre"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, False)
+
+    def test_compare_quantities_with_atol_short_form(self):
+        answer = "1.0*m"
+        params = {"atol": "0.05", "strict_syntax": False}
+        responses = ["1.04*m", "0.96*m"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+        responses = ["1.06*m", "0.94*m"]
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, False)
 
@@ -237,9 +287,27 @@ class TestEvaluationFunction(unittest.TestCase):
         params.update({"atol": "50", "rtol": "0.1"})
         self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_compare_quantities_with_atol_and_rtol_short_form(self):
+        answer = "1.0*k*m"
+        # Both absolute and relative error small enough
+        response = "1098*m"
+        params = {"atol": "100", "rtol": "0.1", "strict_syntax": False}
+        self.assertEqual_input_variations(response, answer, params, True)
+        # Both absolute and relative error too large
+        response = "1102*m"
+        self.assertEqual_input_variations(response, answer, params, False)
+        # Absolute error small enough and relative error too large
+        response = "1098*m"
+        params.update({"atol": "100", "rtol": "0.05"})
+        self.assertEqual_input_variations(response, answer, params, False)
+        # Absolute error too large and relative error small enough
+        response = "1098*m"
+        params.update({"atol": "50", "rtol": "0.1"})
+        self.assertEqual_input_variations(response, answer, params, False)
+
     def test_buckingham_pi_one_group(self):
         answer = "U*L/nu"
-        params = {"comparison": "buckinghamPi", "input_symbols": ['U','L','nu'], "strict_syntax": False}
+        params = {"comparison": "buckinghamPi", "input_symbols": [['U',[]],['L',[]],['nu',[]]], "strict_syntax": False}
         correct_responses = ["U*L/nu",
                              "L*U/nu",
                              "nu/U/L",
@@ -276,7 +344,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": ['U','L','nu','f']}
+                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -285,7 +353,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": ['U','L','nu','f']}
+                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
         answer = "-"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -296,7 +364,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": ['U','L','nu','f']}
+                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
         answer = "f*U*L/nu, f*L/U"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
@@ -320,7 +388,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": ['U','L','nu','f']}
+                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
         answer = "U*L/nu"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
@@ -344,7 +412,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": ['U','L','nu','f']}
+                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
