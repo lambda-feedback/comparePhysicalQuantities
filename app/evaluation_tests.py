@@ -102,6 +102,16 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_compare_dimensions_with_defaults(self):
+        answer = "length**2/time**2"
+        params = { "comparison": "dimensions",
+                   "strict_syntax": False}
+        responses = ["metre**2/second**2",
+                     "(centi*metre)**2/hour**2",
+                     "246*ohm/(kilo*gram)*coulomb**2/second"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+
     def test_short_form_of_units(self):
         # NOTE: It is known that short forms does not always work, it will take time before this improves
         params = {"strict_syntax": False}

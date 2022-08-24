@@ -127,22 +127,7 @@ def convert_short_forms():
             convert_short_forms_list.append((prefix[1]+"*"+unit[1], prefix[0]+"*"+unit[0]))
             convert_short_forms_list.append((prefix[1]+" "+unit[1], prefix[0]+"*"+unit[0]))
     convert_short_forms_list.sort(key=lambda x: -len(x[0]))
-    return [(x[0],x[0]) for x in units]+convert_short_forms_list
-
-def remove_SI_prefixes():
-    return "".join("('"+x[0]+"','"+x[2]+"')" for x in list_of_SI_prefixes())
-
-def convert_SI_base_units_to_dimensions(): 
-    return "".join("('"+x[0]+"','"+x[2]+"')" for x in list_of_SI_base_unit_dimensions())
-
-def convert_SI_base_units_to_dimensions_short_form(): 
-    return "".join("('"+x[1]+"','"+x[2]+"')" for x in list_of_SI_base_unit_dimensions())
-
-def convert_derived_SI_units_to_SI_base_units():
-    return "".join("('"+x[0]+"','"+x[2]+"')" for x in list_of_derived_SI_units_in_SI_base_units())
-
-def convert_common_units_to_SI():
-    return "".join("('"+x[0]+"','"+x[2]+"')" for x in list_of_common_units_in_SI())
+    return [(x[0],x[0]) for x in units]+[(x[2],x[2]) for x in list_of_SI_base_unit_dimensions()]+convert_short_forms_list
 
 def convert_to_SI_base_units():
     return [[(x[0],x[2]) for x in list_of_common_units_in_SI()],\
@@ -151,3 +136,9 @@ def convert_to_SI_base_units():
 
 def convert_to_SI_base_units_short_form():
     return [convert_short_forms()]+convert_to_SI_base_units()
+
+def convert_SI_base_units_to_dimensions(): 
+    return convert_to_SI_base_units()+[[(x[0],x[2]) for x in list_of_SI_base_unit_dimensions()]]
+
+def convert_SI_base_units_to_dimensions_short_form(): 
+    return convert_to_SI_base_units_short_form()+[[(x[0],x[2]) for x in list_of_SI_base_unit_dimensions()]]
