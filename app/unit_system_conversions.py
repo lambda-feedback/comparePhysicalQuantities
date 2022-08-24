@@ -52,6 +52,7 @@ def list_of_derived_SI_units_in_SI_base_units():
     """
     Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
     Note that degrees Celsius is omitted.
+    Note that short form symbols are defined here, but not used since they cause to many ambiguities
     """
     list = [
         ('radian',    'r',   '(1)'), # Note: here 'r' is used instead of the more common 'rad' to avoid collision
