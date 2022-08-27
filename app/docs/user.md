@@ -304,7 +304,7 @@ In the example given in the example problem set, the following responses are tes
 
 In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
 
-| Strict syntax         | Relaxed syntax       | Using syntax  |
+| Strict syntax         | Relaxed syntax       | Using symbols  |
 |-----------------------|:---------------------|:--------------|
 | `0.61*metre/second`   | `0.61 metre/second`  | `0.61 m/s`    |
 | `2.2*kilo*metre/hour` | `2.2 kilometre/hour` | `2.2 km/hour` |
