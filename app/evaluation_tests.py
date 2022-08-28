@@ -122,46 +122,37 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
 
-#    def test_short_form_of_units(self):
-#        # NOTE: Short forms for common units are not allowed
-#        params = {"strict_syntax": False}
-#        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
-#        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
-#        m = len(prefixes_long_forms)
-#        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
-#        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
-#        n = len(long_forms)
-#        k = 0
-#        incorrect = []
-#        errors = []
-#        for i in range(0,n):
-#            for a in range(0,m):
-#                answer = prefixes_long_forms[a]+"*"+long_forms[i]
-#                for prod in ["*"," ",""]:
-#                    response = prefixes_short_forms[a]+prod+short_forms[i]
-#                    k += 1
-#                    try:
-#                        result = evaluation_function(response, answer, params)
-#                    except:
-#                        errors.append((answer,response))
-#                        continue
-#                    if not result.get("is_correct"):
-#                        incorrect.append((answer,response))
-#        #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
-#        self.assertEqual(len(errors)+len(incorrect), 0)
-
-    def test_aaa(self):
+    def test_short_form_of_units(self):
         # NOTE: Short forms for common units are not allowed
         params = {"strict_syntax": False}
-        answer = 'nano*candela*candela'
-        response = 'n*cd*cd'
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
+        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
+        m = len(prefixes_long_forms)
+        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
+        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
+        n = len(long_forms)
+        k = 0
+        incorrect = []
+        errors = []
+        for i in range(0,n):
+            for a in range(0,m):
+                answer = prefixes_long_forms[a]+"*"+long_forms[i]
+                for prod in ["*"," ",""]:
+                    response = prefixes_short_forms[a]+prod+short_forms[i]
+                    k += 1
+                    try:
+                        result = evaluation_function(response, answer, params)
+                    except:
+                        errors.append((answer,response))
+                        continue
+                    if not result.get("is_correct"):
+                        incorrect.append((answer,response))
+        #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
+        self.assertEqual(len(errors)+len(incorrect), 0)
 
     def test_short_form_of_compound_units(self):
         # NOTE: Short forms for common units are not allowed
-        units = [("","","")]\
-                +list_of_SI_base_unit_dimensions()\
+        units = list_of_SI_base_unit_dimensions()\
                 +list_of_derived_SI_units_in_SI_base_units()\
                 +list_of_very_common_units_in_SI()
         all_units = list_of_SI_base_unit_dimensions()\
@@ -177,7 +168,6 @@ class TestEvaluationFunction(unittest.TestCase):
         n = len(long_forms)
         k = 0
         does_not_match_convention = []
-        does_not_match_convention_alt = []
         incorrect = []
         errors = []
         for i in range(0,n):
@@ -201,10 +191,10 @@ class TestEvaluationFunction(unittest.TestCase):
                             continue
                         if not result.get("is_correct"):
                             incorrect.append((answer,response))
-        log_details = True
+        log_details = False
         if log_details:
             f = open("symbols_log.txt","w")
-            f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors]))
+            f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors])+"\nDoes not match convention:\n"+"".join([str(x)+"\n" for x in does_not_match_convention]))
             f.close()
             print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k} {len(does_not_match_convention)}/{k+len(does_not_match_convention)} {len(does_not_match_convention)/(k+len(does_not_match_convention))}")
         self.assertEqual(len(errors)+len(incorrect), 0)
