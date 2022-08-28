@@ -52,7 +52,6 @@ def list_of_derived_SI_units_in_SI_base_units():
     """
     Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
     Note that degrees Celsius is omitted.
-    Note that short form symbols are defined here, but not used since they cause to many ambiguities
     """
     list = [
         ('radian',    'r',   '(1)'), # Note: here 'r' is used instead of the more common 'rad' to avoid collision
@@ -80,14 +79,14 @@ def list_of_derived_SI_units_in_SI_base_units():
     list.sort(key=lambda x: -len(x[0]))
     return list
 
-def list_of_common_units_in_SI():
+def list_of_very_common_units_in_SI():
     """
     Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+    This is the subset of common symbols whose short form symbols are allowed
     """
     list = [
-        ('min',               'min', '(60*second)'),
+        ('minute',            'min', '(60*second)'),
         ('hour',              'h',   '(3600*second)'),
-        ('day',               'd',   '(86400*second)'),
         ('angle_degree',      'deg', '(pi/180)'),
         ('liter',             'L',   '(10**(-3)*metre**3)'),
         ('metric_ton',        't',   '(10**3*kilo*gram)'),
@@ -95,19 +94,29 @@ def list_of_common_units_in_SI():
         ('bel',               'B',   '((1/2)*log(10))'),
         ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)'),
         ('atomic_mass_unit',  'u',   '(1.66054*10**(-27)*kilo*gram)'),
+        ('angstrom',          'å',   '(10**(-10)*metre)'),
+        ]
+    list.sort(key=lambda x: -len(x[0]))
+    return list
+
+def list_of_common_units_in_SI():
+    """
+    Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+    Note that short form symbols are defined here, but not used since they cause to many ambiguities
+    """
+    list = [
         ('astronomical_unit', 'au',  '(149597870700*metre)'),
         ('nautical_mile',     'nmi', '(1852*metre)'), #Note: no short form in source, short form from Wikipedia
         ('knot',              'kn',  '((1852/3600)*metre/second)'), #Note: no short form in source, short form from Wikipedia
         ('are',               'a',   '(10**2*metre**2)'),
         ('hectare',           'ha',  '(10**4*metre**2)'),
         ('bar',               'bar', '(10**5*pascal)'),
-        ('angstrom',          'å',   '(10**(-10)*metre)'),
         ('barn',              'b',   '(10**(-28)*metre**2)'),
         ('curie',             'Ci',  '(3.7*10**10*becquerel)'),
         ('roentgen',          'R',   '(2.58*10**(-4)*kelvin/(kilo*gram))'),
         ('rad',               'rad', '(10**(-2)*gray)'),
         ('rem',               'rem', '(10**(-2)*sievert)'),
-        ]
+        ]+list_of_very_common_units_in_SI()
     list.sort(key=lambda x: -len(x[0]))
     return list
 
@@ -116,7 +125,8 @@ def names_of_prefixes_base_SI_units_and_dimensions():
 
 def convert_short_forms():
     units = list_of_SI_base_unit_dimensions()\
-           +list_of_derived_SI_units_in_SI_base_units()
+           +list_of_derived_SI_units_in_SI_base_units()\
+           +list_of_very_common_units_in_SI()
     protect_long_forms = [(x[0],x[0]) for x in units]\
                         +[(x[0],x[0]) for x in list_of_common_units_in_SI()]\
                         +[(x[2],x[2]) for x in list_of_SI_base_unit_dimensions()]\
@@ -125,12 +135,9 @@ def convert_short_forms():
     collision_fixes = []
     for prefix in list_of_SI_prefixes():
         for unit in units:
-            #convert_short_forms_list.append((prefix[1]+unit[0],     prefix[0]+"*"+unit[0]))
-            #convert_short_forms_list.append((prefix[1]+"*"+unit[0], prefix[0]+"*"+unit[0]))
-            #convert_short_forms_list.append((prefix[1]+" "+unit[0], prefix[0]+"*"+unit[0]))
-            collision_fixes.append((prefix[1]+unit[1],     prefix[0]+"*"+unit[0]))
-            collision_fixes.append((prefix[1]+"*"+unit[1], prefix[0]+"*"+unit[0]))
-            collision_fixes.append((prefix[1]+" "+unit[1], prefix[0]+"*"+unit[0]))
+            collision_fixes.append((prefix[1]+unit[1],     prefix[0]+"*("+unit[0]+")"))
+            collision_fixes.append((prefix[1]+"*"+unit[1], prefix[0]+"*("+unit[0]+")"))
+            collision_fixes.append((prefix[1]+" "+unit[1], prefix[0]+"*("+unit[0]+")"))
     collision_fixes.sort(key=lambda x: -len(x[0]))
     convert_short_forms_list = [(x[1],x[0]) for x in units]
     convert_short_forms_list.sort(key=lambda x: -len(x[0]))

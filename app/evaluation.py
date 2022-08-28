@@ -26,115 +26,111 @@ def evaluation_function(response, answer, params) -> dict:
 
     do_transformations = not parameters["strict_syntax"]
 
-    try:
-        if parameters["comparison"] == "buckinghamPi":
-            # Parse expressions for groups in response and answer
-            response_strings = response.split(',')
-            response_groups = []
-            for res in response_strings:
-                try:
-                    expr = parse_expression(res,do_transformations,unsplittable_symbols).simplify()
-                except (SyntaxError, TypeError) as e:
-                    raise Exception("SymPy was unable to parse the response") from e
-                response_groups.append(expr)
-            if answer == "-":
-                answer_strings = []
-            else:
-                answer_strings = answer.split(',')
-            answer_groups = []
-            for ans in answer_strings:
-                try:
-                    expr = parse_expression(ans,do_transformations,unsplittable_symbols).simplify()
-                except (SyntaxError, TypeError) as e:
-                    raise Exception("SymPy was unable to parse the answer") from e
-                answer_groups.append(expr)
+    if parameters["comparison"] == "buckinghamPi":
+        # Parse expressions for groups in response and answer
+        response_strings = response.split(',')
+        response_groups = []
+        for res in response_strings:
+            try:
+                expr = parse_expression(res,do_transformations,unsplittable_symbols).simplify()
+            except (SyntaxError, TypeError) as e:
+                raise Exception("SymPy was unable to parse the response") from e
+            response_groups.append(expr)
+        if answer == "-":
+            answer_strings = []
+        else:
+            answer_strings = answer.split(',')
+        answer_groups = []
+        for ans in answer_strings:
+            try:
+                expr = parse_expression(ans,do_transformations,unsplittable_symbols).simplify()
+            except (SyntaxError, TypeError) as e:
+                raise Exception("SymPy was unable to parse the answer") from e
+            answer_groups.append(expr)
     
-            # Find what different symbols for quantities there are
-            if "quantities" in parameters.keys():
-                quantities_strings = parameters["quantities"]
-                quantities = []
-                index = quantities_strings.find("(")
-                while index > -1:
-                    index_match = find_matching_parenthesis(quantities_strings,index)
-                    try:
-                        quantity_strings = eval(quantities_strings[index+1:index_match])
-                        quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols),quantity_strings))
-                        quantities.append(quantity)
-                    except (SyntaxError, TypeError) as e:
-                        raise Exception("List of quantities not written correctly.")
-                    index = quantities_strings.find('(',index_match+1)
-                response_symbols = list(map(lambda x: x[0], quantities))
-                answer_symbols = response_symbols
+        # Find what different symbols for quantities there are
+        if "quantities" in parameters.keys():
+            quantities_strings = parameters["quantities"]
+            quantities = []
+            index = quantities_strings.find("(")
+            while index > -1:
+                index_match = find_matching_parenthesis(quantities_strings,index)
+                try:
+                    quantity_strings = eval(quantities_strings[index+1:index_match])
+                    quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols),quantity_strings))
+                    quantities.append(quantity)
+                except (SyntaxError, TypeError) as e:
+                    raise Exception("List of quantities not written correctly.")
+                index = quantities_strings.find('(',index_match+1)
+            response_symbols = list(map(lambda x: x[0], quantities))
+            answer_symbols = response_symbols
     
-                # Check how many dimensionless groups are needed
-                dimension_symbols = set()
+            # Check how many dimensionless groups are needed
+            dimension_symbols = set()
+            for quantity in quantities:
+                dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
+            quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
+            number_of_groups = len(quantities)-quantity_matrix.rank()
+    
+            if answer_groups == []:
+                # Compute answer groups
+                nullspace_basis = quantity_matrix.T.nullspace()
+                answer_groups = [1]*number_of_groups
+                for i in range(0,len(answer_groups)):
+                    for j in range(0,len(quantities)):
+                        answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
+    
+            # Analyse dimensions of answers and responses
+            answer_dimensions = []
+            for group in answer_groups:
+                dimension = group
                 for quantity in quantities:
-                    dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
-                quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
-                number_of_groups = len(quantities)-quantity_matrix.rank()
+                    dimension = dimension.subs(quantity[0],quantity[1])
+                answer_dimensions.append(dimension.simplify())
+            
+            # Check that answers are dimensionless
+            for k,dimension in enumerate(answer_dimensions):
+                if not dimension.is_constant():
+                    raise Exception(f"Answer {answer_groups[k]} is not dimensionless.")
+            
+            # Check that there is a sufficient number of independent groups in the answer
+            answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+            if answer_matrix.rank() < number_of_groups:
+                raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
     
-                if answer_groups == []:
-                    # Compute answer groups
-                    nullspace_basis = quantity_matrix.T.nullspace()
-                    answer_groups = [1]*number_of_groups
-                    for i in range(0,len(answer_groups)):
-                        for j in range(0,len(quantities)):
-                            answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
+            # Check that responses are dimensionless
+            response_dimensions = []
+            for group in response_groups:
+                dimension = group
+                for quantity in quantities:
+                    dimension = dimension.subs(quantity[0],quantity[1])
+                response_dimensions.append(dimension.simplify())
+            for k,dimension in enumerate(response_dimensions):
+                if not dimension.is_constant():
+                    raise Exception(f"Response {response_groups[k]} is not dimensionless.")
     
-                # Analyse dimensions of answers and responses
-                answer_dimensions = []
-                for group in answer_groups:
-                    dimension = group
-                    for quantity in quantities:
-                        dimension = dimension.subs(quantity[0],quantity[1])
-                    answer_dimensions.append(dimension.simplify())
-                
-                # Check that answers are dimensionless
-                for k,dimension in enumerate(answer_dimensions):
-                    if not dimension.is_constant():
-                        raise Exception(f"Answer {answer_groups[k]} is not dimensionless.")
-                
-                # Check that there is a sufficient number of independent groups in the answer
-                answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
-                if answer_matrix.rank() < number_of_groups:
-                    raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
-    
-                # Check that responses are dimensionless
-                response_dimensions = []
-                for group in response_groups:
-                    dimension = group
-                    for quantity in quantities:
-                        dimension = dimension.subs(quantity[0],quantity[1])
-                    response_dimensions.append(dimension.simplify())
-                for k,dimension in enumerate(response_dimensions):
-                    if not dimension.is_constant():
-                        raise Exception(f"Response {response_groups[k]} is not dimensionless.")
-    
-                # Check that there is a sufficient number of independent groups in the response
-                response_matrix = get_exponent_matrix(response_groups,response_symbols)
-                if answer_matrix.rank() < number_of_groups:
-                    return {"is_correct": False, **feedback}
-            else:
-                response_symbols = set()
-                for res in response_groups:
-                    response_symbols = response_symbols.union(res.free_symbols)
-                answer_symbols = set()
-                for ans in answer_groups:
-                    answer_symbols = answer_symbols.union(ans.free_symbols)
-                if not answer_symbols == response_symbols:
-                    return {"is_correct": False, **feedback}
-                answer_symbols = list(answer_symbols)
-    
-            # Extract exponents from answers and responses and compare matrix ranks
-            answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
+            # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
-            enhanced_matrix = answer_matrix.col_join(response_matrix)
-            if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-                return {"is_correct": True, **feedback}
-            return {"is_correct": False, **feedback}
-    except Exception as e:
-        #raise Exception(f"Error in Buckingham pi comparison. {answer} {response} {params}")
-        raise e
+            if answer_matrix.rank() < number_of_groups:
+                return {"is_correct": False, **feedback}
+        else:
+            response_symbols = set()
+            for res in response_groups:
+                response_symbols = response_symbols.union(res.free_symbols)
+            answer_symbols = set()
+            for ans in answer_groups:
+                answer_symbols = answer_symbols.union(ans.free_symbols)
+            if not answer_symbols == response_symbols:
+                return {"is_correct": False, **feedback}
+            answer_symbols = list(answer_symbols)
+    
+        # Extract exponents from answers and responses and compare matrix ranks
+        answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
+        response_matrix = get_exponent_matrix(response_groups,response_symbols)
+        enhanced_matrix = answer_matrix.col_join(response_matrix)
+        if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
+            return {"is_correct": True, **feedback}
+        return {"is_correct": False, **feedback}
 
     list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
@@ -177,9 +173,16 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 substitutions += convert_SI_base_units_to_dimensions_short_form()
 
+#    new_answer = answer
+#    new_response = response
     for sub in substitutions:
-        answer = substitute(answer, sub)
-        response = substitute(response, sub)
+#        answer = substitute(answer, sub)
+        answer = new_substitute(answer, sub)
+#        response = substitute(response, sub)
+        response = new_substitute(response, sub)
+
+#    if new_answer != answer or new_response != response:
+#        return {"is_correct": False}
 
     # Safely try to parse answer and response into symbolic expressions
     try:
@@ -256,7 +259,7 @@ def substitute(string, substitutions):
                 i = part.find(pair[0])
                 while i > -1:
                     substitution_locations.append(i)
-                    i = part.find(pair[0],i+1)
+                    i = part.find(pair[0],i+len(pair[0]))
                 j = 0
                 for i in substitution_locations:
                     if i > 0:
@@ -273,6 +276,41 @@ def substitute(string, substitutions):
             string[k] = substitutions[elem][1]
 
     return "".join(string)
+
+def new_substitute(string, substitutions):
+    if isinstance(string,str):
+        string = [string]
+
+    # Perform substitutions
+    new_string = []
+    for part in string:
+        if not isinstance(part, str):
+            new_string.append(part)
+        else:
+            index = 0
+            string_buffer = ""
+            while index < len(part):
+                matched_start = False
+                for k,pair in enumerate(substitutions):
+                    if part.startswith(pair[0],index):
+                        matched_start = True
+                        if len(string_buffer) > 0:
+                            new_string.append(string_buffer)
+                            string_buffer = ""
+                        new_string.append(k)
+                        index += len(pair[0])
+                        break
+                if not matched_start:
+                    string_buffer += part[index]
+                    index += 1
+            if len(string_buffer) > 0:
+                new_string.append(string_buffer)
+
+    for k, elem in enumerate(new_string):
+        if isinstance(elem,int):
+            new_string[k] = substitutions[elem][1]
+
+    return "".join(new_string)
 
 def parse_expression(expr,do_transformations,unsplittable_symbols):
     if do_transformations:
