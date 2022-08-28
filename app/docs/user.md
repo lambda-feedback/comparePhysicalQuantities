@@ -17,7 +17,7 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 - If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
 - Longer short form symbols take precedence over shorter short forms, e.g. `sr` will be interpreted as `steradian` instead of `second radian`.
 
-**Note:** Only the short forms listed in the tables below are accepted. This means some common practices, such as writing `h` for hour will not be handled correctly.
+**Note:** Only the short forms listed in the tables below are accepted.
 
 ## Inputs
 All input parameters need to be supplied via the **Grading parameters** panel.
@@ -253,7 +253,7 @@ In the example given in the example problem set, the following responses are tes
 | Strict syntax                           | Relaxed syntax                        | Using symbols      |
 |-----------------------------------------|:--------------------------------------|:-------------------|
 | `metre**2/second**2`                    | `metre^2/second^2`                    | `m^2/s^2`          |
-| `(centi*metre)**2/hour**2`              | `(centimetre)^2/hour^2`               | `(cm)^2/hour^2`    |
+| `(centi*metre)**2/hour**2`              | `(centimetre)^2/h^2`                  | `(cm)^2/h^2`       |
 | `246*ohm/(kilo*gram)*coulomb**2/second` | `246 ohm/(kilogram) coulomb^2/second` | `246 O/(kg) c^2/s` |
 
 
@@ -302,18 +302,16 @@ In the example given in the example problem set, the following responses are tes
 | `0.556*metre/second`  | `0.556 metre/second` | `0.556 m/s`   |
 | `0.560*metre/second`  | `0.560 metre/second` | `0.560 m/s`   |
 | `0.6*metre/second`    | `0.6 metre/second`   | `0.6 m/s`     |
-| `2*kilo*metre/hour`   | `2 kilometre/hour`   | `2 km/hour`   |
-| `1.9*kilo*metre/hour` | `1.9 kilometre/hour` | `1.9 km/hour` |
-| `2.1*kilo*metre/hour` | `2.1 kilometre/hour` | `2.1 km/hour` |
+| `2*kilo*metre/hour`   | `2 kilometre/hour`   | `2 km/h`      |
+| `1.9*kilo*metre/hour` | `1.9 kilometre/hour` | `1.9 km/h`    |
+| `2.1*kilo*metre/hour` | `2.1 kilometre/hour` | `2.1 km/h`    |
 
 In the example given in the example problem set, the following responses are tested and evaluated as incorrect:
 
 | Strict syntax         | Relaxed syntax       | Using syntax  |
 |-----------------------|:---------------------|:--------------|
 | `0.61*metre/second`   | `0.61 metre/second`  | `0.61 m/s`    |
-| `2.2*kilo*metre/hour` | `2.2 kilometre/hour` | `2.2 km/hour` |
-
-Note that the symbol `h` cannot be used in place of `hour`.
+| `2.2*kilo*metre/hour` | `2.2 kilometre/hour` | `2.2 km/h`    |
 
 #### c)
 
@@ -326,7 +324,7 @@ In the example given in the example problem set, the following responses are tes
 | Strict syntax          | Relaxed syntax        | Using symbols  |
 |------------------------|:----------------------|:---------------|
 | `0.533*metre/second`   | `0.533 metre/second`  | `0.533 m/s`    |
-| `2.08*kilo*metre/hour` | `2.08 kilometre/hour` | `2.08 km/hour` |
+| `2.08*kilo*metre/hour` | `2.08 kilometre/hour` | `2.08 km/h`    |
 
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since only default SI units are expected it is not necessary to set any input symbols.
 
@@ -335,9 +333,7 @@ In the example given in the example problem set, the following responses are tes
 | Strict syntax          | Relaxed syntax        | Using symbols  |
 |------------------------|:----------------------|:---------------|
 | `0.522*metre/second`   | `0.522 metre/second`  | `0.522 m/s`    |
-| `2.11*kilo*metre/hour` | `2.11 kilometre/hour` | `2.11 km/hour` |
-
-Note that the symbol `h` cannot be used in place of `hour`.
+| `2.11*kilo*metre/hour` | `2.11 kilometre/hour` | `2.11 km/h`    |
 
 ### 3 Checking if a set of quantities match the Buckingham pi theorem
 
