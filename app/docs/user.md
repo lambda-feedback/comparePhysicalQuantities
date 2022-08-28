@@ -5,13 +5,17 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 
 **Note:** When the `quantities` grading parameter is set, this function cannot handle short form symbols for units. Thus when defining quantities all units must be given with full names in lower-case letters. For example `Nm/s` or `Newton*metre/SECOND` will not be handled correctly, but `newton*metre/second` will.
 
-**Note:** Prefixes have lower precedence exponentiation, e.g. `10*cm**2` will be interpreted as `10*10^(-2)*metre**2` rather than `10*(10^(-2)*metre)**2`.
+**Note:** Prefixes have lower precedence than exponentiation, e.g. `10*cm**2` will be interpreted as $10 \cdot 10^{-2} \mathrm{metre}^2$ rather than $10 (10^(-2)\mathrm{metre})^2$.
 
 **Note:** This function allows omitting `*` and using `^` instead of `**` if the grading parameter `strict_syntax` is set to false. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as input symbols.
 
-**Note:** Only the short forms listed in the tables below are accepted. This means some common practices, such as writing `h` for hour will not be handled correctly.
+**Note:** Only the short forms listed in the tables below are accepted. Not all units that are supported have short forms (since this leads to ambiguities).
 
-**Note:** When using the short forms the following convention is assumed: If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+**Note:** When using the short forms the following convention is assumed:
+- Long form names takes precedence over sequences of short forms, e.g.  e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+- Short form symbols of prefixes will take precedence over short form symbols of units from the left, e.g. 
+- If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+- Longer short form symbols take precedence over shorter short forms, e.g. `sr` will be interpreted as `steradian` instead of `second radian`.
 
 **Note:** Only the short forms listed in the tables below are accepted. This means some common practices, such as writing `h` for hour will not be handled correctly.
 
@@ -113,31 +117,31 @@ Note that the function treats radians and steradians as dimensionless values.
 
 Commonly used non-SI units taken from Table 6 and 7 of https://physics.nist.gov/cuu/Units/outside.html
 
-Note that there are no short form symbols defined for these units.
-
 Note that the function treats angles, neper and bel as dimensionless values.
+
+Note that only the first table in this section has short form symbols defined, the second table does not.
+
+| Unit name         | Symbol | Expressed in SI units                         |
+|-------------------|:-------|:----------------------------------------------|
+| minute            |  min   | 60 second                                     |
+| hour              |   h    | 3600 second                                   |
+| angle_degree      |  deg   | $\frac{\pi}{180}$                             |
+| liter             |   l    | $10^{-3}$ metre$^3$                           |
+| metric_ton        |   t    | $10^3$ kilo gram                              |
+| neper             |  Np    | 1                                             |
+| bel               |   B    | $\frac{1}{2} \ln(10)$                         |
+| electronvolt      |  eV    | $1.60218 \cdot 10^{-19}$ joule                |
+| atomic_mass_unit  |   u    | $1.66054 \cdot 10^{-27}$ kilogram             |
+| angstrom          |   å    | $10^{-10}$ metre                              |
 
 | Unit name         | Expressed in SI units                         |
 |-------------------|:----------------------------------------------|
-| min               | 60 second                                     |
-| hour              | 3600 second                                   |
-| day               | 86400 second                                  |
-| angle_degree      | $\frac{\pi}{180}$                             |
-| angle_minute      | $\frac{\pi}{10800}$                           |
-| angle_second      | $\frac{\pi}{648000}$                          |
-| liter             | $10^{-3}$ metre$^3$                           |
-| metric_ton        | $10^3$ kilo gram                              |
-| neper             | 1                                             |
-| bel               | $\frac{1}{2} \ln(10)$                         |
-| electronvolt      | $1.60218 \cdot 10^{-19}$ joule                |
-| atomic_mass_unit  | $1.66054 \cdot 10^{-27}$ kilogram             |
 | astronomical_unit | $149597870700$ metre                          |
 | nautical_mile     | $1852$ metre                                  |
 | knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |
 | are               | $10^2$ metre$^2$                              |
 | hectare           | $10^4$ metre$^2$                              |
 | bar               | $10^5$ pascal                                 |
-| angstrom          | $10^{-10}$ metre                              |
 | barn              | $10^{-28}$ metre                              |
 | curie             | $3.7 \cdot 10^{10}$ becquerel                 |
 | roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
@@ -169,7 +173,7 @@ Parameter that determines what kind of comparison is done. There are four possib
  - `dimensions` Checks that the answer and response have the same dimensions, does not compare the values of the physical quantities.
  - `buckinghamPi` Checks that the set of quantities in the response matches the set of quantities in the sense given by the Buckingham Pi theorem.
 
-For more details on each options see the description below and the correspondig examples.
+For more details on each options see the description below and the corresponding examples.
 
 If `comparison` is not specified it defaults to `expression`.
 

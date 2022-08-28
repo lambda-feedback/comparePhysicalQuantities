@@ -5,11 +5,17 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 
 **Note:** When the `quantities` grading parameter is set, this function cannot handle short form symbols for units. Thus when defining quantities all units must be given with full names in lower-case letters. For example `Nm/s` or `Newton*metre/SECOND` will not be handled correctly, but `newton*metre/second` will.
 
-**Note:** Prefixes have lower precedence exponentiation, e.g. `10*cm**2` will be interpreted as `10*10^(-2)*metre**2` rather than `10*(10^(-2)*metre)**2`.
+**Note:** Prefixes have lower precedence than exponentiation, e.g. `10*cm**2` will be interpreted as $10 \cdot 10^{-2} \mathrm{metre}^2$ rather than $10 (10^(-2)\mathrm{metre})^2$.
 
 **Note:** This function allows omitting `*` and using `^` instead of `**` if the grading parameter `strict_syntax` is set to false. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as input symbols.
 
-**Note:** When using the short forms the following convention is assumed: If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+**Note:** Only the short forms listed in the tables below are accepted. Not all units that are supported have short forms (since this leads to ambiguities).
+
+**Note:** When using the short forms the following convention is assumed:
+- Long form names takes precedence over sequences of short forms, e.g.  e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+- Short form symbols of prefixes will take precedence over short form symbols of units from the left, e.g. 
+- If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
+- Longer short form symbols take precedence over shorter short forms, e.g. `sr` will be interpreted as `steradian` instead of `second radian`.
 
 **Note:** Only the short forms listed in the tables below are accepted. This means some common practices, such as writing `h` for hour will not be handled correctly.
 

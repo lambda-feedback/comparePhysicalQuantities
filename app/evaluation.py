@@ -177,9 +177,16 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 substitutions += convert_SI_base_units_to_dimensions_short_form()
 
+#    new_answer = answer
+#    new_response = response
     for sub in substitutions:
-        answer = substitute(answer, sub)
-        response = substitute(response, sub)
+#        answer = substitute(answer, sub)
+        answer = new_substitute(answer, sub)
+#        response = substitute(response, sub)
+        response = new_substitute(response, sub)
+
+#    if new_answer != answer or new_response != response:
+#        return {"is_correct": False}
 
     # Safely try to parse answer and response into symbolic expressions
     try:
@@ -256,7 +263,7 @@ def substitute(string, substitutions):
                 i = part.find(pair[0])
                 while i > -1:
                     substitution_locations.append(i)
-                    i = part.find(pair[0],i+1)
+                    i = part.find(pair[0],i+len(pair[0]))
                 j = 0
                 for i in substitution_locations:
                     if i > 0:
@@ -273,6 +280,41 @@ def substitute(string, substitutions):
             string[k] = substitutions[elem][1]
 
     return "".join(string)
+
+def new_substitute(string, substitutions):
+    if isinstance(string,str):
+        string = [string]
+
+    # Perform substitutions
+    new_string = []
+    for part in string:
+        if not isinstance(part, str):
+            new_string.append(part)
+        else:
+            index = 0
+            string_buffer = ""
+            while index < len(part):
+                matched_start = False
+                for k,pair in enumerate(substitutions):
+                    if part.startswith(pair[0],index):
+                        matched_start = True
+                        if len(string_buffer) > 0:
+                            new_string.append(string_buffer)
+                            string_buffer = ""
+                        new_string.append(k)
+                        index += len(pair[0])
+                        break
+                if not matched_start:
+                    string_buffer += part[index]
+                    index += 1
+            if len(string_buffer) > 0:
+                new_string.append(string_buffer)
+
+    for k, elem in enumerate(new_string):
+        if isinstance(elem,int):
+            new_string[k] = substitutions[elem][1]
+
+    return "".join(new_string)
 
 def parse_expression(expr,do_transformations,unsplittable_symbols):
     if do_transformations:
