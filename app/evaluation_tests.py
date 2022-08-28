@@ -117,7 +117,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = { "comparison": "dimensions",
                    "strict_syntax": False}
         responses = ["m**2/s**2",
-                     "(c*m)**2/hour**2",
+                     "(c*m)**2/h**2",
                      "246*O/(k*g)*C**2/s"]
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
