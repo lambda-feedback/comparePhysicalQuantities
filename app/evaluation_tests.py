@@ -310,15 +310,19 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_rtol(self):
-        correct_results = []
-        incorrect_results = []
         for k in [1,2,3]:
             # Checks that sufficiently accurate responses are considered correct
-            response = "1"*(k+1)+"0"*(4-k)+"*deka*metre"
             answer = "111111*metre"
             params = {"rtol": "0."+"0"*k+"1", "strict_syntax": False}
+            response = "1"*(k+1)+"0"*(4-k)+"*deka*metre"
             self.assertEqual_input_variations(response, answer, params, True)
             # Checks that insufficiently accurate responses are considered wrong
+            response = "1"*k+"0"*(5-k)+"*metre"
+            self.assertEqual_input_variations(response, answer, params, False)
+            # Check that rtol can be specified as a float
+            params["rtol"] = float(params["rtol"])
+            response = "1"*(k+1)+"0"*(4-k)+"*deka*metre"
+            self.assertEqual_input_variations(response, answer, params, True)
             response = "1"*k+"0"*(5-k)+"*metre"
             self.assertEqual_input_variations(response, answer, params, False)
 

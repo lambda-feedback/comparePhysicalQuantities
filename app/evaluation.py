@@ -175,16 +175,9 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 substitutions += convert_SI_base_units_to_dimensions_short_form()
 
-#    new_answer = answer
-#    new_response = response
     for sub in substitutions:
-#        answer = substitute(answer, sub)
         answer = new_substitute(answer, sub)
-#        response = substitute(response, sub)
         response = new_substitute(response, sub)
-
-#    if new_answer != answer or new_response != response:
-#        return {"is_correct": False}
 
     # Safely try to parse answer and response into symbolic expressions
     try:
@@ -216,13 +209,13 @@ def evaluation_function(response, answer, params) -> dict:
         else:
             error_below_atol = True
         if "rtol" in parameters.keys():
-            parameters["rtol"] = eval(parameters["rtol"])
-            error_below_rtol = bool(abs(((ans-res)/ans).evalf()) < parameters["rtol"])
+            rtol = float(parameters["rtol"])
+            error_below_rtol = bool(float(abs((ans-res)/ans)) < rtol)
         else:
             if "atol" in parameters.keys():
                 error_below_rtol = True
             else:
-                error_below_rtol = bool(abs(((ans-res)/ans).evalf()) < default_rtol)
+                error_below_rtol = bool(float(abs(((ans-res)/ans))) < default_rtol)
         if error_below_atol and error_below_rtol and equal_up_to_multiplication:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
