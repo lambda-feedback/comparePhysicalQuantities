@@ -19,6 +19,8 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 
 **Note:** Only the short forms listed in the tables below are accepted. This means some common practices, such as writing `h` for hour will not be handled correctly.
 
+**Note:** When running the unit test some tests are expected to take much longer than the other. These tests can be skipped by adding `skip_resource_intensive_tests` as a command line argument to improve iteration times.
+
 ## Inputs
 All input parameters need to be supplied via the **Grading parameters** panel.
 
