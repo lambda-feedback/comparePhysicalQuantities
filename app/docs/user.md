@@ -136,6 +136,9 @@ Note that only the first table in this section has short form symbols defined, t
 
 | Unit name         | Expressed in SI units                         |
 |-------------------|:----------------------------------------------|
+| day               | $86400$ second                                |
+| angle_minute      | $\frac{pi}{10800}$                            |
+| angle_second      | $\frac{pi}{648000}$                           |
 | astronomical_unit | $149597870700$ metre                          |
 | nautical_mile     | $1852$ metre                                  |
 | knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |

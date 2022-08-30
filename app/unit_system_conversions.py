@@ -105,6 +105,9 @@ def list_of_common_units_in_SI():
     Note that short form symbols are defined here, but not used since they cause to many ambiguities
     """
     list = [
+        ('day',               'd',   '(86400*second)'),
+        ('angle_minute',      "'",   '(pi/10800)'),
+        ('angle_second',      '"',   '(pi/648000)'),
         ('astronomical_unit', 'au',  '(149597870700*metre)'),
         ('nautical_mile',     'nmi', '(1852*metre)'), #Note: no short form in source, short form from Wikipedia
         ('knot',              'kn',  '((1852/3600)*metre/second)'), #Note: no short form in source, short form from Wikipedia
