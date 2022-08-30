@@ -107,11 +107,12 @@ def evaluation_function(response, answer, params) -> dict:
                 response_dimensions.append(dimension.simplify())
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
-                    raise Exception(f"Response {response_groups[k]} is not dimensionless.")
+                    feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
+                    return {"is_correct": False, **feedback}
     
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
-            if answer_matrix.rank() < number_of_groups:
+            if response_matrix.rank() < number_of_groups:
                 return {"is_correct": False, **feedback}
         else:
             response_symbols = set()
@@ -120,13 +121,14 @@ def evaluation_function(response, answer, params) -> dict:
             answer_symbols = set()
             for ans in answer_groups:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
-            if not answer_symbols == response_symbols:
+            if not response_symbols.issubset(answer_symbols):
+                feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
                 return {"is_correct": False, **feedback}
             answer_symbols = list(answer_symbols)
     
         # Extract exponents from answers and responses and compare matrix ranks
-        answer_matrix = get_exponent_matrix(answer_groups,response_symbols)
-        response_matrix = get_exponent_matrix(response_groups,response_symbols)
+        answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+        response_matrix = get_exponent_matrix(response_groups,answer_symbols)
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
             return {"is_correct": True, **feedback}

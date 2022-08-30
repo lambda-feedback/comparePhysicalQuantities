@@ -1,4 +1,4 @@
-import unittest
+import unittest, sys
 
 try:
     from .evaluation import evaluation_function
@@ -6,6 +6,16 @@ try:
 except ImportError:
     from evaluation import evaluation_function
     from unit_system_conversions import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+
+# If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
+# then tests marked with @unittest.skipIf(skip_resource_intensive_tests,message_on_skip)
+# will be skipped. This can be used to avoid takes that take a long time when making several
+# small changes with most tests running between each change
+message_on_skip = "Test skipped to save on resources"
+skip_resource_intensive_tests = False
+if "skip_resource_intensive_tests" in sys.argv:
+    skip_resource_intensive_tests = True
+    sys.argv.remove("skip_resource_intensive_tests")
 
 class TestEvaluationFunction(unittest.TestCase):
     """
@@ -27,21 +37,25 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def assertEqual_input_variations(self, response, answer, params, value):
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), value)
+        with self.subTest(variation="default"):
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result.get("is_correct"), value)
         variation_definitions = [lambda x : x.replace('**','^'),
-                                 lambda x : x.replace('**','^').replace('*',' '),
-                                 lambda x : x.replace('**','^').replace('*','')]
+                                lambda x : x.replace('**','^').replace('*',' '),
+                                lambda x : x.replace('**','^').replace('*','')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
             if (response_variation != response) or (answer_variation != answer):
-                result = evaluation_function(response_variation, answer, params)
-                self.assertEqual(result.get("is_correct"), value)
-                result = evaluation_function(response, answer_variation, params)
-                self.assertEqual(result.get("is_correct"), value)
-                result = evaluation_function(response_variation, answer_variation , params)
-                self.assertEqual(result.get("is_correct"), value)
+                with self.subTest(response=response_variation, answer=answer):
+                    result = evaluation_function(response_variation, answer, params)
+                    self.assertEqual(result.get("is_correct"), value)
+                with self.subTest(response=response, answer=answer_variation):
+                    result = evaluation_function(response, answer_variation, params)
+                    self.assertEqual(result.get("is_correct"), value)
+                with self.subTest(response=response_variation, answer=answer_variation):
+                    result = evaluation_function(response_variation, answer_variation , params)
+                    self.assertEqual(result.get("is_correct"), value)
 
     def test_invalid_user_expression(self):
         body = {"response": "3x*", "answer": "3*x"}
@@ -122,6 +136,7 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
 
+    @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):
         # NOTE: Short forms for common units are not allowed
         params = {"strict_syntax": False}
@@ -150,6 +165,7 @@ class TestEvaluationFunction(unittest.TestCase):
         #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
         self.assertEqual(len(errors)+len(incorrect), 0)
 
+    @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_compound_units(self):
         # NOTE: Short forms for common units are not allowed
         units = list_of_SI_base_unit_dimensions()\
@@ -446,13 +462,8 @@ class TestEvaluationFunction(unittest.TestCase):
         )
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, U*nu/(f*L**2)"
-        self.assertRaises(
-            Exception,
-            evaluation_function,
-            response,
-            answer,
-            params,
-        )
+        result = evaluation_function(response, answer, params)
+        self.assertIn("feedback",result)
 
     def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_answer(self):
         params = {"comparison": "buckinghamPi",
