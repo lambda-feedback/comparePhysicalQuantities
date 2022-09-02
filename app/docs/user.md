@@ -13,7 +13,7 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 
 **Note:** When using the short forms the following convention is assumed:
 - Long form names takes precedence over sequences of short forms, e.g.  e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
-- Short form symbols of prefixes will take precedence over short form symbols of units from the left, e.g. `mug` will be interpreted as `micro*gram` instead `metre*astronomical_unit*gram`.
+- Short form symbols of prefixes will take precedence over short form symbols of units from the left, e.g. `mug` will be interpreted as `micro*gram` instead `metre*astronomicalunit*gram`.
 - If there is a short form symbol for a prefix that collides with the short form for a unit (i.e. `m`) then it is assumed the that unit will always be placed to the right of another unit in compound units, e.g. `mN` will be interpreted as `milli newton`, `Nm` as `newton metre`, `mmN` as `milli metre newton`, `mNm` as `milli newton metre` and `Nmm` as `newton milli metre`.
 - Longer short form symbols take precedence over shorter short forms, e.g. `sr` will be interpreted as `steradian` instead of `second radian`.
 
@@ -59,10 +59,10 @@ Note that gram is used as a base unit instead of kilogram.
 | metre        |   m    | length              |
 | gram         |   g    | mass                |
 | second       |   s    | time                |
-| ampere       |   A    | electric_current    |
+| ampere       |   A    | electriccurrent     |
 | kelvin       |   k    | temperature         |
-| mole         |  mol   | amount_of_substance |
-| candela      |  cd    | luminous_intensity  |
+| mole         |  mol   | amountofsubstance   |
+| candela      |  cd    | luminousintensity   |
 
 #### Table: SI prefixes
 
@@ -125,7 +125,7 @@ Note that only the first table in this section has short form symbols defined, t
 |-------------------|:-------|:----------------------------------------------|
 | minute            |  min   | 60 second                                     |
 | hour              |   h    | 3600 second                                   |
-| angle_degree      |  deg   | $\frac{\pi}{180}$                             |
+| degree            |  deg   | $\frac{\pi}{180}$                             |
 | liter             |   l    | $10^{-3}$ metre$^3$                           |
 | metric_ton        |   t    | $10^3$ kilo gram                              |
 | neper             |  Np    | 1                                             |
@@ -134,22 +134,22 @@ Note that only the first table in this section has short form symbols defined, t
 | atomic_mass_unit  |   u    | $1.66054 \cdot 10^{-27}$ kilogram             |
 | angstrom          |   å    | $10^{-10}$ metre                              |
 
-| Unit name         | Expressed in SI units                         |
-|-------------------|:----------------------------------------------|
-| day               | $86400$ second                                |
-| angle_minute      | $\frac{pi}{10800}$                            |
-| angle_second      | $\frac{pi}{648000}$                           |
-| astronomical_unit | $149597870700$ metre                          |
-| nautical_mile     | $1852$ metre                                  |
-| knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |
-| are               | $10^2$ metre$^2$                              |
-| hectare           | $10^4$ metre$^2$                              |
-| bar               | $10^5$ pascal                                 |
-| barn              | $10^{-28}$ metre                              |
-| curie             | $3.7 \cdot 10^{10}$ becquerel                 |
-| roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
-| rad               | $10^{-2}$ gray                                |
-| rem               | $10^{-2}$ sievert                             |
+| Unit name        | Expressed in SI units                         |
+|------------------|:----------------------------------------------|
+| day              | $86400$ second                                |
+| angleminute      | $\frac{pi}{10800}$                            |
+| anglesecond      | $\frac{pi}{648000}$                           |
+| astronomicalunit | $149597870700$ metre                          |
+| nauticalmile     | $1852$ metre                                  |
+| knot             | $\frac{1852}{3600}$ metre second$^{-1}$       |
+| are              | $10^2$ metre$^2$                              |
+| hectare          | $10^4$ metre$^2$                              |
+| bar              | $10^5$ pascal                                 |
+| barn             | $10^{-28}$ metre                              |
+| curie            | $3.7 \cdot 10^{10}$ becquerel                 |
+| roentgen         | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
+| rad              | $10^{-2}$ gray                                |
+| rem              | $10^{-2}$ sievert                             |
 
 ### `strict_syntax`
 

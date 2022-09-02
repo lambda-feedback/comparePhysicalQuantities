@@ -52,6 +52,8 @@ If the `comparison` parameter is set to `buckinghamPi`, then `quantities` should
 
 #### Table: Base SI units
 
+These tables list the units defined in `unit_system_conversions.py`. Note that the evaluation function uses static version of these arrays created by running `generate_unit_conversion_arrays.py` and stored in `static_unit_conversion_arrays.py`.
+
 SI base units taken from Table 1 of https://physics.nist.gov/cuu/Units/units.html
 
 Note that gram is used as a base unit instead of kilogram.
@@ -61,10 +63,10 @@ Note that gram is used as a base unit instead of kilogram.
 | metre        |   m    | length              |
 | gram         |   g    | mass                |
 | second       |   s    | time                |
-| ampere       |   a    | electric_current    |
+| ampere       |   A    | electriccurrent     |
 | kelvin       |   k    | temperature         |
-| mole         |  mol   | amount_of_substance |
-| candela      |  cd    | luminous_intensity  |
+| mole         |  mol   | amountofsubstance   |
+| candela      |  cd    | luminousintensity   |
 
 #### Table: SI prefixes
 
@@ -119,36 +121,39 @@ Note that the function treats radians and steradians as dimensionless values.
 
 Commonly used non-SI units taken from Table 6 and 7 of https://physics.nist.gov/cuu/Units/outside.html
 
-Note that there are no short form symbols defined for these units.
-
 Note that the function treats angles, neper and bel as dimensionless values.
 
-| Unit name         | Expressed in SI units                         |
-|-------------------|:----------------------------------------------|
-| min               | 60 second                                     |
-| hour              | 3600 second                                   |
-| day               | 86400 second                                  |
-| angle_degree      | $\frac{\pi}{180}$                             |
-| angle_minute      | $\frac{\pi}{10800}$                           |
-| angle_second      | $\frac{\pi}{648000}$                          |
-| liter             | $10^{-3}$ metre$^3$                           |
-| metric_ton        | $10^3$ kilo gram                              |
-| neper             | 1                                             |
-| bel               | $\frac{1}{2} \ln(10)$                         |
-| electronvolt      | $1.60218 \cdot 10^{-19}$ joule                |
-| atomic_mass_unit  | $1.66054 \cdot 10^{-27}$ kilogram             |
-| astronomical_unit | $149597870700$ metre                          |
-| nautical_mile     | $1852$ metre                                  |
-| knot              | $\frac{1852}{3600}$ metre second$^{-1}$       |
-| are               | $10^2$ metre$^2$                              |
-| hectare           | $10^4$ metre$^2$                              |
-| bar               | $10^5$ pascal                                 |
-| angstrom          | $10^{-10}$ metre                              |
-| barn              | $10^{-28}$ metre                              |
-| curie             | $3.7 \cdot 10^{10}$ becquerel                 |
-| roentgen          | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
-| rad               | $10^{-2}$ gray                                |
-| rem               | $10^{-2}$ sievert                             |
+Note that only the first table in this section has short form symbols defined, the second table does not.
+
+| Unit name         | Symbol | Expressed in SI units                         |
+|-------------------|:-------|:----------------------------------------------|
+| minute            |  min   | 60 second                                     |
+| hour              |   h    | 3600 second                                   |
+| degree            |  deg   | $\frac{\pi}{180}$                             |
+| liter             |   l    | $10^{-3}$ metre$^3$                           |
+| metric_ton        |   t    | $10^3$ kilo gram                              |
+| neper             |  Np    | 1                                             |
+| bel               |   B    | $\frac{1}{2} \ln(10)$                         |
+| electronvolt      |  eV    | $1.60218 \cdot 10^{-19}$ joule                |
+| atomic_mass_unit  |   u    | $1.66054 \cdot 10^{-27}$ kilogram             |
+| angstrom          |   å    | $10^{-10}$ metre                              |
+
+| Unit name        | Expressed in SI units                         |
+|------------------|:----------------------------------------------|
+| day              | $86400$ second                                |
+| angleminute      | $\frac{pi}{10800}$                            |
+| anglesecond      | $\frac{pi}{648000}$                           |
+| astronomicalunit | $149597870700$ metre                          |
+| nauticalmile     | $1852$ metre                                  |
+| knot             | $\frac{1852}{3600}$ metre second$^{-1}$       |
+| are              | $10^2$ metre$^2$                              |
+| hectare          | $10^4$ metre$^2$                              |
+| bar              | $10^5$ pascal                                 |
+| barn             | $10^{-28}$ metre                              |
+| curie            | $3.7 \cdot 10^{10}$ becquerel                 |
+| roentgen         | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
+| rad              | $10^{-2}$ gray                                |
+| rem              | $10^{-2}$ sievert                             |
 
 ### `strict_syntax`
 
