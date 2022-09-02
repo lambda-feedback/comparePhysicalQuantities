@@ -31,7 +31,7 @@ def list_of_SI_prefixes():
     list.sort(key=lambda x: -len(x[0]))
     return list
 
-def list_of_SI_base_unit_dimensions(): 
+def list_of_SI_base_unit_dimensions():
     """
     SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
     Note that gram is used as a base unit instead of kilogram.
@@ -87,13 +87,13 @@ def list_of_very_common_units_in_SI():
     list = [
         ('minute',            'min', '(60*second)'),
         ('hour',              'h',   '(3600*second)'),
-        ('degree',      'deg', '(pi/180)'),
+        ('degree',            'deg', '(pi/180)'),
         ('liter',             'L',   '(10**(-3)*metre**3)'),
-        ('metricton',        't',   '(10**3*kilo*gram)'),
+        ('metricton',         't',   '(10**3*kilo*gram)'),
         ('neper',             'Np',  '(1)'),
         ('bel',               'B',   '((1/2)*log(10))'),
         ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)'),
-        ('atomicmassunit',  'u',   '(1.66054*10**(-27)*kilo*gram)'),
+        ('atomicmassunit',    'u',   '(1.66054*10**(-27)*kilo*gram)'),
         ('angstrom',          'å',   '(10**(-10)*metre)'),
         ]
     list.sort(key=lambda x: -len(x[0]))

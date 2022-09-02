@@ -2,10 +2,10 @@ import unittest, sys
 
 try:
     from .evaluation import evaluation_function
-    from .unit_system_conversions import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
 except ImportError:
     from evaluation import evaluation_function
-    from unit_system_conversions import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
 
 # If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
 # then tests marked with @unittest.skipIf(skip_resource_intensive_tests,message_on_skip)
