@@ -87,13 +87,13 @@ def list_of_very_common_units_in_SI():
     list = [
         ('minute',            'min', '(60*second)'),
         ('hour',              'h',   '(3600*second)'),
-        ('angle_degree',      'deg', '(pi/180)'),
+        ('degree',      'deg', '(pi/180)'),
         ('liter',             'L',   '(10**(-3)*metre**3)'),
-        ('metric_ton',        't',   '(10**3*kilo*gram)'),
+        ('metricton',        't',   '(10**3*kilo*gram)'),
         ('neper',             'Np',  '(1)'),
         ('bel',               'B',   '((1/2)*log(10))'),
         ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)'),
-        ('atomic_mass_unit',  'u',   '(1.66054*10**(-27)*kilo*gram)'),
+        ('atomicmassunit',  'u',   '(1.66054*10**(-27)*kilo*gram)'),
         ('angstrom',          'å',   '(10**(-10)*metre)'),
         ]
     list.sort(key=lambda x: -len(x[0]))
@@ -106,10 +106,10 @@ def list_of_common_units_in_SI():
     """
     list = [
         ('day',               'd',   '(86400*second)'),
-        ('angle_minute',      "'",   '(pi/10800)'),
-        ('angle_second',      '"',   '(pi/648000)'),
-        ('astronomical_unit', 'au',  '(149597870700*metre)'),
-        ('nautical_mile',     'nmi', '(1852*metre)'), #Note: no short form in source, short form from Wikipedia
+        ('angleminute',      "'",   '(pi/10800)'),
+        ('anglesecond',      '"',   '(pi/648000)'),
+        ('astronomicalunit', 'au',  '(149597870700*metre)'),
+        ('nauticalmile',     'nmi', '(1852*metre)'), #Note: no short form in source, short form from Wikipedia
         ('knot',              'kn',  '((1852/3600)*metre/second)'), #Note: no short form in source, short form from Wikipedia
         ('are',               'a',   '(10**2*metre**2)'),
         ('hectare',           'ha',  '(10**4*metre**2)'),
@@ -124,7 +124,10 @@ def list_of_common_units_in_SI():
     return list
 
 def names_of_prefixes_base_SI_units_and_dimensions():
-    return tuple(x[0] for x in list_of_SI_prefixes())+tuple(x[0] for x in list_of_SI_base_unit_dimensions())+tuple(x[2] for x in list_of_SI_base_unit_dimensions())
+    return tuple(x[0] for x in list_of_SI_prefixes())\
+          +tuple(x[0] for x in list_of_SI_base_unit_dimensions())\
+          +tuple(x[2] for x in list_of_SI_base_unit_dimensions())\
+          +tuple(x[0] for x in list_of_common_units_in_SI())
 
 def convert_short_forms():
     units = list_of_SI_base_unit_dimensions()\
