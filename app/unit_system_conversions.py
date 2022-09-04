@@ -74,7 +74,7 @@ def list_of_derived_SI_units_in_SI_base_units():
         ('becquerel', 'Bq',  '(second**(-1))'),
         ('gray',      'Gy',  '(metre**2*second**(-2))'),
         ('sievert',   'Sv',  '(metre**2*second**(-2))'),
-        ('katal',     'kat', '(second(-1)*mole)')
+        ('katal',     'kat', '(second**(-1)*mole)')
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -123,10 +123,11 @@ def list_of_common_units_in_SI():
     list.sort(key=lambda x: -len(x[0]))
     return list
 
-def names_of_prefixes_base_SI_units_and_dimensions():
+def names_of_prefixes_units_and_dimensions():
     return tuple(x[0] for x in list_of_SI_prefixes())\
           +tuple(x[0] for x in list_of_SI_base_unit_dimensions())\
           +tuple(x[2] for x in list_of_SI_base_unit_dimensions())\
+          +tuple(x[0] for x in list_of_derived_SI_units_in_SI_base_units())\
           +tuple(x[0] for x in list_of_common_units_in_SI())
 
 def convert_short_forms():

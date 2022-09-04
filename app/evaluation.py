@@ -3,9 +3,9 @@ from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix, Symbol
 
 try:
-    from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_base_SI_units_and_dimensions
+    from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
 except ImportError:
-    from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_base_SI_units_and_dimensions
+    from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
 
 def evaluation_function(response, answer, params) -> dict:
     """
@@ -16,7 +16,7 @@ def evaluation_function(response, answer, params) -> dict:
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
     else:
-        unsplittable_symbols = names_of_prefixes_base_SI_units_and_dimensions()
+        unsplittable_symbols = names_of_prefixes_units_and_dimensions
 
     if "input_symbols" in params.keys():
         unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
@@ -199,14 +199,14 @@ def evaluation_function(response, answer, params) -> dict:
 
     if "substitutions" not in parameters.keys():
         if "quantities" in parameters.keys():
-            substitutions += convert_to_SI_base_units()
+            substitutions += convert_to_SI_base_units
         else:
-            substitutions += convert_to_SI_base_units_short_form()
+            substitutions += convert_to_SI_base_units_short_form
         if parameters["comparison"] == "dimensions":
             if "quantities" in parameters.keys():
-                substitutions += convert_SI_base_units_to_dimensions()
+                substitutions += convert_SI_base_units_to_dimensions
             else:
-                substitutions += convert_SI_base_units_to_dimensions_short_form()
+                substitutions += convert_SI_base_units_to_dimensions_short_form
 
     for sub in substitutions:
         answer = substitute(answer, sub)
@@ -233,23 +233,26 @@ def evaluation_function(response, answer, params) -> dict:
 
     if parameters["comparison"] == "expression":
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
-        if ans.free_symbols == res.free_symbols:
-            for symbol in ans.free_symbols:
-                ans = ans.subs(symbol,1)
-                res = res.subs(symbol,1)
-        if "atol" in parameters.keys():
-            error_below_atol = bool(abs(float(ans-res)) < float(parameters["atol"]))
-        else:
-            error_below_atol = True
-        if "rtol" in parameters.keys():
-            rtol = float(parameters["rtol"])
-            error_below_rtol = bool(float(abs((ans-res)/ans)) < rtol)
-        else:
+        error_below_atol = False
+        error_below_rtol = False
+        if equal_up_to_multiplication:
+            if ans.free_symbols == res.free_symbols:
+                for symbol in ans.free_symbols:
+                    ans = ans.subs(symbol,1)
+                    res = res.subs(symbol,1)
             if "atol" in parameters.keys():
-                error_below_rtol = True
+                error_below_atol = bool(abs(float(ans-res)) < float(parameters["atol"]))
             else:
-                error_below_rtol = bool(float(abs(((ans-res)/ans))) < default_rtol)
-        if error_below_atol and error_below_rtol and equal_up_to_multiplication:
+                error_below_atol = True
+            if "rtol" in parameters.keys():
+                rtol = float(parameters["rtol"])
+                error_below_rtol = bool(float(abs((ans-res)/ans)) < rtol)
+            else:
+                if "atol" in parameters.keys():
+                    error_below_rtol = True
+                else:
+                    error_below_rtol = bool(float(abs(((ans-res)/ans))) < default_rtol)
+        if error_below_atol and error_below_rtol:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
     if parameters["comparison"] == "expressionExact":
@@ -325,7 +328,7 @@ def get_exponent_matrix(expressions,symbols):
 
 def expression_to_latex(expression,parameters,do_transformations,unsplittable_symbols,local_dict=None):
     if "quantities" not in parameters.keys():
-        subs = convert_short_forms()
+        subs = convert_short_forms
         expression = substitute(expression,subs)
     try:
         expression_preview = parse_expression(expression,do_transformations,unsplittable_symbols,local_dict)
