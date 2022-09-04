@@ -146,6 +146,17 @@ class TestEvaluationFunction(unittest.TestCase):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
 
+    def test_wrong_dimensions(self):
+        answer = "1"
+        params = {"strict_syntax": False}
+        responses = ["m",
+                     "s",
+                     "s*m"]
+        for response in responses:
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            print(result["response_latex"])
+
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):
         # NOTE: Short forms for common units are not allowed
