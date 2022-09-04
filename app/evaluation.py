@@ -246,12 +246,12 @@ def evaluation_function(response, answer, params) -> dict:
                 error_below_atol = True
             if "rtol" in parameters.keys():
                 rtol = float(parameters["rtol"])
-                error_below_rtol = bool(float(abs((ans-res)/ans)) < rtol)
+                error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
             else:
                 if "atol" in parameters.keys():
                     error_below_rtol = True
                 else:
-                    error_below_rtol = bool(float(abs(((ans-res)/ans))) < default_rtol)
+                    error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < default_rtol)
         if error_below_atol and error_below_rtol:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
