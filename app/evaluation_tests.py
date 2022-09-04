@@ -136,15 +136,25 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_dimensionless_quantities(self):
+        answer = "1"
+        params = {"strict_syntax": False}
+        responses = ["1",
+                     "s*Hz",
+                     "k*kat*m*s/mol"]
+        for response in responses:
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):
         # NOTE: Short forms for common units are not allowed
         params = {"strict_syntax": False}
-        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
-        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
+        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes]
+        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes]
         m = len(prefixes_long_forms)
-        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
-        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units())]
+        long_forms = [x[0] for x in (list_of_SI_base_unit_dimensions+list_of_derived_SI_units_in_SI_base_units)]
+        short_forms = [x[1] for x in (list_of_SI_base_unit_dimensions+list_of_derived_SI_units_in_SI_base_units)]
         n = len(long_forms)
         k = 0
         incorrect = []
@@ -168,16 +178,16 @@ class TestEvaluationFunction(unittest.TestCase):
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_compound_units(self):
         # NOTE: Short forms for common units are not allowed
-        units = list_of_SI_base_unit_dimensions()\
-                +list_of_derived_SI_units_in_SI_base_units()\
-                +list_of_very_common_units_in_SI()
-        all_units = list_of_SI_base_unit_dimensions()\
-                    +list_of_derived_SI_units_in_SI_base_units()\
-                    +list_of_common_units_in_SI()
+        units = list_of_SI_base_unit_dimensions\
+                +list_of_derived_SI_units_in_SI_base_units\
+                +list_of_very_common_units_in_SI
+        all_units = list_of_SI_base_unit_dimensions\
+                    +list_of_derived_SI_units_in_SI_base_units\
+                    +list_of_common_units_in_SI
         all_long_forms = [x[0] for x in all_units]
         params = {"strict_syntax": False}
-        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes()]
-        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes()]
+        prefixes_long_forms = [x[0] for x in list_of_SI_prefixes]
+        prefixes_short_forms = [x[1] for x in list_of_SI_prefixes]
         m = len(prefixes_long_forms)
         long_forms = [x[0] for x in units]
         short_forms = [x[1] for x in units]
