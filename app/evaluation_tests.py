@@ -155,7 +155,6 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in responses:
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            print(result["response_latex"])
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):

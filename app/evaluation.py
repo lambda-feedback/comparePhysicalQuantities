@@ -340,7 +340,7 @@ def expression_to_latex(expression,parameters,do_transformations,unsplittable_sy
     expression_preview = parse_expression(expression,do_transformations,unsplittable_symbols,local_dict=symbs_dic)
     symbol_names = {}
     for x in symbs_dic.values():
-        symbol_names.update({x: "\mathrm{"+str(x)+"}"})
+        symbol_names.update({x: "~\mathrm{"+str(x)+"}"})
     latex_str = latex(expression_preview,symbol_names=symbol_names)
     for symbol in symbs_dic.keys():
         if symbol not in local_dict.keys() and symbol not in unsplittable_symbols:
