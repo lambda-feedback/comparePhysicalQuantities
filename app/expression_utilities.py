@@ -88,7 +88,7 @@ from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import Symbol
 
-def create_sympy_parsing_params(params, unsplittable_symbols=set()):
+def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     '''
     Input:
         params               : evaluation function parameter dictionary
@@ -103,7 +103,6 @@ def create_sympy_parsing_params(params, unsplittable_symbols=set()):
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
-        unsplittable_symbols += ("beta", "gamma", "zeta")
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
@@ -132,9 +131,9 @@ def create_sympy_parsing_params(params, unsplittable_symbols=set()):
     for symbol in unsplittable_symbols:
         symbol_dict.update({symbol: Symbol(symbol)})
 
-    do_transformations = not params.get("strict_syntax",True)
+    strict_syntax = params.get("strict_syntax",True)
 
-    parsing_params = {"unsplittable_symbols": unsplittable_symbols, "do_transformations": do_transformations, "symbol_dict": symbol_dict}
+    parsing_params = {"unsplittable_symbols": unsplittable_symbols, "strict_syntax": strict_syntax, "symbol_dict": symbol_dict, "extra_transformations": tuple()}
 
     return parsing_params
 
@@ -147,11 +146,12 @@ def parse_expression(expr, parsing_params):
         sympy expression created by parsing expr configured according
         to the parameters in parsing_params
     '''
-    do_transformations = parsing_params.get("do_transformations",False)
+    strict_syntax = parsing_params.get("strict_syntax",False)
+    extra_transformations = parsing_params.get("extra_transformations",())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
-    if do_transformations:
-        transformations = parser_transformations[0:4,6]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+    if strict_syntax:
+        transformations = parser_transformations[0:4]+extra_transformations
     else:
-        transformations = parser_transformations[0:4]
+        transformations = parser_transformations[0:4,6]+extra_transformations+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
     return parse_expr(expr,transformations=transformations,local_dict=symbol_dict)
