@@ -41,8 +41,8 @@ class TestEvaluationFunction(unittest.TestCase):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), value)
         variation_definitions = [lambda x : x.replace('**','^'),
-                                lambda x : x.replace('**','^').replace('*',' '),
-                                lambda x : x.replace('**','^').replace('*','')]
+                                 lambda x : x.replace('**','^').replace('*',' '),
+                                 lambda x : x.replace('**','^').replace('*','')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
@@ -182,7 +182,6 @@ class TestEvaluationFunction(unittest.TestCase):
                         continue
                     if not result.get("is_correct"):
                         incorrect.append((answer,response))
-        #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
         self.assertEqual(len(errors)+len(incorrect), 0)
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
@@ -329,6 +328,19 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_compare_quantities_with_defaults_and_alternatives(self):
+        params = { "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
+                   "input_symbols": [['d',['distance','D']],['t',['time','T']],['v',['velocity','speed','V']]],
+                   "strict_syntax": False}
+
+        response = "(distance/time)**2*((1/3.6)**2)+velocity**2"
+        answer = "2*speed**2"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+        response = "(D/T)**2*((1/3.6)**2)+2*V**2-velocity**2"
+        answer = "2*v**2"
+        self.assertEqual_input_variations(response, answer, params, True)
+
     def test_compare_quantities_with_rtol(self):
         for k in [1,2,3]:
             # Checks that sufficiently accurate responses are considered correct
@@ -437,7 +449,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi", "strict_syntax": False,
-                  "input_symbols": ['g','v','h','l']}
+                  "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
         # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
         answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
         # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
