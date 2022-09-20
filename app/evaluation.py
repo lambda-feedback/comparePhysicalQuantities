@@ -4,8 +4,10 @@ from sympy import simplify, latex, Matrix, Symbol
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
+    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 except ImportError:
     from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
+    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
 def evaluation_function(response, answer, params) -> dict:
     """
@@ -18,44 +20,11 @@ def evaluation_function(response, answer, params) -> dict:
     else:
         unsplittable_symbols = names_of_prefixes_units_and_dimensions
 
-    if "input_symbols" in params.keys():
-        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
-
-    if params.get("specialFunctions", False) == True:
-        from sympy import beta, gamma, zeta
-        unsplittable_symbols += ("beta", "gamma", "zeta")
-    else:
-        beta = Symbol("beta")
-        gamma = Symbol("gamma")
-        zeta = Symbol("zeta")
-    if params.get("complexNumbers", False) == True:
-        from sympy import I
-    else:
-        I = Symbol("I")
-    E = Symbol("E")
-    N = Symbol("N")
-    O = Symbol("O")
-    Q = Symbol("Q")
-    S = Symbol("S")
-    symbol_dict = {
-        "beta": beta,
-        "gamma": gamma,
-        "zeta": zeta,
-        "I": I,
-        "N": N,
-        "O": O,
-        "Q": Q,
-        "S": S,
-        "E": E
-    }
-
-    for symbol in unsplittable_symbols:
-        symbol_dict.update({symbol: Symbol(symbol)})
-
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
-    do_transformations = not parameters["strict_syntax"]
+    answer, response = preprocess_expression([answer, response],parameters)
+    parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
@@ -63,7 +32,7 @@ def evaluation_function(response, answer, params) -> dict:
         response_groups = []
         for res in response_strings:
             try:
-                expr = parse_expression(res,do_transformations,unsplittable_symbols,local_dict=symbol_dict).simplify()
+                expr = parse_expression(res,parsing_params).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the response") from e
             response_groups.append(expr)
@@ -74,7 +43,7 @@ def evaluation_function(response, answer, params) -> dict:
         answer_groups = []
         for ans in answer_strings:
             try:
-                expr = parse_expression(ans,do_transformations,unsplittable_symbols,local_dict=symbol_dict).simplify()
+                expr = parse_expression(ans,parsing_params).simplify()
             except (SyntaxError, TypeError) as e:
                 raise Exception("SymPy was unable to parse the answer") from e
             answer_groups.append(expr)
@@ -88,7 +57,7 @@ def evaluation_function(response, answer, params) -> dict:
                 index_match = find_matching_parenthesis(quantities_strings,index)
                 try:
                     quantity_strings = eval(quantities_strings[index+1:index_match])
-                    quantity = tuple(map(lambda x: parse_expression(x,do_transformations,unsplittable_symbols,local_dict=symbol_dict),quantity_strings))
+                    quantity = tuple(map(lambda x: parse_expression(x,parsing_params),quantity_strings))
                     quantities.append(quantity)
                 except (SyntaxError, TypeError) as e:
                     raise Exception("List of quantities not written correctly.")
@@ -175,7 +144,7 @@ def evaluation_function(response, answer, params) -> dict:
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
-    interp = {"response_latex": expression_to_latex(response,parameters,do_transformations,unsplittable_symbols,local_dict=symbol_dict)}
+    interp = {"response_latex": expression_to_latex(response,parameters,parsing_params)}
 
     substitutions = []
     for subs_strings in list_of_substitutions_strings:
@@ -214,12 +183,12 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expression(response,do_transformations,unsplittable_symbols,local_dict=symbol_dict)
+        res = parse_expression(response,parsing_params)
     except (SyntaxError, TypeError) as e:
         raise Exception(f"SymPy was unable to parse the response {response}") from e
 
     try:
-        ans = parse_expression(answer,do_transformations,unsplittable_symbols,local_dict=symbol_dict)
+        ans = parse_expression(answer,parsing_params)
     except (SyntaxError, TypeError) as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
@@ -275,48 +244,6 @@ def find_matching_parenthesis(string,index):
                 return k
     return -1
 
-def substitute(string, substitutions):
-    if isinstance(string,str):
-        string = [string]
-
-    # Perform substitutions
-    new_string = []
-    for part in string:
-        if not isinstance(part, str):
-            new_string.append(part)
-        else:
-            index = 0
-            string_buffer = ""
-            while index < len(part):
-                matched_start = False
-                for k,pair in enumerate(substitutions):
-                    if part.startswith(pair[0],index):
-                        matched_start = True
-                        if len(string_buffer) > 0:
-                            new_string.append(string_buffer)
-                            string_buffer = ""
-                        new_string.append(k)
-                        index += len(pair[0])
-                        break
-                if not matched_start:
-                    string_buffer += part[index]
-                    index += 1
-            if len(string_buffer) > 0:
-                new_string.append(string_buffer)
-
-    for k, elem in enumerate(new_string):
-        if isinstance(elem,int):
-            new_string[k] = substitutions[elem][1]
-
-    return "".join(new_string)
-
-def parse_expression(expr, do_transformations, unsplittable_symbols, local_dict = None):
-    if do_transformations:
-        transformations = parser_transformations[0:4,6]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
-    else:
-        transformations = parser_transformations[0:4]
-    return parse_expr(expr,transformations=transformations,local_dict=local_dict)
-
 def get_exponent_matrix(expressions,symbols):
     exponents_list = []
     for expression in expressions:
@@ -326,25 +253,30 @@ def get_exponent_matrix(expressions,symbols):
         exponents_list.append(exponents)
     return Matrix(exponents_list)
 
-def expression_to_latex(expression,parameters,do_transformations,unsplittable_symbols,local_dict=None):
+def expression_to_latex(expression,parameters,parsing_params):
+    do_transformations = parsing_params.get("do_transformations",False)
+    unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
+    symbol_dict = parsing_params.get("symbol_dict",{})
     if "quantities" not in parameters.keys():
         subs = convert_short_forms
         expression = substitute(expression,subs)
     try:
-        expression_preview = parse_expression(expression,do_transformations,unsplittable_symbols,local_dict)
+        expression_preview = parse_expression(expression,parsing_params)
     except (SyntaxError, TypeError) as e:
         raise Exception(f"Preview unable to parse {expression}") from e
 
     symbs = expression_preview.atoms(Symbol)
     symbs_dic = {str(x): Symbol(str(x),commutative=False) for x in symbs}
-    expression_preview = parse_expression(expression,do_transformations,unsplittable_symbols,local_dict=symbs_dic)
+    parsing_params_latex = parsing_params.copy()
+    parsing_params_latex["symbol_dict"] = symbs_dic
+    expression_preview = parse_expression(expression,parsing_params_latex)
     symbol_names = {}
     for x in symbs_dic.values():
         if str(x) in names_of_prefixes_units_and_dimensions:
             symbol_names.update({x: "~\mathrm{"+str(x)+"}"})
     latex_str = latex(expression_preview,symbol_names=symbol_names)
     for symbol in symbs_dic.keys():
-        if symbol not in local_dict.keys() and symbol not in unsplittable_symbols:
+        if symbol not in symbol_dict.keys() and symbol not in unsplittable_symbols:
             if symbol in globals():
                 del(globals()[symbol])
     return latex_str

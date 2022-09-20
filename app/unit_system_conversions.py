@@ -130,6 +130,12 @@ def names_of_prefixes_units_and_dimensions():
           +tuple(x[0] for x in list_of_derived_SI_units_in_SI_base_units())\
           +tuple(x[0] for x in list_of_common_units_in_SI())
 
+def names_of_all_units_and_dimensions():
+    return tuple(x[0] for x in list_of_SI_prefixes())\
+          +tuple(x[0] for x in list_of_SI_base_unit_dimensions())\
+          +tuple(x[2] for x in list_of_SI_base_unit_dimensions())\
+          +tuple(x[0] for x in list_of_common_units_in_SI())
+
 def convert_short_forms():
     units = list_of_SI_base_unit_dimensions()\
            +list_of_derived_SI_units_in_SI_base_units()\
