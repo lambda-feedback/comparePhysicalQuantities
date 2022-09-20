@@ -2,10 +2,10 @@ import unittest, sys
 
 try:
     from .evaluation import evaluation_function
-    from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 except ImportError:
     from evaluation import evaluation_function
-    from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions,  list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 
 # If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
 # then tests marked with @unittest.skipIf(skip_resource_intensive_tests,message_on_skip)
@@ -37,12 +37,12 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def assertEqual_input_variations(self, response, answer, params, value):
-        with self.subTest(variation="default"):
+        with self.subTest(response=response, answer=answer):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), value)
         variation_definitions = [lambda x : x.replace('**','^'),
-                                lambda x : x.replace('**','^').replace('*',' '),
-                                lambda x : x.replace('**','^').replace('*','')]
+                                 lambda x : x.replace('**','^').replace('*',' '),
+                                 lambda x : x.replace('**','^').replace('*','')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
@@ -151,12 +151,37 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"strict_syntax": False}
         responses = ["m",
                      "s",
-                     "s*m",
-                     "x*y km/h"]
+                     "s*m"]
         for response in responses:
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            print(result["response_latex"])
+
+    @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
+    def test_alternative_names_compound_units(self):
+        params = {"strict_syntax": False}
+        convert_alternative_names_to_standard
+        n = len(convert_alternative_names_to_standard)
+        incorrect = []
+        errors = []
+        for i in range(0,n):
+            for j in range(0,n):
+                answer = convert_alternative_names_to_standard[i][1]+"*"+convert_alternative_names_to_standard[j][1]
+                for prod in ["*"," ",""]:
+                    response = convert_alternative_names_to_standard[i][0]+prod+convert_alternative_names_to_standard[j][0]
+                    try:
+                        result = evaluation_function(response, answer, params)
+                    except:
+                        errors.append((answer,response))
+                        continue
+                    if not result.get("is_correct"):
+                        incorrect.append((answer,response))
+        log_details = True
+        if log_details:
+            f = open("alternatives_log.txt","w")
+            f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors]))
+            f.close()
+            print(f"{len(incorrect)}/{3*n*n} {len(errors)}/{3*n*n} {(len(errors)+len(incorrect))/(3*n*n)}")
+        self.assertEqual(len(errors)+len(incorrect), 0)
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):
@@ -184,7 +209,6 @@ class TestEvaluationFunction(unittest.TestCase):
                         continue
                     if not result.get("is_correct"):
                         incorrect.append((answer,response))
-        #print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k}")
         self.assertEqual(len(errors)+len(incorrect), 0)
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
@@ -229,7 +253,7 @@ class TestEvaluationFunction(unittest.TestCase):
                             continue
                         if not result.get("is_correct"):
                             incorrect.append((answer,response))
-        log_details = False
+        log_details = True
         if log_details:
             f = open("symbols_log.txt","w")
             f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors])+"\nDoes not match convention:\n"+"".join([str(x)+"\n" for x in does_not_match_convention]))
@@ -329,6 +353,19 @@ class TestEvaluationFunction(unittest.TestCase):
                   "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
                   "strict_syntax": False}
 
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_compare_quantities_with_defaults_and_alternatives(self):
+        params = { "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
+                   "input_symbols": [['d',['distance','D']],['t',['time','T']],['v',['velocity','speed','V']]],
+                   "strict_syntax": False}
+
+        response = "(distance/time)**2*((1/3.6)**2)+velocity**2"
+        answer = "2*speed**2"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+        response = "(D/T)**2*((1/3.6)**2)+2*V**2-velocity**2"
+        answer = "2*v**2"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_rtol(self):
@@ -439,7 +476,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi", "strict_syntax": False,
-                  "input_symbols": ['g','v','h','l']}
+                  "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
         # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
         answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
         # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
