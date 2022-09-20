@@ -37,7 +37,7 @@ class TestEvaluationFunction(unittest.TestCase):
     """
 
     def assertEqual_input_variations(self, response, answer, params, value):
-        with self.subTest(variation="default"):
+        with self.subTest(response=response, answer=answer):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), value)
         variation_definitions = [lambda x : x.replace('**','^'),
@@ -338,6 +338,19 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
         response = "(D/T)**2*((1/3.6)**2)+2*V**2-velocity**2"
+        answer = "2*v**2"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_compare_quantities_with_defaults_and_short_alternatives(self):
+        params = { "quantities": "('distance','(metre)') ('time','(second)') ('velocity','(kilo*metre/hour)')",
+                   "input_symbols": [['distance',['d','D']],['time',['t','T']],['velocity',['v','speed','s']]],
+                   "strict_syntax": False}
+
+        response = "(distance/time)**2*((1/3.6)**2)+velocity**2"
+        answer = "2*speed**2"
+        self.assertEqual_input_variations(response, answer, params, True)
+
+        response = "(D/T)**2*((1/3.6)**2)+2*s**2-velocity**2"
         answer = "2*v**2"
         self.assertEqual_input_variations(response, answer, params, True)
 
