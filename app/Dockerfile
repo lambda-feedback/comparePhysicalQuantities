@@ -14,6 +14,7 @@ COPY evaluation_tests.py ./app/
 
 # Copy additional files
 COPY static_unit_conversion_arrays.py ./app/
+COPY expression_utilities.py ./app/
 
 # Copy Documentation
 COPY docs/dev.md ./app/docs/dev.md
