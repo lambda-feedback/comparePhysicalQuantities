@@ -23,11 +23,11 @@ def evaluation_function(response, answer, params) -> dict:
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
-    if answer == "spew":
-        return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
-
     answer, response = preprocess_expression([answer, response],parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
+
+    if answer == "spew":
+        return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
 
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
