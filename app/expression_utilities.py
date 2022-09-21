@@ -13,16 +13,15 @@ def preprocess_expression(exprs, params):
     if isinstance(exprs,str):
         exprs = [exprs]
 
-    if "input_symbols" in params.keys():
-        substitutions = []
-        for input_symbol in params["input_symbols"]:
-            substitutions.append((input_symbol[0],input_symbol[0]))
-            for alternative in input_symbol[1]:
-                substitutions.append((alternative,input_symbol[0]))
-        substitutions.sort(key=lambda x: -len(x[0]))
+    substitutions = []
+    for input_symbol in params.get("input_symbols",[]):
+        substitutions.append((input_symbol[0],input_symbol[0]))
+        for alternative in input_symbol[1]:
+            substitutions.append((alternative,input_symbol[0]))
+    substitutions.sort(key=lambda x: -len(x[0]))
 
-        for k in range(0,len(exprs)):
-            exprs[k] = substitute(exprs[k], substitutions)
+    for k in range(0,len(exprs)):
+        exprs[k] = substitute(exprs[k], substitutions)
 
     return exprs
 
