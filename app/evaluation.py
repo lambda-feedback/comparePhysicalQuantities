@@ -24,7 +24,7 @@ def evaluation_function(response, answer, params) -> dict:
     parameters.update(params)
 
     if answer == "spew":
-        return return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
+        return {"is_correct": False, "feedback": f"{answer} {response} {params}"}
 
     answer, response = preprocess_expression([answer, response],parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
