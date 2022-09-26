@@ -3,10 +3,10 @@ from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix, Symbol
 
 try:
-    from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
+    from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 except ImportError:
-    from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions
+    from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
 def evaluation_function(response, answer, params) -> dict:
@@ -23,8 +23,10 @@ def evaluation_function(response, answer, params) -> dict:
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
+    answer = substitute(answer+" ", convert_alternative_names_to_standard)[0:-1]
+    response = substitute(response+" ", convert_alternative_names_to_standard)[0:-1]
+
     answer, response = preprocess_expression([answer, response],parameters)
-    new_answer, new_response = preprocess_expression([answer, response],parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
     if parameters["comparison"] == "buckinghamPi":
@@ -273,8 +275,7 @@ def expression_to_latex(expression,parameters,parsing_params):
     expression_preview = parse_expression(expression,parsing_params_latex)
     symbol_names = {}
     for x in symbs_dic.values():
-        if str(x) in names_of_prefixes_units_and_dimensions:
-            symbol_names.update({x: "~\mathrm{"+str(x)+"}"})
+        symbol_names.update({x: "~\mathrm{"+str(x)+"}"})
     latex_str = latex(expression_preview,symbol_names=symbol_names)
     for symbol in symbs_dic.keys():
         if symbol not in symbol_dict.keys() and symbol not in unsplittable_symbols:

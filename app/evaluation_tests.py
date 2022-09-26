@@ -2,10 +2,10 @@ import unittest, sys
 
 try:
     from .evaluation import evaluation_function
-    from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 except ImportError:
     from evaluation import evaluation_function
-    from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI
+    from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions,  list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 
 # If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
 # then tests marked with @unittest.skipIf(skip_resource_intensive_tests,message_on_skip)
@@ -151,12 +151,46 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"strict_syntax": False}
         responses = ["m",
                      "s",
-                     "s*m",
-                     "x*y km/h"]
+                     "s*m"]
         for response in responses:
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            print(result["response_latex"])
+
+    @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
+    def test_alternative_names_compound_units(self):
+        params = {"strict_syntax": False}
+        convert_alternative_names_to_standard
+        n = len(convert_alternative_names_to_standard)
+        incorrect = []
+        errors = []
+        for i in range(0,n):
+            for j in range(0,n):
+                answer = convert_alternative_names_to_standard[i][1]+"*"+convert_alternative_names_to_standard[j][1]
+                for prod in ["*"," ",""]:
+                    left = convert_alternative_names_to_standard[i][0]
+                    if isinstance(left,tuple):
+                        if len(prod) == 0:
+                            left = convert_alternative_names_to_standard[i][1]
+                        else:
+                            left = left[0]
+                    right = convert_alternative_names_to_standard[j][0]
+                    if isinstance(right,tuple):
+                        right = right[0]
+                    response = left+prod+right
+                    try:
+                        result = evaluation_function(response, answer, params)
+                    except:
+                        errors.append((answer,response))
+                        continue
+                    if not result.get("is_correct"):
+                        incorrect.append((answer,response))
+        log_details = False
+        if log_details:
+            f = open("test_alternative_names_compound_units_log.txt","w")
+            f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors]))
+            f.close()
+            print(f"{len(incorrect)}/{3*n*n} {len(errors)}/{3*n*n} {(len(errors)+len(incorrect))/(3*n*n)}")
+        self.assertEqual((len(errors)+len(incorrect))/(3*n*n) < 0.01, True)
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_units(self):
@@ -230,7 +264,7 @@ class TestEvaluationFunction(unittest.TestCase):
                             incorrect.append((answer,response))
         log_details = False
         if log_details:
-            f = open("symbols_log.txt","w")
+            f = open("test_short_form_of_compound_units_log.txt","w")
             f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors])+"\nDoes not match convention:\n"+"".join([str(x)+"\n" for x in does_not_match_convention]))
             f.close()
             print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k} {len(does_not_match_convention)}/{k+len(does_not_match_convention)} {len(does_not_match_convention)/(k+len(does_not_match_convention))}")
