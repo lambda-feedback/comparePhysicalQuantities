@@ -23,8 +23,8 @@ def evaluation_function(response, answer, params) -> dict:
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
-    answer = substitute(answer, convert_alternative_names_to_standard)
-    response = substitute(response, convert_alternative_names_to_standard)
+    answer = substitute(answer+" ", convert_alternative_names_to_standard)[0:-1]
+    response = substitute(response+" ", convert_alternative_names_to_standard)[0:-1]
 
     answer, response = preprocess_expression([answer, response],parameters)
 

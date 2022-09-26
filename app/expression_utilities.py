@@ -28,11 +28,13 @@ def preprocess_expression(exprs, params):
 def substitute(string, substitutions):
     '''
     Input:
-        string        : a string or a list of strings
-        substitutions : a list of pairs of strings
+        string        (required) : a string or a list of strings
+        substitutions (required) : a list with elements of the form (string,string)
+                                   or ((string,list of strings),string)
     Output:
         A string that is the input string where any occurence of the left element 
         of each pair in substitutions have been replaced with the corresponding right element.
+        If the first element in the substitution is of the form (string,list of strings) then the substitution will only happen if the first element followed by one of the strings in the list in the second element.
     Remarks:
         Substitutions are made in the input order but if a substitutions left element is a
         substring of a preceding substitutions right element there will be no substitution.
@@ -62,13 +64,23 @@ def substitute(string, substitutions):
             while index < len(part):
                 matched_start = False
                 for k,pair in enumerate(substitutions):
-                    if part.startswith(pair[0],index):
+                    if isinstance(pair[0], tuple):
+                        match = False
+                        for look_ahead in pair[0][1]:
+                            if part.startswith(pair[0][0]+look_ahead,index):
+                                match = True
+                                break
+                        substitution_length = len(pair[0][0])
+                    else:
+                        match = part.startswith(pair[0],index)
+                        substitution_length = len(pair[0])
+                    if match:
                         matched_start = True
                         if len(string_buffer) > 0:
                             new_string.append(string_buffer)
                             string_buffer = ""
                         new_string.append(k)
-                        index += len(pair[0])
+                        index += substitution_length
                         break
                 if not matched_start:
                     string_buffer += part[index]
@@ -150,6 +162,8 @@ def parse_expression(expr, parsing_params):
     extra_transformations = parsing_params.get("extra_transformations",())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
+    separate_unsplittable_symbols = [(x,x+" ") for x in unsplittable_symbols]
+    expr = substitute(expr,separate_unsplittable_symbols)
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
     else:

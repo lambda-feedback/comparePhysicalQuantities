@@ -36,14 +36,15 @@ def list_of_SI_base_unit_dimensions():
     SI base units taken from Table 1 https://physics.nist.gov/cuu/Units/units.html
     Note that gram is used as a base unit instead of kilogram.
     """
+    preop = lambda x:[(x,[" ","*","/"])]
     list = [
-        ('metre',   'm',   'length',              ['metres','meter','meters']),
-        ('gram',    'g',   'mass',                ['grams']),
-        ('second',  's',   'time',                ['seconds']),
-        ('ampere',  'A',   'electric_current',    ['amperes','Ampere','Amperes']),
-        ('kelvin',  'K',   'temperature',         ['kelvins','Kelvin','Kelvins']),
-        ('mole',    'mol', 'amount_of_substance', ['moles']),
-        ('candela', 'cd',  'luminous_intensity',  ['candelas','Candela','Candelas']),
+        ('metre',   'm',   'length',              preop('metres')+['meter']+preop('meters')),
+        ('gram',    'g',   'mass',                preop('grams')),
+        ('second',  's',   'time',                preop('seconds')),
+        ('ampere',  'A',   'electric_current',    preop('amperes')+['Ampere']+preop('Amperes')),
+        ('kelvin',  'K',   'temperature',         preop('kelvins')+['Kelvin']+preop('Kelvins')),
+        ('mole',    'mol', 'amount_of_substance', preop('moles')),
+        ('candela', 'cd',  'luminous_intensity',  preop('candelas')+['Candela']+preop('Candelas')),
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -51,30 +52,30 @@ def list_of_SI_base_unit_dimensions():
 def list_of_derived_SI_units_in_SI_base_units():
     """
     Derived SI units taken from Table 3 https://physics.nist.gov/cuu/Units/units.html
+    Note that radians and degree have been moved to list_of_very_common_units_in_SI to reduce collisions when substituting.
     Note that degrees Celsius is omitted.
     """
+    preop = lambda x:[(x,[" ","*","/"])]
     list = [
-        ('radian',    'r',   '(1)',                                                 ['radians']), # Note: here 'r' is used instead of the more common 'rad' to avoid collision
-        ('steradian', 'sr',  '(1)',                                                 ['steradians']),
         ('hertz',     'Hz',  '(second**(-1))',                                      []),
-        ('newton',    'N',   '(metre*kilo*gram*second**(-2))',                      ['newtons','Newton','Newtons']),
-        ('pascal',    'Pa',  '(metre**(-1)*kilogram*second**(-2))',                 ['pascals','Pascal','Pascals']),
-        ('joule',     'J',   '(metre**2*kilo*gram*second**(-2))',                   ['joules','Joule','Joules']),
-        ('watt',      'W',   '(metre**2*kilo*gram*second**(-3))',                   ['watts','Watt','Watts']),
-        ('coulomb',   'C',   '(second*ampere)',                                     ['coulombs','Coulomb','Coulombs']),
-        ('volt',      'V',   '(metre**2*kilo*gram*second**(-3)*ampere**(-1))',      ['volts','Volt','Volts']),
-        ('farad',     'F',   '(metre**(-2)*(kilo*gram)**(-1)*second**4*ampere**2)', ['farads','Farad','Farads']),
-        ('ohm',       'O', '(metre**2*kilo*gram*second**(-3)*ampere**(-2))',        ['ohms','Ohm','Ohms']),
-        ('siemens',   'S',   '(metre**(-2)*kilo*gram**(-1)*second**3*ampere**2)',   ['Siemens']),
-        ('weber',     'Wb',  '(metre**2*kilo*gram*second**(-2)*ampere**(-1))',      ['webers','Weber','Webers']),
-        ('tesla',     'T',   '(kilo*gram*second**(-2)*ampere**(-1))',               ['teslas','Tesla','Teslas']),
-        ('henry',     'H',   '(metre**2*kilo*gram*second**(-2)*ampere**(-2))',      ['henrys','Henry','Henrys']),
-        ('lumen',     'lm',  '(candela)',                                           ['lumens']),
+        ('newton',    'N',   '(metre*kilo*gram*second**(-2))',                      preop('newtons')+['Newton']+preop('Newtons')),
+        ('pascal',    'Pa',  '(metre**(-1)*kilogram*second**(-2))',                 preop('pascals')+['Pascal']+preop('Pascals')),
+        ('joule',     'J',   '(metre**2*kilo*gram*second**(-2))',                   preop('joules')+['Joule']+preop('Joules')),
+        ('watt',      'W',   '(metre**2*kilo*gram*second**(-3))',                   preop('watts')+['Watt']+preop('Watts')),
+        ('coulomb',   'C',   '(second*ampere)',                                     preop('coulombs')+['Coulomb']+preop('Coulombs')),
+        ('volt',      'V',   '(metre**2*kilo*gram*second**(-3)*ampere**(-1))',      preop('volts')+['Volt']+preop('Volts')),
+        ('farad',     'F',   '(metre**(-2)*(kilo*gram)**(-1)*second**4*ampere**2)', preop('farads')+['Farad']+preop('Farads')),
+        ('ohm',       'O', '(metre**2*kilo*gram*second**(-3)*ampere**(-2))',        preop('ohms')+['Ohm']+preop('Ohms')),
+        ('siemens',   'S',   '(metre**(-2)*kilo*gram**(-1)*second**3*ampere**2)',   preop('Siemens')),
+        ('weber',     'Wb',  '(metre**2*kilo*gram*second**(-2)*ampere**(-1))',      preop('webers')+['Weber']+preop('Webers')),
+        ('tesla',     'T',   '(kilo*gram*second**(-2)*ampere**(-1))',               preop('teslas')+['Tesla']+preop('Teslas')),
+        ('henry',     'H',   '(metre**2*kilo*gram*second**(-2)*ampere**(-2))',      preop('henrys')+['Henry']+preop('Henrys')),
+        ('lumen',     'lm',  '(candela)',                                           preop('lumens')),
         ('lux',       'lx',  '(metre**(-2)*candela)',                               []),
-        ('becquerel', 'Bq',  '(second**(-1))',                                      ['becquerels','Becquerel','Becquerels']),
-        ('gray',      'Gy',  '(metre**2*second**(-2))',                             ['grays','Gray','Grays']),
-        ('sievert',   'Sv',  '(metre**2*second**(-2))',                             ['sieverts','Sievert','Sieverts']),
-        ('katal',     'kat', '(second**(-1)*mole)',                                 ['katals','Katal','Katals'])
+        ('becquerel', 'Bq',  '(second**(-1))',                                      preop('becquerels')+['Becquerel']+preop('Becquerels')),
+        ('gray',      'Gy',  '(metre**2*second**(-2))',                             preop('grays')+['Gray']+preop('Grays')),
+        ('sievert',   'Sv',  '(metre**2*second**(-2))',                             preop('sieverts')+['Sievert']+preop('Sieverts')),
+        ('katal',     'kat', '(second**(-1)*mole)',                                 preop('katals')+['Katal']+preop('Katals'))
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -82,19 +83,23 @@ def list_of_derived_SI_units_in_SI_base_units():
 def list_of_very_common_units_in_SI():
     """
     Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
+    Note that radian and steradian from Table 3 have been moved here to reduce collisions when substituting.
     This is the subset of common symbols whose short form symbols are allowed
     """
+    preop = lambda x:[(x,[" ","*","/"])]
     list = [
-        ('minute',            'min', '(60*second)',                   ['minutes']),
-        ('hour',              'h',   '(3600*second)',                 ['hours']),
-        ('degree',            'deg', '(pi/180)',                      ['degrees']),
-        ('liter',             'L',   '(10**(-3)*metre**3)',           ['liters']),
-        ('metricton',         't',   '(10**3*kilo*gram)',             ['tonne','tonnes']),
-        ('neper',             'Np',  '(1)',                           ['nepers','Neper','Nepers']),
-        ('bel',               'B',   '((1/2)*log(10))',               ['bels','Bel','Bels']),
-        ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)',     ['electronvolts']),
-        ('atomicmassunit',    'u',   '(1.66054*10**(-27)*kilo*gram)', ['atomicmassunits']),
-        ('angstrom',          'å',   '(10**(-10)*metre)',             ['angstroms','Angstrom','Angstroms','Ångström']),
+        ('radian',    'r',   '(1)',                                   preop('radians')), # Note: here 'r' is used instead of the more common 'rad' to avoid collision
+        ('steradian', 'sr',  '(1)',                                   preop('steradians')),
+        ('minute',            'min', '(60*second)',                   preop('minutes')),
+        ('hour',              'h',   '(3600*second)',                 preop('hours')),
+        ('degree',            'deg', '(pi/180)',                      preop('degrees')),
+        ('liter',             'L',   '(10**(-3)*metre**3)',           preop('liters')),
+        ('metricton',         't',   '(10**3*kilo*gram)',             preop('tonne')+preop('tonnes')),
+        ('neper',             'Np',  '(1)',                           preop('nepers')+['Neper']+preop('Nepers')),
+        ('bel',               'B',   '((1/2)*log(10))',               preop('bels')+['Bel']+preop('Bels')),
+        ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)',     preop('electronvolts')),
+        ('atomicmassunit',    'u',   '(1.66054*10**(-27)*kilo*gram)', preop('atomicmassunits')),
+        ('angstrom',          'å',   '(10**(-10)*metre)',             preop('angstroms')+['Angstrom']+preop('Angstroms')+['Ångström']),
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -104,21 +109,22 @@ def list_of_common_units_in_SI():
     Commonly used non-SI units taken from Table 6 and 7 https://physics.nist.gov/cuu/Units/outside.html
     Note that short form symbols are defined here, but not used since they cause to many ambiguities
     """
+    preop = lambda x:[(x,[" ","*","/"])]
     list = [
-        ('day',               'd',   '(86400*second)',                     ['days']),
+        ('day',               'd',   '(86400*second)',                     preop('days')),
         ('angleminute',       "'",   '(pi/10800)',                         []),
         ('anglesecond',       '"',   '(pi/648000)',                        []),
-        ('astronomicalunit',  'au',  '(149597870700*metre)',               ['astronomicalunits']),
-        ('nauticalmile',      'nmi', '(1852*metre)',                       ['nauticalmies']), #Note: no short form in source, short form from Wikipedia
-        ('knot',              'kn',  '((1852/3600)*metre/second)',         ['knots']), #Note: no short form in source, short form from Wikipedia
-        ('are',               'a',   '(10**2*metre**2)',                   ['ares']),
-        ('hectare',           'ha',  '(10**4*metre**2)',                   ['hectares']),
-        ('bar',               'bar', '(10**5*pascal)',                     ['bars']),
-        ('barn',              'b',   '(10**(-28)*metre**2)',               ['barns']),
-        ('curie',             'Ci',  '(3.7*10**10*becquerel)',             ['curies']),
-        ('roentgen',          'R',   '(2.58*10**(-4)*kelvin/(kilo*gram))', ['roentgens','Roentgen','Roentgens','Röntgen']),
-        ('rad',               'rad', '(10**(-2)*gray)',                    ['rads']),
-        ('rem',               'rem', '(10**(-2)*sievert)',                 ['rems']),
+        ('astronomicalunit',  'au',  '(149597870700*metre)',               preop('astronomicalunits')),
+        ('nauticalmile',      'nmi', '(1852*metre)',                       preop('nauticalmiles')), #Note: no short form in source, short form from Wikipedia
+        ('knot',              'kn',  '((1852/3600)*metre/second)',         preop('knots')), #Note: no short form in source, short form from Wikipedia
+        ('are',               'a',   '(10**2*metre**2)',                   preop('ares')),
+        ('hectare',           'ha',  '(10**4*metre**2)',                   preop('hectares')),
+        ('bar',               'bar', '(10**5*pascal)',                     preop('bars')),
+        ('barn',              'b',   '(10**(-28)*metre**2)',               preop('barns')),
+        ('curie',             'Ci',  '(3.7*10**10*becquerel)',             preop('curies')),
+        ('roentgen',          'R',   '(2.58*10**(-4)*kelvin/(kilo*gram))', preop('roentgens')+['Roentgen']+preop('Roentgens')+['Röntgen']),
+        ('rad',               'rad', '(10**(-2)*gray)',                    preop('rads')),
+        ('rem',               'rem', '(10**(-2)*sievert)',                 preop('rems')),
         ]+list_of_very_common_units_in_SI()
     list.sort(key=lambda x: -len(x[0]))
     return list
@@ -157,9 +163,11 @@ def convert_short_forms():
     return protect_long_forms+collision_fixes+convert_short_forms_list
 
 def convert_to_SI_base_units():
-    return [[(x[0],x[2]) for x in list_of_common_units_in_SI()],\
-            [(x[0],x[2]) for x in list_of_derived_SI_units_in_SI_base_units()],\
-            [(x[0],x[2]) for x in list_of_SI_prefixes()]]
+    protect_base_units = [(x[0],x[0]) for x in list_of_SI_base_unit_dimensions()]
+    return [protect_base_units+[(x[0],x[2]) for x in list_of_derived_SI_units_in_SI_base_units()],\
+            protect_base_units+[(x[0],x[2]) for x in list_of_common_units_in_SI()],\
+            protect_base_units+[(x[0],x[2]) for x in list_of_derived_SI_units_in_SI_base_units()],\
+            protect_base_units+[(x[0],x[2]) for x in list_of_SI_prefixes()]]
 
 def convert_to_SI_base_units_short_form():
     return [convert_short_forms()]+convert_to_SI_base_units()
@@ -171,14 +179,12 @@ def convert_SI_base_units_to_dimensions_short_form():
     return convert_to_SI_base_units_short_form()+[[(x[0],x[2]) for x in list_of_SI_base_unit_dimensions()]]
 
 def convert_alternative_names_to_standard():
-    standard_alternatives = list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_very_common_units_in_SI()+list_of_common_units_in_SI()
-    protect_standards = []
+    standard_alternatives = list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI()
     convert_to_standard = []
     for elem in standard_alternatives:
         standard = elem[0]
         alternatives = elem[3]
-        protect_standards.append((standard,standard))
         for alternative in alternatives:
             convert_to_standard.append((alternative,standard))
-    convert_to_standard.sort(key=lambda x: -len(x[0]))
-    return protect_standards+convert_to_standard
+    convert_to_standard.sort(key=lambda x: -max(len(x[0]),len(x[0][0])))
+    return convert_to_standard
