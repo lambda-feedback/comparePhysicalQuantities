@@ -27,7 +27,6 @@ def evaluation_function(response, answer, params) -> dict:
     response = substitute(response+" ", convert_alternative_names_to_standard)[0:-1]
 
     answer, response = preprocess_expression([answer, response],parameters)
-
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
     if parameters["comparison"] == "buckinghamPi":
