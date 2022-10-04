@@ -14,11 +14,30 @@ def preprocess_expression(exprs, params):
         exprs = [exprs]
 
     if "input_symbols" in params.keys():
+        input_symbols = params["input_symbols"]
+        input_symbols_to_remove = []
+        alternatives_to_remove = []
+        for k in range(0,len(input_symbols)):
+            if len(input_symbols[k]) > 0:
+                input_symbols[k][0].strip()
+                if len(input_symbols[k][0]) == 0:
+                    input_symbols_to_remove += [k]
+            else:
+                for i in range(0,len(input_symbols[k][1])):
+                    if len(input_symbols[k][1][i]) > 0:
+                        input_symbols[k][1][i].strip()
+                    if len(input_symbols[k][1][i]) == 0:
+                        alternatives_to_remove += [(k,i)]
+        for (k,i) in alternatives_to_remove:
+            del input_symbols[k][1][i]
+        for k in input_symbols_to_remove:
+            del input_symbols[k]
         substitutions = []
         for input_symbol in params["input_symbols"]:
             substitutions.append((input_symbol[0],input_symbol[0]))
             for alternative in input_symbol[1]:
-                substitutions.append((alternative,input_symbol[0]))
+                if len(alternative) > 0:
+                    substitutions.append((alternative,input_symbol[0]))
         substitutions.sort(key=lambda x: -len(x[0]))
 
         for k in range(0,len(exprs)):

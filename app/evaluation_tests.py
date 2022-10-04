@@ -583,5 +583,14 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_empty_input_symbols_codes_and_alternatives(self):
+        answer = '10*gamma km/s'
+        response = '10*gamma km/s'
+        params = {'strict_syntax': False,
+                   'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
+                 }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
 if __name__ == "__main__":
     unittest.main()
