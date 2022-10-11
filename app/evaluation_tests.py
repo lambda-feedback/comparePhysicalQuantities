@@ -1,10 +1,10 @@
 import unittest, sys
 
 try:
-    from .evaluation import evaluation_function
+    from .evaluation import evaluation_function, parse_error_warning
     from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 except ImportError:
-    from evaluation import evaluation_function
+    from evaluation import evaluation_function, parse_error_warning
     from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions,  list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
 
 # If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
@@ -60,13 +60,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_invalid_user_expression(self):
         body = {"response": "3x*", "answer": "3*x"}
 
-        self.assertRaises(
-            Exception,
-            evaluation_function,
-            body["response"],
-            body["answer"],
-            {},
-        )
+        result = evaluation_function(body["response"],body["answer"],{})
+        self.assertEqual(result["feedback"],parse_error_warning(body["response"]))
 
     def test_invalid_author_expression(self):
         body = {"response": "3*x", "answer": "3x*"}
@@ -591,6 +586,19 @@ class TestEvaluationFunction(unittest.TestCase):
                  }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
+
+    def test_warning_inappropriate_symbol(self):
+        answer = '2**4'
+        response = '2^4'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["feedback"], "Note that `^` cannot be used to denote exponentiation, use `**` instead.")
+
+        answer = '2**4'
+        response = '2^0.5'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
 if __name__ == "__main__":
     unittest.main()

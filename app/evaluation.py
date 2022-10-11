@@ -9,11 +9,13 @@ except ImportError:
     from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
+parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
+
 def evaluation_function(response, answer, params) -> dict:
     """
     Funtion that provides some basic dimensional analysis functionality.
     """
-    feedback = {} #{"feedback": f"{answer} {response} {params}"}
+    feedback = {}
     default_rtol = 1e-12
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
@@ -29,6 +31,13 @@ def evaluation_function(response, answer, params) -> dict:
     answer, response = preprocess_expression([answer, response],parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
+    remark = ""
+
+    if parameters["strict_syntax"]:
+        if "^" in response:
+            separator = "" if len(remark) == 0 else "\n"
+            remark += separator+"Note that `^` cannot be used to denote exponentiation, use `**` instead."
+
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
@@ -37,7 +46,8 @@ def evaluation_function(response, answer, params) -> dict:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
             except (SyntaxError, TypeError) as e:
-                raise Exception("SymPy was unable to parse the response") from e
+                separator = "" if len(remark) == 0 else "\n"
+                return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
             response_groups.append(expr)
         if answer == "-":
             answer_strings = []
@@ -147,7 +157,7 @@ def evaluation_function(response, answer, params) -> dict:
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
-    interp = {"response_latex": expression_to_latex(response,parameters,parsing_params)}
+    interp = {"response_latex": expression_to_latex(response,parameters,parsing_params,remark)}
 
     substitutions = []
     for subs_strings in list_of_substitutions_strings:
@@ -188,7 +198,8 @@ def evaluation_function(response, answer, params) -> dict:
     try:
         res = parse_expression(response,parsing_params)
     except (SyntaxError, TypeError) as e:
-        raise Exception(f"SymPy was unable to parse the response {response}") from e
+        separator = "" if len(remark) == 0 else "\n"
+        return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
 
     try:
         ans = parse_expression(answer,parsing_params)
@@ -233,6 +244,10 @@ def evaluation_function(response, answer, params) -> dict:
         if is_correct:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
+    if "feedback" in feedback.keys():
+        feedback.update({"feedback": feedback["feedback"]+remark})
+    elif len(remark) > 0:
+        feedback.update({"feedback": remark})
     return {"is_correct": False, **interp, **feedback}
 
 def find_matching_parenthesis(string,index):
@@ -256,7 +271,7 @@ def get_exponent_matrix(expressions,symbols):
         exponents_list.append(exponents)
     return Matrix(exponents_list)
 
-def expression_to_latex(expression,parameters,parsing_params):
+def expression_to_latex(expression,parameters,parsing_params,remark):
     do_transformations = parsing_params.get("do_transformations",False)
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
@@ -266,7 +281,8 @@ def expression_to_latex(expression,parameters,parsing_params):
     try:
         expression_preview = parse_expression(expression,parsing_params)
     except (SyntaxError, TypeError) as e:
-        raise Exception(f"Preview unable to parse {expression}") from e
+        separator = "" if len(remark) == 0 else "\n"
+        return {"is_correct": False, "feedback": parse_error_warning(expression)+separator+remark}
 
     symbs = expression_preview.atoms(Symbol)
     symbs_dic = {str(x): Symbol(str(x),commutative=False) for x in symbs}
