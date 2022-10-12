@@ -28,6 +28,12 @@ def evaluation_function(response, answer, params) -> dict:
     answer = substitute(answer+" ", convert_alternative_names_to_standard)[0:-1]
     response = substitute(response+" ", convert_alternative_names_to_standard)[0:-1]
 
+    if not isinstance(answer,str):
+        raise Exception("No answer was given.")
+    if not isinstance(response,str):
+        return {"is_correct": False, "feedback": "No response submitted."}
+
+
     answer = answer.strip()
     response = response.strip()
     if len(answer) == 0:
