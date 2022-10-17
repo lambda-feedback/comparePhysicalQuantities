@@ -25,14 +25,20 @@ def evaluation_function(response, answer, params) -> dict:
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
-    answer = substitute(answer+" ", convert_alternative_names_to_standard)[0:-1]
-    response = substitute(response+" ", convert_alternative_names_to_standard)[0:-1]
+    remark = ""
+    if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
+        if (" per " in response):
+            remark += "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous."
+        if (" per " in answer):
+            raise Exception("Note that 'per' is interpreted as '/'. This can cause ambiguities. Use '/' and parenthesis and ensure the answer is unambiguous.")
+        answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
+        response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
+
 
     if not isinstance(answer,str):
         raise Exception("No answer was given.")
     if not isinstance(response,str):
         return {"is_correct": False, "feedback": "No response submitted."}
-
 
     answer = answer.strip()
     response = response.strip()
@@ -44,12 +50,12 @@ def evaluation_function(response, answer, params) -> dict:
     answer, response = preprocess_expression([answer, response],parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
-    remark = ""
-
     if parameters["strict_syntax"]:
         if "^" in response:
             separator = "" if len(remark) == 0 else "\n"
             remark += separator+"Note that `^` cannot be used to denote exponentiation, use `**` instead."
+        if "^" in answer:
+            raise Exception("Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
@@ -219,8 +225,11 @@ def evaluation_function(response, answer, params) -> dict:
     except (SyntaxError, TypeError) as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
-    # Add how res was interpreted to the response
-    # interp = {"response_latex": latex(res)}
+    # Add remarks found to feedback
+    if "feedback" in feedback.keys():
+        feedback.update({"feedback": feedback["feedback"]+remark})
+    elif len(remark) > 0:
+        feedback.update({"feedback": remark})
 
     if parameters["comparison"] == "dimensions":
         is_correct = bool(simplify(res/ans).is_constant() and res != 0)
@@ -257,10 +266,6 @@ def evaluation_function(response, answer, params) -> dict:
         if is_correct:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
-    if "feedback" in feedback.keys():
-        feedback.update({"feedback": feedback["feedback"]+remark})
-    elif len(remark) > 0:
-        feedback.update({"feedback": remark})
     return {"is_correct": False, **interp, **feedback}
 
 def find_matching_parenthesis(string,index):
