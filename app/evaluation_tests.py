@@ -632,5 +632,39 @@ class TestEvaluationFunction(unittest.TestCase):
                 {},
             )
 
+    def test_per(self):
+        per_warning = "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous."
+        with self.subTest(tag="Correct response with per"):
+            answer = "50*kilometre/hour"
+            response = "50 kilometres per hour"
+            params = {"strict_syntax": False, "input_symbols": [["alpha",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            self.assertEqual(per_warning in result["feedback"], True)
+
+        with self.subTest(tag="Ambiguity in denominator"):
+            answer = "50*kilometre/(hour*ampere)"
+            response = "50 kilometres per hour ampere"
+            params = {"strict_syntax": False, "input_symbols": [["alpha",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(per_warning in result["feedback"], True)
+
+        with self.subTest(tag="With 'per' in input symbol"):
+            answer = "50*kilometre/hour"
+            response = "50 kilometres per hour"
+            params = {"strict_syntax": False, "input_symbols": [["per",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(per_warning in result.get("feedback",""), False)
+
+        with self.subTest(tag="With 'per' in input symbol alternative"):
+            answer = "50*kilometre/hour"
+            response = "50 kilometres per hour"
+            params = {"strict_syntax": False, "input_symbols": [["A",["per"]],["beta",["b"]],["gamma",["g"]]]}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(per_warning in result.get("feedback",""), False)
+
 if __name__ == "__main__":
     unittest.main()
