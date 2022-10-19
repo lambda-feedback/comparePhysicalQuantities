@@ -64,7 +64,7 @@ def evaluation_function(response, answer, params) -> dict:
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
-            except (SyntaxError, TypeError) as e:
+            except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
                 return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
             response_groups.append(expr)
@@ -76,7 +76,7 @@ def evaluation_function(response, answer, params) -> dict:
         for ans in answer_strings:
             try:
                 expr = parse_expression(ans,parsing_params).simplify()
-            except (SyntaxError, TypeError) as e:
+            except Exception as e:
                 raise Exception("SymPy was unable to parse the answer") from e
             answer_groups.append(expr)
     
@@ -91,7 +91,7 @@ def evaluation_function(response, answer, params) -> dict:
                     quantity_strings = eval(quantities_strings[index+1:index_match])
                     quantity = tuple(map(lambda x: parse_expression(x,parsing_params),quantity_strings))
                     quantities.append(quantity)
-                except (SyntaxError, TypeError) as e:
+                except Exception as e:
                     raise Exception("List of quantities not written correctly.")
                 index = quantities_strings.find('(',index_match+1)
             response_symbols = list(map(lambda x: x[0], quantities))
@@ -176,7 +176,11 @@ def evaluation_function(response, answer, params) -> dict:
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
         raise Exception("List of substitutions not written correctly.")
 
-    interp = {"response_latex": expression_to_latex(response,parameters,parsing_params,remark)}
+    try:
+        interp = {"response_latex": expression_to_latex(response,parameters,parsing_params,remark)}
+    except Exception as e:
+        separator = "" if len(remark) == 0 else "\n"
+        return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
 
     substitutions = []
     for subs_strings in list_of_substitutions_strings:
@@ -187,7 +191,7 @@ def evaluation_function(response, answer, params) -> dict:
             index_match = find_matching_parenthesis(subs_strings,index)
             try:
                 sub_substitutions.append(eval(subs_strings[index:index_match+1]))
-            except (SyntaxError, TypeError) as e:
+            except Exception as e:
                 raise Exception("List of substitutions not written correctly.")
             index = subs_strings.find('(',index_match+1)
             if index > -1 and subs_strings.find('|',index_match,index) > -1:
@@ -216,13 +220,13 @@ def evaluation_function(response, answer, params) -> dict:
     # Safely try to parse answer and response into symbolic expressions
     try:
         res = parse_expression(response,parsing_params)
-    except (SyntaxError, TypeError) as e:
+    except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
 
     try:
         ans = parse_expression(answer,parsing_params)
-    except (SyntaxError, TypeError) as e:
+    except Exception as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
     # Add remarks found to feedback
@@ -298,7 +302,7 @@ def expression_to_latex(expression,parameters,parsing_params,remark):
         expression = substitute(expression,subs)
     try:
         expression_preview = parse_expression(expression,parsing_params)
-    except (SyntaxError, TypeError) as e:
+    except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(expression)+separator+remark}
 
