@@ -666,5 +666,30 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual(result["is_correct"], False)
             self.assertEqual(per_warning in result.get("feedback",""), False)
 
+    def test_error_inappropriate_symbol(self):
+        answer = '0.5'
+        response = '0,5'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
+        answer = '(0.002*6800*v)/1.2'
+        response = '(0,002*6800*v)/1,2'
+        params = {'strict_syntax': False }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
+        answer = '-inf'
+        response = '-∞'
+        params = {'strict_syntax': False }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
+        answer = 'x*y'
+        response = 'x.y'
+        params = {'strict_syntax': False }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
 if __name__ == "__main__":
     unittest.main()
