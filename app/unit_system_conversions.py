@@ -99,7 +99,7 @@ def list_of_very_common_units_in_SI():
         ('bel',               'B',   '((1/2)*log(10))',               preop('bels')+['Bel']+preop('Bels')),
         ('electronvolt',      'eV',  '(1.60218*10**(-19)*joule)',     preop('electronvolts')),
         ('atomicmassunit',    'u',   '(1.66054*10**(-27)*kilo*gram)', preop('atomicmassunits')),
-        ('angstrom',          'å',   '(10**(-10)*metre)',             preop('angstroms')+['Angstrom']+preop('Angstroms')+['Ångström']),
+        ('angstrom',          'Å',   '(10**(-10)*metre)',             preop('angstroms')+['Angstrom']+preop('Angstroms')+['Ångström']),
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list
