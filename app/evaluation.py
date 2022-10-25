@@ -13,7 +13,7 @@ parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathemati
 
 def evaluation_function(response, answer, params) -> dict:
     """
-    Funtion that provides some basic dimensional analysis functionality.
+    Function that provides some basic dimensional analysis functionality.
     """
     feedback = {}
     default_rtol = 1e-12
