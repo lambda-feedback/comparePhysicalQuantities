@@ -89,29 +89,29 @@ Note that degrees Celsius is omitted.
 
 Note that the function treats radians and steradians as dimensionless values.
 
-| Unit name | Symbol | Expressed in base SI units                          |
-|-----------|:-------|:----------------------------------------------------|
-| radian    |   r    | 1                                                   |
-| steradian |  sr    | 1                                                   |
-| hertz     |  Hz    | second$^{-1}$                                       |
-| newton    |   N    | metre kilogram second$^{-2}$                        |
-| pascal    |  Pa    | metre$^{-1}$ kilogram second$^{-2}$                 |
-| joule     |   J    | metre$^2$ kilogram second$^{-2}$                    |
-| watt      |   W    | metre$^2$ kilogram second$^{-3}$                    |
-| coulomb   |   C    | second ampere                                       |
-| volt      |   V    | metre$^2$ kilogram second$^{-3}$ ampere$^{-1}$      |
-| farad     |   F    | metre$^{-2}$ kilogram$^{-1}$ second$^4$ ampere$^2$  |
-| ohm       |   O    | metre$^2$ kilogram second$^{-3}$ ampere$^{-2}$      |
-| siemens   |   S    | metre$^{-2}$ kilogram$^{-1}$ second$^3$ ampere$^2$  |
-| weber     |  Wb    | metre$^2$ kilogram second$^{-2}$ ampere$^{-1}$      |
-| tesla     |   T    | kilo gram second$^{-2}$ ampere$^{-1}$               |
-| henry     |   H    | metre$^2$ kilogram second$^{-2}$ ampere$^{-2}$      |
-| lumen     |  lm    | candela                                             |
-| lux       |  lx    | metre$^{-2}$ candela                                |
-| becquerel |  Bq    | second$^{-1}$                                       |
-| gray      |  Gy    | metre$^2$ second$^{-2}$                             |
-| sievert   |  Sv    | metre$^2$ second$^{-2}$                             |
-| katal     |  kat   | mole second$^{-1}$                                  |
+| Unit name | Symbol | Expressed in base SI units                                                       |
+|-----------|:-------|:---------------------------------------------------------------------------------|
+| radian    |   r    | 1                                                                                |
+| steradian |  sr    | 1                                                                                |
+| hertz     |  Hz    | $\mathrm{second}^{-1}$                                                           |
+| newton    |   N    | $\mathrm{metre}~\mathrm{kilogram}~\mathrm{second}^{-2}$                         |
+| pascal    |  Pa    | $\mathrm{metre}^{-1}~\mathrm{kilogram}~\mathrm{second}^{-2}$                     |
+| joule     |   J    | $\mathrm{metre}^2~\mathrm{kilogram~second}^{-2}$                                 |
+| watt      |   W    | $\mathrm{metre}^2~\mathrm{kilogram~second}^{-3}$                                 |
+| coulomb   |   C    | $\mathrm{second~ampere}$                                                         |
+| volt      |   V    | $\mathrm{metre}^2~\mathrm{kilogram second}^{-3}~\mathrm{ampere}^{-1}$            |
+| farad     |   F    | $\mathrm{metre}^{-2}~\mathrm{kilogram}^{-1}~\mathrm{second}^4~\mathrm{ampere}^2$ |
+| ohm       |   O    | $\mathrm{metre}^2~\mathrm{kilogram second}^{-3}~\mathrm{ampere}^{-2}$            |
+| siemens   |   S    | $\mathrm{metre}^{-2}~\mathrm{kilogram}^{-1}~\mathrm{second}^3~\mathrm{ampere}^2$ |
+| weber     |  Wb    | $\mathrm{metre}^2~\mathrm{kilogram~second}^{-2}~\mathrm{ampere}^{-1}$            |
+| tesla     |   T    | $\mathrm{kilogram~second}^{-2} \mathrm{ampere}^{-1}$                            |
+| henry     |   H    | $\mathrm{metre}^2~\mathrm{kilogram~second}^{-2}~\mathrm{ampere}^{-2}$            |
+| lumen     |  lm    | $\mathrm{candela}$                                                               |
+| lux       |  lx    | $\mathrm{metre}^{-2}~\mathrm{candela}$                                            |
+| becquerel |  Bq    | $\mathrm{second}^{-1}$                                                            |
+| gray      |  Gy    | $\mathrm{metre}^2~\mathrm{second}^{-2}$                                          |
+| sievert   |  Sv    | $\mathrm{metre}^2~\mathrm{second}^{-2}$                                          |
+| katal     |  kat   | $\mathrm{mole~second}^{-1}$                                                      |
 
 #### Table: Common non-SI units
 
@@ -137,8 +137,8 @@ Note that only the first table in this section has short form symbols defined, t
 | Unit name        | Expressed in SI units                         |
 |------------------|:----------------------------------------------|
 | day              | $86400$ second                                |
-| angleminute      | $\frac{pi}{10800}$                            |
-| anglesecond      | $\frac{pi}{648000}$                           |
+| angleminute      | $\frac{\pi}{10800}$                            |
+| anglesecond      | $\frac{\pi}{648000}$                           |
 | astronomicalunit | $149597870700$ metre                          |
 | nauticalmile     | $1852$ metre                                  |
 | knot             | $\frac{1852}{3600}$ metre second$^{-1}$       |
@@ -201,7 +201,7 @@ With this option the quantities (specified by the `quantities` parameter) can be
 Checks that the set of quantities in the response matches the set of quantities in the sense given by the Buckingham Pi theorem.
 
 There are three different ways of supplying this function with the necessary information.
-- In the answer, supply a list of groups on the form `['` first group `','` second group `','` ... `','` last group `']`. Note that if there is only one group it still needs to be written as a list `['` group `']`. When used this way the function assumes that the given list is correct and contains at least the minimum number of groups.
+- In the answer, provide an example set of groups as a comma seprated list. When used this way the function assumes that the given list is correct and contains at least the minimum number of groups.
 - In the `quantities` parameter, supply a list of what the dimensions for each quantity is and set answer to `-`. The function will then compute a list of sufficiently many independen dimensionless quantities and compare to the response.
 - In the `quantities` parameter, supply a list of what the dimensions for each quantity is and in the answer, supply a list of groups as in the first option. The function will then check that the supplied answer is dimensionless and has a sufficient number of independent groups before comparing it to the response.
 
