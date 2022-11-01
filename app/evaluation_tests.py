@@ -691,5 +691,25 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
+    def test_AAA_MECH50010_set_5(self):
+        # Dimensional homogeneity a) - This does not work due to fractional powers in answer
+        # params = {"strict_syntax": False,
+        #           "comparison": "buckinghamPi"}
+        # answer = "f*(((m*l)/T)**0.5)"
+        # response = "f**2*((m*l)/T)"
+        # result = evaluation_function(response, answer, params)
+        # self.assertEqual(result["is_correct"], True)
+
+        # Aircraft propeller a)
+        params = {"strict_syntax": False,
+                  "comparison": "buckinghamPi",
+                  "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
+                  "input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]]}
+        answer = "-"
+        response = "U/(omega*D),F/(rho*D**4*omega**2)"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
 if __name__ == "__main__":
     unittest.main()
+

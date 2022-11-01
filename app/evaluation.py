@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol
+from sympy import simplify, latex, Matrix, Symbol, Integer
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -107,6 +107,14 @@ def evaluation_function(response, answer, params) -> dict:
             if answer_groups == []:
                 # Compute answer groups
                 nullspace_basis = quantity_matrix.T.nullspace()
+                for basis_vector in nullspace_basis:
+                    multiplier = 1
+                    for i in range(0,basis_vector.rows):
+                        if not isinstance(basis_vector[i,0],Integer):
+                            multiplier *= 1/basis_vector[i,0]
+                    if multiplier != 1:
+                        for i in range(0,basis_vector.rows):
+                            basis_vector[i,0] = round(basis_vector[i,0]*multiplier)
                 answer_groups = [1]*number_of_groups
                 for i in range(0,len(answer_groups)):
                     for j in range(0,len(quantities)):
