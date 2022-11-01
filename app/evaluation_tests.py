@@ -710,6 +710,10 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
+        response = "U/(omega*D),F/(rho*D**2*U**2)"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
 if __name__ == "__main__":
     unittest.main()
 
