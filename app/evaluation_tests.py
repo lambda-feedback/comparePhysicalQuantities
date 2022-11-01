@@ -692,7 +692,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
     def test_AAA_MECH50010_set_5(self):
-        # Dimensional homogeneity a)
+        # Dimensional homogeneity a) - This does not work due to fractional powers in answer
         # params = {"strict_syntax": False,
         #           "comparison": "buckinghamPi"}
         # answer = "f*(((m*l)/T)**0.5)"
