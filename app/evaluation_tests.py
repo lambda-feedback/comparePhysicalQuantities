@@ -691,14 +691,78 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
-    def test_AAA_MECH50010_set_5(self):
-        # Dimensional homogeneity a) - This does not work due to fractional powers in answer
-        # params = {"strict_syntax": False,
-        #           "comparison": "buckinghamPi"}
-        # answer = "f*(((m*l)/T)**0.5)"
-        # response = "f**2*((m*l)/T)"
-        # result = evaluation_function(response, answer, params)
-        # self.assertEqual(result["is_correct"], True)
+    def test_fractional_powers_buckingham_pi(self):
+        params = {"strict_syntax": False, "comparison": "buckinghamPi"}
+        with self.subTest(tag="square root in answer"):
+            answer = "f*(((m*l)/T)**0.5)"
+            response = "f**2*((m*l)/T)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="fractional power that can be written exactly as a decimal in answer"):
+            answer = "f*(((m*l)/T)**0.25)"
+            response = "f**4*((m*l)/T)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="fractional power written as a fraction in answer"):
+            answer = "f*(((m*l)/T)**(1/3))"
+            response = "f**3*((m*l)/T)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="fractional power that that is not an n:th root in answer"):
+            answer = "f*(((m*l)/T)**(2/3))"
+            response = "f**3*((m*l)/T)**2"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+    def test_sums_buckingham_pi(self):
+        params = {"strict_syntax": False, "comparison": "buckinghamPi"}
+
+        with self.subTest(tag="sum of valid dimensionless terms"):
+            answer = "f*(((m*l)/T)**0.5)"
+            response = "f**2*((m*l)/T)+f*((m*l)/T)**0.5+1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="sum that contains an invalid dimensionless terms"):
+            answer = "f*(((m*l)/T)**0.5)"
+            response = "f**2*((m*l)/T)+((m*l)/T)**0.5+1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+        params = {"strict_syntax": False,
+                  "comparison": "buckinghamPi",
+                  "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
+                  "input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]]}
+
+        with self.subTest(tag="two groups, one is sum of valid terms"):
+            answer = "-"
+            response = "U/(omega*D),U/(omega*D)+F/(rho*D**4*omega**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="two groups, one has an invalid terms"):
+            answer = "-"
+            response = "U/(omega*D),U/(omega*D)+1/(rho*D**4*omega**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+        with self.subTest(tag="a sum with two independent valid terms instead of two groups"):
+            answer = "-"
+            response = "U/(omega*D)+F/(rho*D**4*omega**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+    def test_MECH50010_set_5(self):
+        # Dimensional homogeneity a)
+        params = {"strict_syntax": False,
+                  "comparison": "buckinghamPi"}
+        answer = "f*(((m*l)/T)**0.5)"
+        response = "f**2*((m*l)/T)"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
 
         # Aircraft propeller a)
         params = {"strict_syntax": False,

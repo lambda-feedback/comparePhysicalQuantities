@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -60,26 +60,37 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
+        response_number_of_groups = len(response_strings)
+        response_number_of_groups = len(response_strings)
         response_groups = []
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
+                expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
                 return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
-            response_groups.append(expr)
+            if isinstance(expr,Add):
+                response_groups += list(expr.args)
+            else:
+                response_groups.append(expr)
         if answer == "-":
             answer_strings = []
         else:
             answer_strings = answer.split(',')
+            answer_number_of_groups = len(answer_strings)
         answer_groups = []
         for ans in answer_strings:
             try:
                 expr = parse_expression(ans,parsing_params).simplify()
+                expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 raise Exception("SymPy was unable to parse the answer") from e
-            answer_groups.append(expr)
-    
+            if isinstance(expr,Add):
+                answer_groups += list(expr.args)
+            else:
+                answer_groups.append(expr)
+
         # Find what different symbols for quantities there are
         if "quantities" in parameters.keys():
             quantities_strings = parameters["quantities"]
@@ -119,7 +130,10 @@ def evaluation_function(response, answer, params) -> dict:
                 for i in range(0,len(answer_groups)):
                     for j in range(0,len(quantities)):
                         answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
-    
+
+            if answer == "-":
+                answer_number_of_groups = number_of_groups
+
             # Analyse dimensions of answers and responses
             answer_dimensions = []
             for group in answer_groups:
@@ -167,8 +181,14 @@ def evaluation_function(response, answer, params) -> dict:
             answer_symbols = list(answer_symbols)
     
         # Extract exponents from answers and responses and compare matrix ranks
+        sum_add_independent = lambda s: f"Sum in {s} group contains adds independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
         answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+        if answer_matrix.rank() > answer_number_of_groups:
+            raise Exception(sum_add_independent("answer"))
         response_matrix = get_exponent_matrix(response_groups,answer_symbols)
+        if response_matrix.rank() > response_number_of_groups:
+            separator = "" if len(remark) == 0 else "\n"
+            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark}
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
             return {"is_correct": True, **feedback}
@@ -297,7 +317,10 @@ def get_exponent_matrix(expressions,symbols):
     for expression in expressions:
         exponents = []
         for symbol in symbols:
-            exponents.append(expression.as_coeff_exponent(symbol)[1])
+            exponent = expression.as_coeff_exponent(symbol)[1]
+            if exponent == 0:
+                exponent = -expression.subs(symbol,1/symbol).as_coeff_exponent(symbol)[1]
+            exponents.append(exponent)
         exponents_list.append(exponents)
     return Matrix(exponents_list)
 
