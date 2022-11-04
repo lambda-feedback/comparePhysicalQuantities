@@ -778,6 +778,11 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
+        response = "F/(rhoD^4omega^2)"
+        result = evaluation_function(response, answer, params)
+        print(result)
+        self.assertEqual(result["is_correct"], False)
+
 if __name__ == "__main__":
     unittest.main()
 
