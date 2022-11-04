@@ -91,6 +91,8 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 answer_groups.append(expr)
 
+        remark = ""
+
         # Find what different symbols for quantities there are
         if "quantities" in parameters.keys():
             quantities_strings = parameters["quantities"]
@@ -151,7 +153,18 @@ def evaluation_function(response, answer, params) -> dict:
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
             if answer_matrix.rank() < number_of_groups:
                 raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
-    
+
+            response_symbols = set()
+            for res in response_groups:
+                response_symbols = response_symbols.union(res.free_symbols)
+            answer_symbols = set()
+            for ans in answer_groups:
+                answer_symbols = answer_symbols.union(ans.free_symbols)
+            if not response_symbols.issubset(answer_symbols):
+                feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
+                return {"is_correct": False, **feedback}
+            answer_symbols = list(answer_symbols)
+
             # Check that responses are dimensionless
             response_dimensions = []
             for group in response_groups:
@@ -167,7 +180,10 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             if response_matrix.rank() < number_of_groups:
+                feedback.update({"feedback": f"Response contains to few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
                 return {"is_correct": False, **feedback}
+            if response_number_of_groups > number_of_groups:
+                remark = "Response has more groups than necessary."
         else:
             response_symbols = set()
             for res in response_groups:
@@ -181,7 +197,7 @@ def evaluation_function(response, answer, params) -> dict:
             answer_symbols = list(answer_symbols)
     
         # Extract exponents from answers and responses and compare matrix ranks
-        sum_add_independent = lambda s: f"Sum in {s} group contains adds independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
+        sum_add_independent = lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
         answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
         if answer_matrix.rank() > answer_number_of_groups:
             raise Exception(sum_add_independent("answer"))

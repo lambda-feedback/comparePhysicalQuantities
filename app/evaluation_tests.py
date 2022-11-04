@@ -722,7 +722,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
         with self.subTest(tag="sum of valid dimensionless terms"):
             answer = "f*(((m*l)/T)**0.5)"
-            response = "f**2*((m*l)/T)+f*((m*l)/T)**0.5+1"
+            response = "5*f**2*((m*l)/T)+sin(10)*f*((m*l)/T)**0.5+1"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
 
