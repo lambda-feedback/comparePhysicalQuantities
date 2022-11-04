@@ -197,17 +197,17 @@ def evaluation_function(response, answer, params) -> dict:
     
         # Extract exponents from answers and responses and compare matrix ranks
         sum_add_independent = lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
+        separator = "" if len(remark) == 0 else "\n"
         answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
         if answer_matrix.rank() > answer_number_of_groups:
             raise Exception(sum_add_independent("answer"))
         response_matrix = get_exponent_matrix(response_groups,answer_symbols)
         if response_matrix.rank() > response_number_of_groups:
-            separator = "" if len(remark) == 0 else "\n"
             return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark}
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-            return {"is_correct": True, **feedback}
-        return {"is_correct": False, **feedback}
+            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark}
+        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark}
 
     list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
