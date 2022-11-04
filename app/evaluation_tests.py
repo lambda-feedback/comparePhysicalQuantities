@@ -691,6 +691,25 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
+    def test_warning_wrong_number_of_groups(self):
+        params = {"strict_syntax": False,
+                  "comparison": "buckinghamPi",
+                  "quantities": "('a','metre') ('b','metre') ('c','metre')",
+                  "input_symbols": [["a",[]],["b",[]],["c",[]]]}
+
+        with self.subTest(tag="Enough groups"):
+            answer = "-"
+            response = "a/c,b/c"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="Not enough groups"):
+            answer = "-"
+            response = "a/c"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual("Response contains too few independent groups." in result["feedback"], True)
+
     def test_fractional_powers_buckingham_pi(self):
         params = {"strict_syntax": False, "comparison": "buckinghamPi"}
         with self.subTest(tag="square root in answer"):
