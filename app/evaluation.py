@@ -9,7 +9,7 @@ except ImportError:
     from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
-parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
+parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Possible causes: incorrect notation, ambiguous expression, unpaired parentheses."
 
 def evaluation_function(response, answer, params) -> dict:
     """
@@ -30,7 +30,7 @@ def evaluation_function(response, answer, params) -> dict:
         if (" per " in response):
             remark += "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous."
         if (" per " in answer):
-            raise Exception("Note that 'per' is interpreted as '/'. This can cause ambiguities. Use '/' and parenthesis and ensure the answer is unambiguous.")
+            raise Exception("Note that 'per' is interpreted as '/'. This can cause ambiguities. Use '/' and parentheses and ensure the answer is unambiguous.")
         answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
         response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
 
@@ -60,7 +60,6 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
-        response_number_of_groups = len(response_strings)
         response_number_of_groups = len(response_strings)
         response_groups = []
         for res in response_strings:
