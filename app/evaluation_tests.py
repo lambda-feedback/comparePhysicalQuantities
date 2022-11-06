@@ -780,7 +780,6 @@ class TestEvaluationFunction(unittest.TestCase):
 
         response = "F/(rhoD^4omega^2)"
         result = evaluation_function(response, answer, params)
-        print(result)
         self.assertEqual(result["is_correct"], False)
 
 if __name__ == "__main__":
