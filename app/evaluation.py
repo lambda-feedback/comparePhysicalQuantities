@@ -16,9 +16,6 @@ def evaluation_function(response, answer, params) -> dict:
     Function that provides some basic dimensional analysis functionality.
     """
 
-    if response == "longStringOnlyUsedForDebugging":
-        raise Exception(f"{response}\n{answer}\n{params}")
-
     feedback = {}
     default_rtol = 1e-12
     if "substitutions" in params.keys():
