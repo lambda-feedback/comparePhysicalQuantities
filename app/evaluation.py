@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -286,6 +286,11 @@ def evaluation_function(response, answer, params) -> dict:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
     if parameters["comparison"] == "expression":
+        # REMARK: 'pi' should be a reserve symbols but is sometimes not treated as one, possibly because of input symbols
+        # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
+        # are other reserved symbols.
+        if "atol" in parameters.keys() or "rtol" in parameters.keys():
+            ans = ans.subs(Symbol('pi'),float(pi))
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
         error_below_atol = False
         error_below_rtol = False
