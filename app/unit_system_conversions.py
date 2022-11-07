@@ -146,6 +146,9 @@ def list_of_imperial_units():
         ('pint',              'pt',   '(568.26125*milli*litre)',           preop('pints')),
         ('quart',             'qt',   '(1.1365225*litre)',                 preop('quarts')),
         ('gallon',            'gal',  '(4546.09*litre)',                   preop('gallons')),
+        ('ounce',             'oz',   '(28.349523125*gram)',               preop('ounces')),
+        ('pound',             'lb',   '(0.45359237*kilo*gram)',            preop('pounds')),
+        ('stone',             'st',   '(6.35029318*kilo*gram)',            []),
         ]
     list.sort(key=lambda x: -len(x[0]))
     return list

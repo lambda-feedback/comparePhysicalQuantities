@@ -782,6 +782,18 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], False)
 
+        # Comparing to actual solutions b)
+        params = {'rtol': 0.05,
+                  'strict_syntax': False, 
+                  'cases': [{'answer': '3.1415926', 'feedback': '', 'mark': 1, 'params': {}}],
+                  'input_symbols': [['pi', ['Pi', 'PI', 'π']]]
+                  }
+        answer = "pi"
+        response = "3.14"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
+
 if __name__ == "__main__":
     unittest.main()
 
