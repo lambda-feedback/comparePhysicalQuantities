@@ -1,0 +1,10 @@
+Incorrect:
+('bar*nauticalmile', 'barnauticalmiles')
+('bar*newton', 'barnewtons')
+('bar*newton', 'barNewtons')
+('bar*newton', 'barNewton')
+('bar*neper', 'barnepers')
+('bar*neper', 'barNepers')
+('bar*neper', 'barNeper')
+
+Errors:
