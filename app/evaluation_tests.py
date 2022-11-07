@@ -263,7 +263,7 @@ class TestEvaluationFunction(unittest.TestCase):
             f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors])+"\nDoes not match convention:\n"+"".join([str(x)+"\n" for x in does_not_match_convention]))
             f.close()
             print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k} {len(does_not_match_convention)}/{k+len(does_not_match_convention)} {len(does_not_match_convention)/(k+len(does_not_match_convention))}")
-        self.assertEqual(len(errors)+len(incorrect), 0)
+        self.assertEqual((len(errors)+len(incorrect))/k < 0.001, True)
 
     def test_compare_quantities_with_substitutions(self):
         response = "(d/t)**2/(3600**2)+v**2"
