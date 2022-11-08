@@ -75,6 +75,14 @@ def evaluation_function(response, answer, params) -> dict:
                 response_groups += list(expr.args)
             else:
                 response_groups.append(expr)
+
+        try:
+            response_latex = [latex(x) for x in response_groups]
+            interp = {"response_latex": ", ".join(response_latex)}
+        except Exception as e:
+            separator = "" if len(remark) == 0 else "\n"
+            return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+
         if answer == "-":
             answer_strings = []
         else:
@@ -163,7 +171,7 @@ def evaluation_function(response, answer, params) -> dict:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
                 feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
 
             # Check that responses are dimensionless
@@ -176,13 +184,13 @@ def evaluation_function(response, answer, params) -> dict:
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
                     feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
-                    return {"is_correct": False, **feedback}
+                    return {"is_correct": False, **feedback, **interp}
     
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             if response_matrix.rank() < number_of_groups:
                 feedback.update({"feedback": f"Response contains to few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             if response_number_of_groups > number_of_groups:
                 remark = "Response has more groups than necessary."
         else:
@@ -194,7 +202,7 @@ def evaluation_function(response, answer, params) -> dict:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
                 feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
     
         # Extract exponents from answers and responses and compare matrix ranks
@@ -205,11 +213,11 @@ def evaluation_function(response, answer, params) -> dict:
             raise Exception(sum_add_independent("answer"))
         response_matrix = get_exponent_matrix(response_groups,answer_symbols)
         if response_matrix.rank() > response_number_of_groups:
-            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark}
+            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark, **interp}
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark}
-        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark}
+            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark, **interp}
+        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark, **interp}
 
     list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
