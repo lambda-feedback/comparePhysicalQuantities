@@ -24,6 +24,12 @@ All input parameters need to be supplied via the **Grading parameters** panel.
 
 There are six optional parameters that can be set: `substitutions`, `quantities`, `strict_syntax`, `rtol`, `atol` and `comparison`.
 
+## `elementary_functions`
+
+When using implicit multiplication function names with mulitple characters are sometimes split and not interpreted properly. Setting `elementary_functions` to True will reserve the function names listed below and prevent them from being split:
+
+`sin`, `sinc`, `csc`, `cos`, `sec`, `tan`, `cot`, `asin`, `acsc`, `acos`, `asec`, `atan`, `acot`, `atan2`,`sinh`, `cosh`, `tanh`, `csch`, `sech`, `asinh`, `acosh`, `atanh`, `acsch`, `asech`, `exp`, `log`, `sqrt`, `sign`, `Abs`, `Max`, `Min`, `arg`, `ceiling`, `floor`
+
 ### `substitutions`
 
 String that lists all substitutions that should be done to the answer and response inputs before processing.

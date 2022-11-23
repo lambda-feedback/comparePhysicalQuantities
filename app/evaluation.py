@@ -63,10 +63,12 @@ def evaluation_function(response, answer, params) -> dict:
         response_strings = response.split(',')
         response_number_of_groups = len(response_strings)
         response_number_of_groups = len(response_strings)
+        response_latex = []
         response_groups = []
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
+                response_latex += [latex(expr)]
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
@@ -76,12 +78,7 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 response_groups.append(expr)
 
-        try:
-            response_latex = [latex(x) for x in response_groups]
-            interp = {"response_latex": ", ".join(response_latex)}
-        except Exception as e:
-            separator = "" if len(remark) == 0 else "\n"
-            return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+        interp = {"response_latex": ", ".join(response_latex)}
 
         if answer == "-":
             answer_strings = []
@@ -299,6 +296,7 @@ def evaluation_function(response, answer, params) -> dict:
         # are other reserved symbols.
         if "atol" in parameters.keys() or "rtol" in parameters.keys():
             ans = ans.subs(Symbol('pi'),float(pi))
+            res = res.subs(Symbol('pi'),float(pi))
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
         error_below_atol = False
         error_below_rtol = False
