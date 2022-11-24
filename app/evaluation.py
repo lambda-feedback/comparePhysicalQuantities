@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -15,6 +15,7 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Function that provides some basic dimensional analysis functionality.
     """
+
     feedback = {}
     default_rtol = 1e-12
     if "substitutions" in params.keys():
@@ -62,10 +63,12 @@ def evaluation_function(response, answer, params) -> dict:
         response_strings = response.split(',')
         response_number_of_groups = len(response_strings)
         response_number_of_groups = len(response_strings)
+        response_latex = []
         response_groups = []
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
+                response_latex += [latex(expr)]
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
@@ -74,6 +77,9 @@ def evaluation_function(response, answer, params) -> dict:
                 response_groups += list(expr.args)
             else:
                 response_groups.append(expr)
+
+        interp = {"response_latex": ", ".join(response_latex)}
+
         if answer == "-":
             answer_strings = []
         else:
@@ -142,7 +148,7 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                answer_dimensions.append(dimension.simplify())
+                answer_dimensions.append(posify(dimension)[0].simplify())
             
             # Check that answers are dimensionless
             for k,dimension in enumerate(answer_dimensions):
@@ -162,7 +168,7 @@ def evaluation_function(response, answer, params) -> dict:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
                 feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
 
             # Check that responses are dimensionless
@@ -171,17 +177,17 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                response_dimensions.append(dimension.simplify())
+                response_dimensions.append(posify(dimension)[0].simplify())
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
                     feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
-                    return {"is_correct": False, **feedback}
+                    return {"is_correct": False, **feedback, **interp}
     
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             if response_matrix.rank() < number_of_groups:
                 feedback.update({"feedback": f"Response contains to few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             if response_number_of_groups > number_of_groups:
                 remark = "Response has more groups than necessary."
         else:
@@ -193,7 +199,7 @@ def evaluation_function(response, answer, params) -> dict:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
                 feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
-                return {"is_correct": False, **feedback}
+                return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
     
         # Extract exponents from answers and responses and compare matrix ranks
@@ -204,11 +210,11 @@ def evaluation_function(response, answer, params) -> dict:
             raise Exception(sum_add_independent("answer"))
         response_matrix = get_exponent_matrix(response_groups,answer_symbols)
         if response_matrix.rank() > response_number_of_groups:
-            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark}
+            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark, **interp}
         enhanced_matrix = answer_matrix.col_join(response_matrix)
         if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark}
-        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark}
+            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark, **interp}
+        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark, **interp}
 
     list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
@@ -285,6 +291,12 @@ def evaluation_function(response, answer, params) -> dict:
             return {"is_correct": True, "comparison": parameters["comparison"], **interp, **feedback}
 
     if parameters["comparison"] == "expression":
+        # REMARK: 'pi' should be a reserve symbols but is sometimes not treated as one, possibly because of input symbols
+        # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
+        # are other reserved symbols.
+        if "atol" in parameters.keys() or "rtol" in parameters.keys():
+            ans = ans.subs(Symbol('pi'),float(pi))
+            res = res.subs(Symbol('pi'),float(pi))
         equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
         error_below_atol = False
         error_below_rtol = False
