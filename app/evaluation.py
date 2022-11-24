@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -148,7 +148,7 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                answer_dimensions.append(dimension.simplify())
+                answer_dimensions.append(posify(dimension)[0].simplify())
             
             # Check that answers are dimensionless
             for k,dimension in enumerate(answer_dimensions):
@@ -177,7 +177,7 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                response_dimensions.append(dimension.simplify())
+                response_dimensions.append(posify(dimension)[0].simplify())
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
                     feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
