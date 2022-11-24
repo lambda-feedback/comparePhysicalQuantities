@@ -24,6 +24,12 @@ All input parameters need to be supplied via the **Grading parameters** panel.
 
 There are six optional parameters that can be set: `substitutions`, `quantities`, `strict_syntax`, `rtol`, `atol` and `comparison`.
 
+## `elementary_functions`
+
+When using implicit multiplication function names with mulitple characters are sometimes split and not interpreted properly. Setting `elementary_functions` to True will reserve the function names listed below and prevent them from being split:
+
+`sin`, `sinc`, `csc`, `cos`, `sec`, `tan`, `cot`, `asin`, `acsc`, `acos`, `asec`, `atan`, `acot`, `atan2`,`sinh`, `cosh`, `tanh`, `csch`, `sech`, `asinh`, `acosh`, `atanh`, `acsch`, `asech`, `exp`, `log`, `sqrt`, `sign`, `Abs`, `Max`, `Min`, `arg`, `ceiling`, `floor`
+
 ### `substitutions`
 
 String that lists all substitutions that should be done to the answer and response inputs before processing.
@@ -121,35 +127,54 @@ Note that the function treats angles, neper and bel as dimensionless values.
 
 Note that only the first table in this section has short form symbols defined, the second table does not.
 
+| Unit name         | Symbol | Expressed in SI units                      |
+|-------------------|:-------|:-------------------------------------------|
+| minute            |  min   | $60~\mathrm{second}$                       |
+| hour              |   h    | $3600~\mathrm{second}$                     |
+| degree            |  deg   | $\frac{\pi}{180}$                          |
+| liter             |   l    | $10^{-3}~\mathrm{metre}^3$                 |
+| metric_ton        |   t    | $10^3~\mathrm{kilogram}$                   |
+| neper             |  Np    | $1$                                        |
+| bel               |   B    | $\frac{1}{2}~\ln(10)$                      |
+| electronvolt      |  eV    | $1.60218 \cdot 10^{-19}~\mathrm{joule}$    |
+| atomic_mass_unit  |   u    | $1.66054 \cdot 10^{-27}~\mathrm{kilogram}$ |
+| angstrom          |   å    | $10^{-10}~\mathrm{metre}$                  |
+
+| Unit name        | Expressed in SI units                                |
+|------------------|:-----------------------------------------------------|
+| day              | $86400~\mathrm{second}$                              |
+| angleminute      | $\frac{\pi}{10800}$                                  |
+| anglesecond      | $\frac{\pi}{648000}$                                 |
+| astronomicalunit | $149597870700~\mathrm{metre}$                        |
+| nauticalmile     | $1852~\mathrm{metre}$                                |
+| knot             | $\frac{1852}{3600}~\mathrm{metre~second}^{-1}$       |
+| are              | $10^2~\mathrm{metre}^2$                              |
+| hectare          | $10^4~\mathrm{metre}^2$                              |
+| bar              | $10^5~\mathrm{pascal}$                               |
+| barn             | $10^{-28}~\mathrm{metre}$                            |
+| curie            | $3.7 \cdot 10^{10}~\mathrm{becquerel}                |
+| roentgen         | $2.58 \cdot 10^{-4}~\mathrm{kelvin~(kilogram)}^{-1}$ |
+| rad              | $10^{-2}~\mathrm{gray}$                              |
+| rem              | $10^{-2}~\mathrm{sievert}$                           |
+
+#### Table: Imperial units
+
+Commonly imperial units taken from https://en.wikipedia.org/wiki/Imperial_units
+
 | Unit name         | Symbol | Expressed in SI units                         |
 |-------------------|:-------|:----------------------------------------------|
-| minute            |  min   | 60 second                                     |
-| hour              |   h    | 3600 second                                   |
-| degree            |  deg   | $\frac{\pi}{180}$                             |
-| liter             |   l    | $10^{-3}$ metre$^3$                           |
-| metric_ton        |   t    | $10^3$ kilo gram                              |
-| neper             |  Np    | 1                                             |
-| bel               |   B    | $\frac{1}{2} \ln(10)$                         |
-| electronvolt      |  eV    | $1.60218 \cdot 10^{-19}$ joule                |
-| atomic_mass_unit  |   u    | $1.66054 \cdot 10^{-27}$ kilogram             |
-| angstrom          |   å    | $10^{-10}$ metre                              |
-
-| Unit name        | Expressed in SI units                         |
-|------------------|:----------------------------------------------|
-| day              | $86400$ second                                |
-| angleminute      | $\frac{\pi}{10800}$                            |
-| anglesecond      | $\frac{\pi}{648000}$                           |
-| astronomicalunit | $149597870700$ metre                          |
-| nauticalmile     | $1852$ metre                                  |
-| knot             | $\frac{1852}{3600}$ metre second$^{-1}$       |
-| are              | $10^2$ metre$^2$                              |
-| hectare          | $10^4$ metre$^2$                              |
-| bar              | $10^5$ pascal                                 |
-| barn             | $10^{-28}$ metre                              |
-| curie            | $3.7 \cdot 10^{10}$ becquerel                 |
-| roentgen         | $2.58 \cdot 10^{-4}$ kelvin (kilogram)$^{-1}$ |
-| rad              | $10^{-2}$ gray                                |
-| rem              | $10^{-2}$ sievert                             |
+| inch              |   in   | $0.0254~\mathrm{metre}$                       |
+| foot              |   ft   | $0.3048~\mathrm{metre}$                       |
+| yard              |   yd   | $0.9144~\mathrm{metre}$                       |
+| mile              |   mi   | $1609.344~\mathrm{metre}$                     |
+| fluid ounce       |  fl oz | $28.4130625~\mathrm{millilitre}$              |
+| gill              |   gi   | $142.0653125~\mathrm{millilitre}$             |
+| pint              |   pt   | $568.26125~\mathrm{millilitre}$               |
+| quart             |   qt   | $1.1365225~\mathrm{litre}$                    |
+| gallon            |   gal  | $4546.09~\mathrm{litre}$                      |
+| ounce             |   oz   | $28.349523125~\mathrm{gram}$                  |
+| pound             |   lb   | $0.45359237~\mathrm{kilogram}$                |
+| stone             |   st   | $6.35029318~\mathrm{kilogram}$                |
 
 ### `strict_syntax`
 

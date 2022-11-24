@@ -1,3 +1,5 @@
+from functools import cmp_to_key
+
 # Remarks:
 #   only K, no other temperature scales included
 #   angles measures, bel an neper are all treated as identical dimensionless units
@@ -129,42 +131,76 @@ def list_of_common_units_in_SI():
     list.sort(key=lambda x: -len(x[0]))
     return list
 
+def list_of_imperial_units():
+    """
+    Imperial (UK) units taken from https://en.wikipedia.org/wiki/Imperial_units
+    """
+    preop = lambda x:[(x,[" ","*","/"])]
+    list = [
+        ('inch',              'in',   '(0.0254*metre)',                    preop('inches')),
+        ('foot',              'ft',   '(0.3048*metre)',                    ["feet"]),
+        ('yard',              'yd',   '(0.9144*metre)',                    preop('yards')),
+        ('mile',              'mi',   '(1609.344*metre)',                  preop('miles')),
+        ('fluid ounce',       'fl oz','(28.4130625*milli*litre)',          preop('fluid ounces')),
+        ('gill',              'gi',   '(142.0653125*milli*litre)',         preop('gills')),
+        ('pint',              'pt',   '(568.26125*milli*litre)',           preop('pints')),
+        ('quart',             'qt',   '(1.1365225*litre)',                 preop('quarts')),
+        ('gallon',            'gal',  '(4546.09*litre)',                   preop('gallons')),
+        ('ounce',             'oz',   '(28.349523125*gram)',               preop('ounces')),
+        ('pound',             'lb',   '(0.45359237*kilo*gram)',            preop('pounds')),
+        ('stone',             'st',   '(6.35029318*kilo*gram)',            []),
+        ]
+    list.sort(key=lambda x: -len(x[0]))
+    return list
+
 def names_of_prefixes_units_and_dimensions():
     return tuple(x[0] for x in list_of_SI_prefixes())\
           +tuple(x[0] for x in list_of_SI_base_unit_dimensions())\
           +tuple(x[2] for x in list_of_SI_base_unit_dimensions())\
           +tuple(x[0] for x in list_of_derived_SI_units_in_SI_base_units())\
-          +tuple(x[0] for x in list_of_common_units_in_SI())
+          +tuple(x[0] for x in list_of_common_units_in_SI())\
+          +tuple(x[0] for x in list_of_imperial_units())
 
 def names_of_all_units_and_dimensions():
     return tuple(x[0] for x in list_of_SI_prefixes())\
           +tuple(x[0] for x in list_of_SI_base_unit_dimensions())\
           +tuple(x[2] for x in list_of_SI_base_unit_dimensions())\
-          +tuple(x[0] for x in list_of_common_units_in_SI())
+          +tuple(x[0] for x in list_of_common_units_in_SI())\
+          +tuple(x[0] for x in list_of_imperial_units())
 
 def convert_short_forms():
+    compare = lambda x,y: len(y[0])-len(x[0]) if (len(y[0])-len(x[0])) != 0 else x[1].count('*')-y[1].count('*')
+    print(compare(('min', 'minute'),('min', 'milli*(inch)')))
     units = list_of_SI_base_unit_dimensions()\
            +list_of_derived_SI_units_in_SI_base_units()\
-           +list_of_very_common_units_in_SI()
+           +list_of_very_common_units_in_SI()\
+           +list_of_imperial_units()
     protect_long_forms = [(x[0],x[0]) for x in units]\
                         +[(x[0],x[0]) for x in list_of_common_units_in_SI()]\
+                        +[(x[0],x[0]) for x in list_of_imperial_units()]\
                         +[(x[2],x[2]) for x in list_of_SI_base_unit_dimensions()]\
                         +[(x[0],x[0]) for x in list_of_SI_prefixes()]
-    protect_long_forms.sort(key=lambda x: -len(x[0]))
+    protect_long_forms.sort(key=cmp_to_key(compare))
     collision_fixes = []
     for prefix in list_of_SI_prefixes():
         for unit in units:
             collision_fixes.append((prefix[1]+unit[1],     prefix[0]+"*("+unit[0]+")"))
             collision_fixes.append((prefix[1]+"*"+unit[1], prefix[0]+"*("+unit[0]+")"))
             collision_fixes.append((prefix[1]+" "+unit[1], prefix[0]+"*("+unit[0]+")"))
-    collision_fixes.sort(key=lambda x: -len(x[0]))
+    for unit in units:
+        if unit[0] in [x[0] for x in collision_fixes]:
+            collision_fixes.append((unit[0],unit[0]))
+        if unit[1] in [x[0] for x in collision_fixes]:
+            collision_fixes.append((unit[1],unit[0]))
+    collision_fixes.sort(key=cmp_to_key(compare))
     convert_short_forms_list = [(x[1],x[0]) for x in units]
-    convert_short_forms_list.sort(key=lambda x: -len(x[0]))
+    convert_short_forms_list.sort(key=cmp_to_key(compare))
     return protect_long_forms+collision_fixes+convert_short_forms_list
 
 def convert_to_SI_base_units():
     protect_base_units = [(x[0],x[0]) for x in list_of_SI_base_unit_dimensions()]
     return [protect_base_units+[(x[0],x[2]) for x in list_of_derived_SI_units_in_SI_base_units()],\
+            protect_base_units+[(x[0],x[2]) for x in list_of_imperial_units()],\
             protect_base_units+[(x[0],x[2]) for x in list_of_common_units_in_SI()],\
             protect_base_units+[(x[0],x[2]) for x in list_of_derived_SI_units_in_SI_base_units()],\
             protect_base_units+[(x[0],x[2]) for x in list_of_SI_prefixes()]]
@@ -179,7 +215,7 @@ def convert_SI_base_units_to_dimensions_short_form():
     return convert_to_SI_base_units_short_form()+[[(x[0],x[2]) for x in list_of_SI_base_unit_dimensions()]]
 
 def convert_alternative_names_to_standard():
-    standard_alternatives = list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI()
+    standard_alternatives = list_of_SI_base_unit_dimensions()+list_of_derived_SI_units_in_SI_base_units()+list_of_common_units_in_SI()+list_of_imperial_units()
     convert_to_standard = []
     for elem in standard_alternatives:
         standard = elem[0]
