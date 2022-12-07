@@ -158,7 +158,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
             if answer_matrix.rank() < number_of_groups:
-                raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
+                raise Exception(f"Answer contains too few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
 
             response_symbols = set()
             for res in response_groups:
@@ -186,7 +186,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             if response_matrix.rank() < number_of_groups:
-                feedback.update({"feedback": f"Response contains to few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
+                feedback.update({"feedback": f"Response contains too few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
                 return {"is_correct": False, **feedback, **interp}
             if response_number_of_groups > number_of_groups:
                 remark = "Response has more groups than necessary."
