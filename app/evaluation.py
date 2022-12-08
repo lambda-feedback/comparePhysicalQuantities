@@ -1,6 +1,7 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi
+import sys
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -253,7 +254,7 @@ def evaluation_function(response, answer, params) -> dict:
         substitutions.append(sub_substitutions)
 
     if "substitutions" not in parameters.keys():
-        if "quantities" in parameters.keys():
+        if len(parameters.get("quantities",[])) > 0 or parameters.get("elementary_functions",False) == True:
             substitutions += convert_to_SI_base_units
         else:
             substitutions += convert_to_SI_base_units_short_form
@@ -297,7 +298,12 @@ def evaluation_function(response, answer, params) -> dict:
         if "atol" in parameters.keys() or "rtol" in parameters.keys():
             ans = ans.subs(Symbol('pi'),float(pi))
             res = res.subs(Symbol('pi'),float(pi))
-        equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
+        if res != 0:
+            equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
+        elif ans != 0:
+            equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
+        else: # This corresponds to res = ans = 0
+            equal_up_to_multiplication = True
         error_below_atol = False
         error_below_rtol = False
         if equal_up_to_multiplication:
@@ -315,6 +321,8 @@ def evaluation_function(response, answer, params) -> dict:
             else:
                 if "atol" in parameters.keys():
                     error_below_rtol = True
+                elif ans == 0:
+                    error_below_rtol = bool(float(abs(res)) <= sys.float_info.epsilon)
                 else:
                     error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < default_rtol)
         if error_below_atol and error_below_rtol:
@@ -356,7 +364,7 @@ def expression_to_latex(expression,parameters,parsing_params,remark):
     do_transformations = parsing_params.get("do_transformations",False)
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
-    if "quantities" not in parameters.keys():
+    if not (len(parsing_params.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
         subs = convert_short_forms
         expression = substitute(expression,subs)
     try:
