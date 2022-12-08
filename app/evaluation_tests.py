@@ -77,8 +77,8 @@ class TestEvaluationFunction(unittest.TestCase):
         )
 
     def test_substitutions_replace_no_common_substrings(self):
-        body = {"response": "ab",
-                "answer": "c",
+        body = {"response": "ab", 
+                "answer": "c", 
                 "substitutions": "('a','A') ('b','B') ('c','AB')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
@@ -86,8 +86,8 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_replacement(self):
-        body = {"response": "ab",
-                "answer": "c",
+        body = {"response": "ab", 
+                "answer": "c", 
                 "substitutions": "('a','b') ('b','d') ('c','bd')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
@@ -95,8 +95,8 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_original(self):
-        body = {"response": "ab",
-                "answer": "c",
+        body = {"response": "ab", 
+                "answer": "c", 
                 "substitutions": "('a','d') ('ab','e') ('c','e')"}
 
         response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
@@ -355,7 +355,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_compare_quantities_with_defaults_exact(self):
         response = "(d/t)**2*((1/3.6)**2)+v**2"
         answer = "2*v**2"
-        params = {"comparison": "expressionExact",
+        params = {"comparison": "expressionExact", 
                   "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
                   "strict_syntax": False}
 
@@ -786,7 +786,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
         # Comparing to actual solutions b)
         params = {'rtol': 0.05,
-                  'strict_syntax': False,
+                  'strict_syntax': False, 
                   'cases': [{'answer': '3.1415926', 'feedback': '', 'mark': 1, 'params': {}}],
                   'input_symbols': [['pi', ['Pi', 'PI', 'π']]]
                   }
@@ -798,7 +798,6 @@ class TestEvaluationFunction(unittest.TestCase):
     def assertEqual_elementary_function_aliases(self,answer,response,params,value):
         with self.subTest(alias_tag="name"):
             result = evaluation_function(response, answer, params)
-            print(result["response_latex"])
             self.assertEqual(result["is_correct"], value)
         names = []
         alias_substitutions = []
