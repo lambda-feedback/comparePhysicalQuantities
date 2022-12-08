@@ -964,7 +964,7 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="MECH50001_7.2"):
             answer = "fs/(1-M*cos(theta))"
             response = "fs/(1-Mcos(theta))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True
+            self.assertEqual_elementary_function_aliases(answer,response,params,True)
 
 if __name__ == "__main__":
     unittest.main()
