@@ -794,6 +794,16 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "3.14"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
+        
+        # Drag on a ship a)
+        params = {"strict_syntax": False,
+                  "comparison": "buckinghamPi",
+                  "quantities": "('mu','(gram/metre/second)') ('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('l','(metre)') ('B','(metre)') ('g','(metre*second**(-2))') ",
+                  "input_symbols": [["F",["FD","fd","Fd","F_D","F_d"]],["U",["u"]],["l",["L"]],["B",["b","w","W","width","beam"]],["rho",["r","Rho","rho"]],["g",["G"]],["mu",["m"]]]}
+        answer = "-"
+        response = "U*(rho)^(1/3) / (mu*g)^(1/3) "
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], False)
 
     def assertEqual_elementary_function_aliases(self,answer,response,params,value):
         with self.subTest(alias_tag="name"):
@@ -954,7 +964,7 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="MECH50001_7.2"):
             answer = "fs/(1-M*cos(theta))"
             response = "fs/(1-Mcos(theta))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer,response,params,True
 
 if __name__ == "__main__":
     unittest.main()

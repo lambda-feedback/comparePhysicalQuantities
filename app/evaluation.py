@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify
 import sys
 
 try:
@@ -149,7 +149,7 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                answer_dimensions.append(dimension.simplify())
+                answer_dimensions.append(posify(dimension)[0].simplify())
             
             # Check that answers are dimensionless
             for k,dimension in enumerate(answer_dimensions):
@@ -159,7 +159,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
             if answer_matrix.rank() < number_of_groups:
-                raise Exception(f"Answer contains to few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
+                raise Exception(f"Answer contains too few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
 
             response_symbols = set()
             for res in response_groups:
@@ -178,7 +178,7 @@ def evaluation_function(response, answer, params) -> dict:
                 dimension = group
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0],quantity[1])
-                response_dimensions.append(dimension.simplify())
+                response_dimensions.append(posify(dimension)[0].simplify())
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
                     feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
@@ -187,7 +187,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the response
             response_matrix = get_exponent_matrix(response_groups,response_symbols)
             if response_matrix.rank() < number_of_groups:
-                feedback.update({"feedback": f"Response contains to few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
+                feedback.update({"feedback": f"Response contains too few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
                 return {"is_correct": False, **feedback, **interp}
             if response_number_of_groups > number_of_groups:
                 remark = "Response has more groups than necessary."
