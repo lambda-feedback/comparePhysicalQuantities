@@ -43,7 +43,7 @@ class TestPreviewFunction(unittest.TestCase):
         params = {"strict_syntax": False}
         response = "3 m"
         result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        self.assertEqual(result["preview"]["latex"],"3 ~\\mathrm{metre}")
 
     def test_quantity_with_short_forms(self):
         params = {"strict_syntax": False}
