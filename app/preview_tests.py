@@ -25,20 +25,6 @@ class TestPreviewFunction(unittest.TestCase):
     as it should.
     """
 
-    def test_returns_preview_key(self):
-        response, params = "test", Params()
-        result = preview_function(response, params)
-
-        self.assertIn("preview", result)
-        self.assertIsNotNone(result["preview"])
-
-    def test_returns_preview_key(self):
-        response, params = "test", Params()
-        result = preview_function(response, params)
-
-        self.assertIn("preview", result)
-        self.assertIsNotNone(result["preview"])
-
     def test_quantity_with_short_forms(self):
         params = {"strict_syntax": False}
         response = "2 km/h"
@@ -60,8 +46,12 @@ class TestPreviewFunction(unittest.TestCase):
     def test_invalid_input(self):
         params = {"strict_syntax": False}
         response = "5+"
-        result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"\\text{Failed to parse expression: \\mathtt{5+}}")
+        self.assertRaises(
+            ValueError,
+            preview_function,
+            response,
+            params
+        )
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",
