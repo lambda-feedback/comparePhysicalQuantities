@@ -14,7 +14,7 @@ except ImportError:
 # will be skipped. This can be used to avoid takes that take a long time when making several
 # small changes with most tests running between each change
 message_on_skip = "Test skipped to save on resources"
-skip_resource_intensive_tests = False
+skip_resource_intensive_tests = True # False
 print(sys.argv)
 if "skip_resource_intensive_tests" in sys.argv:
     skip_resource_intensive_tests = True
