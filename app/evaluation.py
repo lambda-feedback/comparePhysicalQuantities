@@ -63,7 +63,6 @@ def evaluation_function(response, answer, params) -> dict:
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
         response_number_of_groups = len(response_strings)
-        response_number_of_groups = len(response_strings)
         response_latex = []
         response_groups = []
         for res in response_strings:
@@ -364,7 +363,7 @@ def expression_to_latex(expression,parameters,parsing_params,remark):
     do_transformations = parsing_params.get("do_transformations",False)
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
-    if not (len(parsing_params.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
+    if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
         subs = convert_short_forms
         expression = substitute(expression,subs)
     try:
@@ -373,14 +372,17 @@ def expression_to_latex(expression,parameters,parsing_params,remark):
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(expression)+separator+remark}
 
-    symbs = expression_preview.atoms(Symbol)
-    symbs_dic = {str(x): Symbol(str(x),commutative=False) for x in symbs}
-    parsing_params_latex = parsing_params.copy()
-    parsing_params_latex["symbol_dict"] = symbs_dic
-    expression_preview = parse_expression(expression,parsing_params_latex)
+    symbs_dic = {}
     symbol_names = {}
-    for x in symbs_dic.values():
-        symbol_names.update({x: "~\mathrm{"+str(x)+"}"})
+    if not len(parameters.get("quantities",[])) > 0:
+        symbs = expression_preview.atoms(Symbol)
+        symbs_dic = {str(x): Symbol(str(x),commutative=False) for x in symbs}
+        parsing_params_latex = parsing_params.copy()
+        parsing_params_latex["symbol_dict"] = symbs_dic
+        expression_preview = parse_expression(expression,parsing_params_latex)
+        symbol_names = {}
+        for x in symbs_dic.values():
+            symbol_names.update({x: "~\\mathrm{"+str(x)+"}"})
     latex_str = latex(expression_preview,symbol_names=symbol_names)
     for symbol in symbs_dic.keys():
         if symbol not in symbol_dict.keys() and symbol not in unsplittable_symbols:

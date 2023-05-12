@@ -15,6 +15,7 @@ except ImportError:
 # small changes with most tests running between each change
 message_on_skip = "Test skipped to save on resources"
 skip_resource_intensive_tests = False
+print(sys.argv)
 if "skip_resource_intensive_tests" in sys.argv:
     skip_resource_intensive_tests = True
     sys.argv.remove("skip_resource_intensive_tests")
@@ -758,6 +759,7 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual(result["is_correct"], False)
 
     def test_MECH50010_set_5(self):
+        print(sys.argv)
         # Dimensional homogeneity a)
         params = {"strict_syntax": False,
                   "comparison": "buckinghamPi"}
@@ -823,7 +825,7 @@ class TestEvaluationFunction(unittest.TestCase):
                 result = evaluation_function(subs_response, subs_answer, params)
                 self.assertEqual(result["is_correct"], value)
 
-    def test_AAA_elementary_functions(self):
+    def test_elementary_functions(self):
         params = {"strict_syntax": False, "elementary_functions": True}
         with self.subTest(tag="sin"):
             answer = "0"
