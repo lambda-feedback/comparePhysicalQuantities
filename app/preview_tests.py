@@ -43,13 +43,15 @@ class TestPreviewFunction(unittest.TestCase):
         params = {"strict_syntax": False}
         response = "2 km/h"
         result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        #self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        self.assertEqual(result["preview"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
 
     def test_quantity_with_long_forms(self):
         params = {"strict_syntax": False}
         response = "2 kilometre/hour"
         result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        #self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        self.assertEqual(result["preview"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",
@@ -57,7 +59,8 @@ class TestPreviewFunction(unittest.TestCase):
                   "strict_syntax": False}
         response = "U*L/nu, (f*L)/U"
         result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"\\frac{L U}{\\nu},~\\frac{L f}{U}")
+        #self.assertEqual(result["preview"]["latex"],"\\frac{L U}{\\nu},~\\frac{L f}{U}")
+        self.assertEqual(result["preview"],"\\frac{L U}{\\nu},~\\frac{L f}{U}")
 
 if __name__ == "__main__":
     unittest.main()
