@@ -17,7 +17,6 @@ class Preview(TypedDict):
     sympy: str
 
 def expression_to_latex(expression,parameters,parsing_params):
-    original_expression = expression
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
     if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
