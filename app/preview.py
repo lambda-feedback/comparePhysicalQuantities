@@ -25,8 +25,8 @@ def expression_to_latex(expression,parameters,parsing_params):
         expression = substitute(expression,subs)
     try:
         expression_preview = parse_expression(expression,parsing_params)
-    except Exception as e:
-        return ("\\text{Failed to parse expression: \\mathtt{"+original_expression+"}}","")
+    except Exception as exc:
+        raise ValueError("Cannot parse response") from exc
 
     symbs_dic = {}
     symbol_names = {}
@@ -81,15 +81,18 @@ def preview_function(response: Any, params: Params) -> Result:
     if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
         response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
 
-    if parameters["comparison"] == "buckinghamPi":
-        preview_latex = []
-        response_strings = response.split(',')
-        for current_response in response_strings:
-            latex, _ = expression_to_latex(current_response, parameters, parsing_params)
-            preview_latex.append(latex)
-        preview_latex = ",~".join(preview_latex)
-        preview_sympy = response
-    else:
-        preview_latex, preview_sympy = expression_to_latex(response, parameters, parsing_params)
+    try:
+        if parameters["comparison"] == "buckinghamPi":
+            preview_latex = []
+            response_strings = response.split(',')
+            for current_response in response_strings:
+                latex, _ = expression_to_latex(current_response, parameters, parsing_params)
+                preview_latex.append(latex)
+            preview_latex = ",~".join(preview_latex)
+            preview_sympy = response
+        else:
+            preview_latex, preview_sympy = expression_to_latex(response, parameters, parsing_params)
+    except Exception as exc:
+        raise ValueError("Cannot parse response") from exc
 
     return Result(preview=Preview(latex=preview_latex, sympy=preview_sympy))
