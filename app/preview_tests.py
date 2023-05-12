@@ -57,6 +57,12 @@ class TestPreviewFunction(unittest.TestCase):
         result = preview_function(response, params)
         self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{mega} ~\\mathrm{metre}")
 
+    def test_invalid_input(self):
+        params = {"strict_syntax": False}
+        response = "5+"
+        result = preview_function(response, params)
+        self.assertEqual(result["preview"]["latex"],"Failed to parse expression: `5+`")
+
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",

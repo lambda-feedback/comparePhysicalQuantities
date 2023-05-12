@@ -17,7 +17,7 @@ class Preview(TypedDict):
     sympy: str
 
 def expression_to_latex(expression,parameters,parsing_params):
-    do_transformations = parsing_params.get("do_transformations",False)
+    original_expression = expression
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
     if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
@@ -26,7 +26,7 @@ def expression_to_latex(expression,parameters,parsing_params):
     try:
         expression_preview = parse_expression(expression,parsing_params)
     except Exception as e:
-        return {"is_correct": False, "feedback": "Parse error"}
+        return (f"Failed to parse expression: `{original_expression}`","")
 
     symbs_dic = {}
     symbol_names = {}
