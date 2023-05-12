@@ -39,12 +39,6 @@ class TestPreviewFunction(unittest.TestCase):
         self.assertIn("preview", result)
         self.assertIsNotNone(result["preview"])
 
-    def test_quantity_l_and_t(self):
-        params = {"strict_syntax": False}
-        response = "3 m"
-        result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"3 ~\\mathrm{metre}")
-
     def test_quantity_with_short_forms(self):
         params = {"strict_syntax": False}
         response = "2 km/h"
@@ -56,6 +50,12 @@ class TestPreviewFunction(unittest.TestCase):
         response = "2 kilometre/hour"
         result = preview_function(response, params)
         self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+
+    def test_quantity_with_alternatives(self):
+        params = {"strict_syntax": False}
+        response = "2 megametres"
+        result = preview_function(response, params)
+        self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{mega} ~\\mathrm{metre}")
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",
