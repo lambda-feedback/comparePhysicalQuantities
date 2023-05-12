@@ -61,7 +61,7 @@ class TestPreviewFunction(unittest.TestCase):
         params = {"strict_syntax": False}
         response = "5+"
         result = preview_function(response, params)
-        self.assertEqual(result["preview"]["latex"],"Failed to parse expression: `5+`")
+        self.assertEqual(result["preview"]["latex"],"\\text{Failed to parse expression: \\mathtt{5+}}")
 
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",

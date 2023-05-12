@@ -26,7 +26,7 @@ def expression_to_latex(expression,parameters,parsing_params):
     try:
         expression_preview = parse_expression(expression,parsing_params)
     except Exception as e:
-        return (f"Failed to parse expression: `{original_expression}`","")
+        return ("\\text{Failed to parse expression: \\mathtt{"+original_expression+"}}","")
 
     symbs_dic = {}
     symbol_names = {}
