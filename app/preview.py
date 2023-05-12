@@ -78,6 +78,9 @@ def preview_function(response: Any, params: Params) -> Result:
     response = preprocess_expression([response],parameters)[0]
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
+    if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
+        response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
+
     if parameters["comparison"] == "buckinghamPi":
         preview_latex = []
         response_strings = response.split(',')
