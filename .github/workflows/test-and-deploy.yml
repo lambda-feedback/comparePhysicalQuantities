@@ -22,8 +22,7 @@ jobs:
         working-directory: app/
 
     env:
-      REQUEST_SCHEMA_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/request.json
-      RESPONSE_SCHEMA_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/responsev2.json
+      SCHEMAS_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/
 
     steps:
       - name: Checkout
@@ -50,6 +49,10 @@ jobs:
       - name: Test Evaluation Function
         run: |
           pytest -v evaluation_tests.py::TestEvaluationFunction
+
+      - name: Test Preview Function
+        run: |
+          pytest -v preview_tests.py::TestPreviewFunction
 
   deploy-staging:
     name: Deploy Staging
