@@ -12,6 +12,10 @@ RUN pip3 install -r requirements.txt
 COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
 
+# Copy the preview and testing scripts
+COPY preview.py ./app/
+COPY preview_tests.py ./app/
+
 # Copy additional files
 COPY static_unit_conversion_arrays.py ./app/
 COPY expression_utilities.py ./app/

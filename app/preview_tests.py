@@ -39,6 +39,13 @@ class TestPreviewFunction(unittest.TestCase):
         self.assertIn("preview", result)
         self.assertIsNotNone(result["preview"])
 
+    def test_quantity_l_and_t(self):
+        params = {"strict_syntax": False}
+        response = "3 m"
+        result = preview_function(response, params)
+        #self.assertEqual(result["preview"]["latex"],"2 ~\\mathrm{kilo} ~\\mathrm{metre} ~\\mathrm{hour}^{-1}")
+        self.assertEqual(result["preview"],"3 ~\\mathrm{metre}")
+
     def test_quantity_with_short_forms(self):
         params = {"strict_syntax": False}
         response = "2 km/h"
