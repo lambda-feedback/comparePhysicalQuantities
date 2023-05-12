@@ -89,5 +89,4 @@ def preview_function(response: Any, params: Params) -> Result:
     else:
         preview_latex, preview_sympy = expression_to_latex(response, parameters, parsing_params)
 
-    #return Result(preview=Preview(latex=preview_latex, sympy=preview_sympy))
-    return Result(preview=preview_latex)
+    return Result(preview=Preview(latex=preview_latex, sympy=preview_sympy))
