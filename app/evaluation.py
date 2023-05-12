@@ -153,7 +153,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that answers are dimensionless
             for k,dimension in enumerate(answer_dimensions):
                 if not dimension.is_constant():
-                    raise Exception(f"Answer {answer_groups[k]} is not dimensionless.")
+                    raise Exception(f"Answer ${latex(answer_groups[k])}$ is not dimensionless.")
             
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
