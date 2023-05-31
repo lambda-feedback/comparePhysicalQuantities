@@ -21,33 +21,63 @@ def preprocess_expression(exprs, params):
     if isinstance(exprs,str):
         exprs = [exprs]
 
+    if "symbols" in params.keys():
+        input_symbols = params["symbols"]
+        input_symbols_to_remove = []
+        aliases_to_remove = []
+        for (code, symbol_data) in input_symbols.items():
+            if len(code) == 0:
+                input_symbols_to_remove += [code]
+            else:
+                if len(code.strip()) == 0:
+                    input_symbols_to_remove += [code]
+                else:
+                    aliases = symbol_data["aliases"]
+                    for i in range(0,len(aliases)):
+                        if len(aliases[i]) > 0:
+                            aliases[i].strip()
+                        if len(aliases[i]) == 0:
+                            aliases_to_remove += [(code,i)]
+        for (code,i) in aliases_to_remove:
+            del input_symbols[code]["aliases"][i]
+        for code in input_symbols_to_remove:
+            del input_symbols[code]
+        substitutions = []
+        for (code, symbol_data) in input_symbols.items():
+            substitutions.append((code,code))
+            for alias in symbol_data["aliases"]:
+                if len(alias) > 0:
+                    substitutions.append((alias,code))
+
+    # REMARK: This is to ensure capability with response areas that use the old formatting
+    # for input_symbols. Should be removed when all response areas are updated.
     if "input_symbols" in params.keys():
         input_symbols = params["input_symbols"]
         input_symbols_to_remove = []
         alternatives_to_remove = []
-        for k in range(0,len(input_symbols)):
+        for k in range(0, len(input_symbols)):
             if len(input_symbols[k]) > 0:
                 input_symbols[k][0].strip()
                 if len(input_symbols[k][0]) == 0:
                     input_symbols_to_remove += [k]
             else:
-                for i in range(0,len(input_symbols[k][1])):
+                for i in range(0, len(input_symbols[k][1])):
                     if len(input_symbols[k][1][i]) > 0:
                         input_symbols[k][1][i].strip()
                     if len(input_symbols[k][1][i]) == 0:
-                        alternatives_to_remove += [(k,i)]
-        for (k,i) in alternatives_to_remove:
+                        alternatives_to_remove += [(k, i)]
+        for (k, i) in alternatives_to_remove:
             del input_symbols[k][1][i]
         for k in input_symbols_to_remove:
             del input_symbols[k]
-        substitutions = []
         for input_symbol in params["input_symbols"]:
-            substitutions.append((input_symbol[0],input_symbol[0]))
+            substitutions.append((input_symbol[0], input_symbol[0]))
             for alternative in input_symbol[1]:
                 if len(alternative) > 0:
-                    substitutions.append((alternative,input_symbol[0]))
-        substitutions.sort(key=lambda x: -len(x[0]))
+                    substitutions.append((alternative, input_symbol[0]))
 
+    if len(substitutions) > 0:
+        substitutions.sort(key=lambda x: -len(x[0]))
         for k in range(0,len(exprs)):
             exprs[k] = substitute(exprs[k], substitutions)
 
