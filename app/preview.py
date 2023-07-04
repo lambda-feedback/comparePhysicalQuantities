@@ -1,6 +1,9 @@
-from typing import Any, TypedDict
+import re
+from typing import Any, Dict, List, TypedDict
 
 from sympy import simplify, latex, Symbol, Integer, Add, Subs, pi, posify
+import sympy
+from latex2sympy2 import latex2sympy
 
 from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
 from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
@@ -8,13 +11,80 @@ from .expression_utilities import preprocess_expression, parse_expression, creat
 class Params(TypedDict):
     pass
 
-
 class Result(TypedDict):
     preview: Any
 
 class Preview(TypedDict):
     latex: str
     sympy: str
+
+class SymbolData(TypedDict):
+    latex: str
+    aliases: List[str]
+
+SymbolDict = Dict[str, SymbolData]
+
+symbol_latex_re = re.compile(
+    r"(?P<start>\\\(|\$\$|\$)(?P<latex>.*?)(?P<end>\\\)|\$\$|\$)"
+)
+
+def extract_latex(symbol):
+    """Returns the latex portion of a symbol string.
+
+    Note:
+        Only the first matched expression is returned.
+
+    Args:
+        symbol (str): The string to extract latex from.
+
+    Returns:
+        str: The latex string.
+    """
+    if (match := symbol_latex_re.search(symbol)) is None:
+        return symbol
+
+    return match.group("latex")
+
+def parse_latex(response: str, symbols: SymbolDict) -> str:
+    """Parse a LaTeX string to a sympy string while preserving custom symbols.
+
+    Args:
+        response (str): The LaTeX expression to parse.
+        symbols (SymbolDict): A mapping of sympy symbol strings and LaTeX
+        symbol strings.
+
+    Raises:
+        ValueError: If the LaTeX string or symbol couldn't be parsed.
+
+    Returns:
+        str: The expression in sympy syntax.
+    """
+    substitutions = {}
+
+    for sympy_symbol_str in symbols:
+        symbol_str = symbols[sympy_symbol_str]["latex"]
+        latex_symbol_str = extract_latex(symbol_str)
+
+        try:
+            latex_symbol = latex2sympy(latex_symbol_str)
+        except Exception:
+            raise ValueError(
+                f"Couldn't parse latex symbol {latex_symbol_str} "
+                f"to sympy symbol."
+            )
+
+        substitutions[latex_symbol] = sympy.Symbol(sympy_symbol_str)
+
+    try:
+        expression = latex2sympy(response, substitutions)
+
+        if isinstance(expression, list):
+            expression = expression.pop()
+
+        return str(expression.xreplace(substitutions))  # type: ignore
+
+    except Exception as e:
+        raise ValueError(str(e))
 
 def expression_to_latex(expression,parameters,parsing_params):
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
@@ -65,6 +135,9 @@ def preview_function(response: Any, params: Params) -> Result:
     The way you wish to structure you code (all in this function, or
     split into many) is entirely up to you.
     """
+    symbols = params.get("symbols", {})
+    if params.get("is_latex", False):
+        response = parse_latex(response, symbols)
 
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
