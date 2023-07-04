@@ -21,6 +21,8 @@ def preprocess_expression(exprs, params):
     if isinstance(exprs,str):
         exprs = [exprs]
 
+    substitutions = []
+
     if "symbols" in params.keys():
         input_symbols = params["symbols"]
         input_symbols_to_remove = []
@@ -42,7 +44,6 @@ def preprocess_expression(exprs, params):
             del input_symbols[code]["aliases"][i]
         for code in input_symbols_to_remove:
             del input_symbols[code]
-        substitutions = []
         for (code, symbol_data) in input_symbols.items():
             substitutions.append((code,code))
             for alias in symbol_data["aliases"]:

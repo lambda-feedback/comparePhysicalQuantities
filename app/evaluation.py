@@ -6,9 +6,11 @@ import sys
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+    from .preview import preview_function
 except ImportError:
     from static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+    from preview import preview_function
 
 parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
 
@@ -16,6 +18,9 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Function that provides some basic dimensional analysis functionality.
     """
+
+    if params.get("is_latex",False):
+        response = preview_function(response, params)["preview"]["sympy"]
 
     feedback = {}
     default_rtol = 1e-12
