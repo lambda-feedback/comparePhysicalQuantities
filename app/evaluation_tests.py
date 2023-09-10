@@ -759,7 +759,6 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual(result["is_correct"], False)
 
     def test_MECH50010_set_5(self):
-        print(sys.argv)
         # Dimensional homogeneity a)
         params = {"strict_syntax": False,
                   "comparison": "buckinghamPi"}
@@ -769,10 +768,19 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(result["is_correct"], True)
 
         # Aircraft propeller a)
-        params = {"strict_syntax": False,
-                  "comparison": "buckinghamPi",
-                  "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
-                  "input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]]}
+        params = {
+            "strict_syntax": False,
+            "comparison": "buckinghamPi",
+            "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
+            #"input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]],
+            "symbols": {
+                "F": {"latex": r"\(F\)", "aliases": []},
+                "U": {"latex": r"\(U\)", "aliases": []},
+                "rho": {"latex": r"\(\rho\)", "aliases": []},
+                "D": {"latex": r"\(D\)", "aliases": []},
+                "omega": {"latex": r"\(\omega\)", "aliases": []},
+            }
+        }
         answer = "-"
         response = "U/(omega*D),F/(rho*D**4*omega**2)"
         result = evaluation_function(response, answer, params)
