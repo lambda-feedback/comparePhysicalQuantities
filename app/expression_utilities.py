@@ -1,9 +1,31 @@
 elementary_functions_names = [
-    ('sin',[]), ('sinc',[]), ('csc',['cosec']), ('cos',[]), ('sec',[]), ('tan',[]), ('cot',['cotan']), ('asin',['arcsin']), ('acsc',['arccsc','arccosec']), ('acos',['arccos']), ('asec',['arcsec']), ('atan',['arctan']), ('acot',['arccot','arccotan']), ('atan2',['arctan2']),\
-    ('sinh',[]), ('cosh',[]), ('tanh',[]), ('csch',['cosech']), ('sech',[]), ('asinh',['arcsinh']), ('acosh',['arccosh']), ('atanh',['arctanh']), ('acsch',['arccsch','arccosech']), ('asech',['arcsech']),\
-    ('exp',['Exp']), ('E',['e']),('log',[]),\
-    ('sqrt',[]), ('sign',[]), ('Abs',['abs']), ('Max',['max']), ('Min',['min']), ('arg',[]), ('ceiling',['ceil']), ('floor',[])\
+    ('sin', []), ('sinc', []), ('csc', ['cosec']), ('cos', []), ('sec', []), ('tan', []), ('cot', ['cotan']),
+    ('asin', ['arcsin']), ('acsc', ['arccsc', 'arccosec', 'acosec']), ('acos', ['arccos']), ('asec', ['arcsec']),
+    ('atan', ['arctan']), ('acot', ['arccot', 'arccotan', 'acotan']), ('atan2', ['arctan2']),
+    ('sinh', []), ('cosh', []), ('tanh', []), ('csch', ['cosech']), ('sech', []),
+    ('asinh', ['arcsinh']), ('acosh', ['arccosh']), ('atanh', ['arctanh']),
+    ('acsch', ['arccsch', 'arccosech']), ('asech', ['arcsech']),
+    ('exp', ['Exp']), ('E', ['e']), ('log', []),
+    ('sqrt', []), ('sign', []), ('Abs', ['abs']), ('Max', ['max']), ('Min', ['min']), ('arg', []), ('ceiling', ['ceil']), ('floor', []),
+    # Below this line should probably not be collected with elementary functions. Some like 'common operations' would be a better name
+    ('summation', ['sum','Sum']), ('Derivative', ['diff']), 
 ]
+for data in elementary_functions_names:
+    upper_case_alternatives = [data[0].upper()]
+    for alternative in data[1]:
+        if alternative.upper() not in upper_case_alternatives:
+            upper_case_alternatives.append(alternative.upper())
+    data[1].extend(upper_case_alternatives)
+
+greek_letters = [
+    "Alpha", "alpha", "Beta", "beta", "Gamma", "gamma", "Delta", "delta", "Epsilon", "epsilon", "Zeta", "zeta",
+    "Eta", "eta", "Theta", "theta", "Iota", "iota", "Kappa", "kappa", "Lambda", # "lambda" removed to avoid collision with reserved keyword in python
+    "Mu", "mu", "Nu", "nu",
+    "Xi", "xi", "Omicron", "omicron", "Pi", "pi", "Rho", "rho", "Sigma", "sigma", "Tau", "tau", "Upsilon", "upsilon",
+    "Phi", "phi", "Chi", "chi", "Psi", "psi", "Omega", "omega"
+]
+special_symbols_names = [(x, []) for x in greek_letters]
+elementary_functions_names += special_symbols_names
 elementary_functions_names.sort(key=lambda x: -len(x))
 
 # -------- String Manipulation Utilities
@@ -169,6 +191,13 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         parsing_params: A dictionary that contains necessary info for the
                         parse_expression function.
     '''
+
+    if "symbols" in params.keys():
+        to_keep = []
+        for symbol in params["symbols"].keys():
+            if len(symbol) > 1:
+                to_keep.append(symbol)
+        unsplittable_symbols += tuple(to_keep)
 
     if "input_symbols" in params.keys():
         to_keep = []
