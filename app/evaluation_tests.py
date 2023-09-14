@@ -581,6 +581,15 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_buckingham_pi_sum_with_dimensional_term(self):
+        params = {
+            "comparison": "buckinghamPi",
+            "strict_syntax": False,
+        }
+        answer = "v/(f*l)"
+        response = "v/(fl)+v"
+        self.assertEqual_input_variations(response, answer, params, False)
+
     def test_empty_input_symbols_codes_and_alternatives(self):
         answer = '10*gamma km/s'
         response = '10*gamma km/s'
