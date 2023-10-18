@@ -68,12 +68,10 @@ def evaluation_function(response, answer, params) -> dict:
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
         response_number_of_groups = len(response_strings)
-        response_latex = []
         response_groups = []
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
-                response_latex += [latex(expr)]
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
@@ -82,6 +80,7 @@ def evaluation_function(response, answer, params) -> dict:
                 response_groups += list(expr.args)
             else:
                 response_groups.append(expr)
+        response_latex = [latex(expr) for expr in response_groups]
 
         interp = {"response_latex": ", ".join(response_latex)}
 
