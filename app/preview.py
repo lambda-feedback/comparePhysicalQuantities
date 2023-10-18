@@ -115,6 +115,37 @@ def expression_to_latex(expression,parameters,parsing_params):
                 del(globals()[symbol])
     return latex_str, sympy_str
 
+def find_matching_parenthesis(string, index, delimiters=None):
+    depth = 0
+    if delimiters == None:
+        delimiters = ('(', ')')
+    for k in range(index, len(string)):
+        if string[k] == delimiters[0]:
+            depth += 1
+            continue
+        if string[k] == delimiters[1]:
+            depth += -1
+            if depth == 0:
+                return k
+    return -1
+
+def sanitise_latex(response):
+    index = 0
+    response = response.replace('~',' ')
+    processed_response = []
+    while index < len(response):
+        mathrm_start = response.find(r"\mathrm{", index)
+        if mathrm_start > -1:
+            processed_response.append(response[index:mathrm_start])
+            mathrm_end = find_matching_parenthesis(response, mathrm_start+1, delimiters=('{','}'))
+            inside_mathrm = response[(mathrm_start+len(r"\mathrm{")):mathrm_end]
+            processed_response.append(inside_mathrm)
+            index = mathrm_end+1
+        else:
+            processed_response.append(response[index:])
+            index = len(response)
+    return "".join(processed_response)
+
 def preview_function(response: Any, params: Params) -> Result:
     """
     Function used to preview a student response.
@@ -135,6 +166,9 @@ def preview_function(response: Any, params: Params) -> Result:
     The way you wish to structure you code (all in this function, or
     split into many) is entirely up to you.
     """
+
+    response = sanitise_latex(response)
+
     symbols = params.get("symbols", {})
     if params.get("is_latex", False):
         if ',' in response:
