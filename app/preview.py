@@ -137,7 +137,14 @@ def preview_function(response: Any, params: Params) -> Result:
     """
     symbols = params.get("symbols", {})
     if params.get("is_latex", False):
-        response = parse_latex(response, symbols)
+        if ',' in response:
+            responses = response.split(',')
+            resp_list = []
+            for resp in responses:
+                resp_list.append(parse_latex(resp, symbols))
+            response = ",".join(resp_list)
+        else:
+            response = parse_latex(response, symbols)
 
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
