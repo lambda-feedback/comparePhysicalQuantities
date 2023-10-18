@@ -996,6 +996,25 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual( result["is_correct"],True)
 
+    def test_eval_function_can_handle_latex_input_with_comma(self):
+        response = r"\frac{m}{\left(\rho l^{3}\right)}, \frac{v t}{l}"
+        answer = "-"
+        params = {
+            "strict_syntax": False,
+            "is_latex": True,
+            "comparison": "buckinghamPi",
+            "symbols": {
+                "m": {"latex": r"\(m\)", "aliases": []},
+                "rho": {"latex": r"\(\rho\)", "aliases": []},
+                "l": {"latex": r"\(l\)", "aliases": []},
+                "t": {"latex": r"\(t\)", "aliases": []},
+                "v": {"latex": r"\(v\)", "aliases": []},
+            },
+            "quantities": "('m','(mass)') ('l','(length)') ('rho','(mass/(length**3))') ('v','(length/time)') ('t','(time)')",
+        }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual( result["is_correct"],True)
+
 if __name__ == "__main__":
     unittest.main()
 
