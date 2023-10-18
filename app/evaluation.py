@@ -185,7 +185,7 @@ def evaluation_function(response, answer, params) -> dict:
                 response_dimensions.append(posify(dimension)[0].simplify())
             for k,dimension in enumerate(response_dimensions):
                 if not dimension.is_constant():
-                    feedback.update({"feedback": f"Response {response_groups[k]} is not dimensionless."})
+                    feedback.update({"feedback": f"Response {response_latex[k]} is not dimensionless."})
                     return {"is_correct": False, **feedback, **interp}
     
             # Check that there is a sufficient number of independent groups in the response
