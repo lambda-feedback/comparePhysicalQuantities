@@ -131,6 +131,7 @@ def find_matching_parenthesis(string, index, delimiters=None):
 
 def sanitise_latex(response):
     response = response.replace('~',' ')
+    response = "".join(response.split())
     wrappers = [r"\mathrm",r"\text"]
     for wrapper in wrappers:
         processed_response = []

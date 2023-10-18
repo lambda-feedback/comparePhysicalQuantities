@@ -985,8 +985,8 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "fs/(1-Mcos(theta))"
             self.assertEqual_elementary_function_aliases(answer,response,params,True)
 
-    def test_eval_function_can_handle_latex_input(self):
-        response = r"\sin x + x^{7} + \mathrm{x} + \text{x}"
+    def test_AAAA_eval_function_can_handle_latex_input(self):
+        response = r"\sin x + x^{7} + \mathrm{x} + \text { x }"
         answer = "sin(x)+x**7+x+x"
         params = {
             "strict_syntax": False,
