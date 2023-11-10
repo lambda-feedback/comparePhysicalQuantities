@@ -53,6 +53,13 @@ class TestPreviewFunction(unittest.TestCase):
             params
         )
 
+    def test_buckingham_pi_one_group(self):
+        params = {"comparison": "buckinghamPi",
+                  "strict_syntax": False}
+        response = "A/r**2"
+        result = preview_function(response, params)
+        self.assertEqual(result["preview"]["latex"],"~\mathrm{A} ~\mathrm{r}^{-2}")
+
     def test_buckingham_pi_two_groups(self):
         params = {"comparison": "buckinghamPi",
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
