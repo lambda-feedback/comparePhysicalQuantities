@@ -89,7 +89,7 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
 def expression_to_latex(expression,parameters,parsing_params):
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
-    if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
+    if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True or parsing_params.get("comparison","") == "buckinghamPi"):
         subs = convert_short_forms
         expression = substitute(expression,subs)
     try:
@@ -184,7 +184,7 @@ def preview_function(response: Any, params: Params) -> Result:
         else:
             response = parse_latex(response, symbols)
 
-    if "substitutions" in params.keys():
+    if "substitutions" in params.keys() or params.get("comparison", "") == "buckinghamPi":
         unsplittable_symbols = tuple()
     else:
         unsplittable_symbols = names_of_prefixes_units_and_dimensions
@@ -194,6 +194,7 @@ def preview_function(response: Any, params: Params) -> Result:
 
     response = preprocess_expression([response],parameters)[0]
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
+    parsing_params.update({"comparison": parameters["comparison"]})
 
     if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
         response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
