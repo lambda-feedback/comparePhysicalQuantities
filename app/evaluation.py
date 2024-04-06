@@ -1,7 +1,7 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify
-import sys
+import sys, re
 
 try:
     from .static_unit_conversion_arrays import convert_short_forms, convert_to_SI_base_units, convert_to_SI_base_units_short_form, convert_SI_base_units_to_dimensions, convert_SI_base_units_to_dimensions_short_form, names_of_prefixes_units_and_dimensions, convert_alternative_names_to_standard
@@ -273,12 +273,18 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
+        match_group = re.match("0+(.0+)?\s", response)
+        if match_group is not None:
+            response = response[match_group.span()[1]:]
         res = parse_expression(response,parsing_params)
     except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
 
     try:
+        match_group = re.match("0+(.0+)?\s", answer)
+        if match_group is not None:
+            answer = answer[match_group.span()[1]:]
         ans = parse_expression(answer,parsing_params)
     except Exception as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e

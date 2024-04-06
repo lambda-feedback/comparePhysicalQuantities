@@ -824,6 +824,17 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], False)
 
+    def test_PHYS40003_1_1_b(self):
+        params = {"strict_syntax": False,
+                  "comparison": "expression"}
+        answer = "0 m/s"
+        response = "0 s"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], False)
+        response = "0 m/s"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
     def assertEqual_elementary_function_aliases(self,answer,response,params,value):
         with self.subTest(alias_tag="name"):
             result = evaluation_function(response, answer, params)
@@ -985,7 +996,7 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "fs/(1-Mcos(theta))"
             self.assertEqual_elementary_function_aliases(answer,response,params,True)
 
-    def test_AAAA_eval_function_can_handle_latex_input(self):
+    def test_eval_function_can_handle_latex_input(self):
         response = r"\sin x + x^{7} + \mathrm{x} + \text { x }"
         answer = "sin(x)+x**7+x+x"
         params = {
