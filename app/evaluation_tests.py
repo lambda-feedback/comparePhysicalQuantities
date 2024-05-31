@@ -1,11 +1,11 @@
 import unittest, sys
 
 try:
-    from .evaluation import evaluation_function, parse_error_warning, buckingham_pi_feedback_responses, parsing_feedback_responses
+    from .evaluation import evaluation_function, buckingham_pi_feedback_responses, parsing_feedback_responses
     from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
     from .expression_utilities import elementary_functions_names, substitute
 except ImportError:
-    from evaluation import evaluation_function, parse_error_warning, buckingham_pi_feedback_responses, parsing_feedback_responses
+    from evaluation import evaluation_function, buckingham_pi_feedback_responses, parsing_feedback_responses
     from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions,  list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
     from expression_utilities import elementary_functions_names, substitute
 
@@ -19,6 +19,7 @@ print(sys.argv)
 if "skip_resource_intensive_tests" in sys.argv:
     skip_resource_intensive_tests = True
     sys.argv.remove("skip_resource_intensive_tests")
+parse_error_warning = parsing_feedback_responses["PARSE_ERROR_WARNING"]
 
 class TestEvaluationFunction(unittest.TestCase):
     """
