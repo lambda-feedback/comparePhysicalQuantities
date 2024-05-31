@@ -878,6 +878,136 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual(result["is_correct"], False)
             self.assertEqual(buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("response") in result["feedback"], True)
 
+    def test_buckingham_pi_example_in_examples_module(self):
+        with self.subTest(tag="Part a)"):
+            params = {
+                "comparison": "buckinghamPi",
+                "strict_syntax": False,
+                "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)')",
+                "symbols": {
+                    'U': {"latex": r"$U$", "aliases": []},
+                    'L': {"latex": r"$L$", "aliases": []},
+                    'nu': {"latex": r"$\nu$", "aliases": []},
+                }
+            }
+            answer = "U*L/nu"
+            # Valid groups
+            response = "U*L/nu"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            response = "U*L/nu+1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            response = "8*U*L/nu"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            # A group with an unknown symbol 
+            response = "q*U*L/nu"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"]({"q"}) in result["feedback"], True)
+            # two dimensionless groups that are not independent
+            response = "U*L/nu, nu/U/L"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](1,2) in result["feedback"], True)
+            self.assertEqual(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
+            # group that is not dimensionless
+            response = "U*L"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]({"L*U", }) in result["feedback"], True)
+        with self.subTest(tag="Part b)"):
+            params = {
+                "comparison": "buckinghamPi",
+                "strict_syntax": False,
+                "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                "symbols": {
+                    'U': {"latex": r"$U$", "aliases": []},
+                    'L': {"latex": r"$L$", "aliases": []},
+                    'nu': {"latex": r"$\nu$", "aliases": []},
+                    'f': {"latex": r"$f$", "aliases": []},
+                }
+            }
+            answer = "-"
+            # Valid groups
+            response = "U*L/nu, f*L/U"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            response = "8*U*L/nu, f*L/U+1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            # sum that contains two valid groups does not count as valid
+            response = "U*L/nu+f*L/U"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("response") in result["feedback"], True)
+            # sum that contains two valid groups does count as valid if the total number of groups is sufficient
+            response = "U*L/nu+f*L/U, f*L/U"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+            # at least one group is not dimensionless
+            response = "U*L/nu, f/U"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]({"f/U"}) in result["feedback"], True)
+            response = "L/nu, f/U"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+            self.assertEqual(
+                buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](["L/nu", "f/U"]) in result["feedback"]
+                or
+                buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](["f/U", "L/nu"]) in result["feedback"],
+                True
+            )
+        with self.subTest(tag="Part c)"):
+            params = {
+                "comparison": "buckinghamPi",
+                "strict_syntax": False,
+                "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]],
+                "custom_feedback": {
+                    "VALID_CANDIDATE_SET": "Your list of power products satisfies the Buckingham Pi theorem.",
+                    "NOT_DIMENSIONLESS": "At least one power product is not dimensionless.",
+                    "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more power products than necessary.",
+                    "CANDIDATE_GROUPS_NOT_INDEPENDENT": "Power products in response are not independent.",
+                    "TOO_FEW_INDEPENDENT_GROUPS": "Candidate set contains too few independent groups.",
+                    "UNKNOWN_SYMBOL": "One of the prower products contains an unkown symbol.",
+                    "SUM_WITH_INDEPENDENT_TERMS": "The candidate set contains an expression which contains more independent terms that there are groups in total. The candidate set should ideally only contain expressions written as power products."
+                }
+            }
+            answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            # Valid response
+            response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
+            self.assertEqual_input_variations(response, answer, params, True)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["VALID_CANDIDATE_SET"] in result["feedback"], True)
+            # Too few independent groups
+            response = "h*l, h**2*l**2"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["CANDIDATE_GROUPS_NOT_INDEPENDENT"] in result["feedback"], True)
+            self.assertEqual(params["custom_feedback"]["TOO_FEW_INDEPENDENT_GROUPS"] in result["feedback"], True)
+            # Not dimensionless
+            response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["NOT_DIMENSIONLESS"] in result["feedback"], True)
+            self.assertEqual_input_variations(response, answer, params, False)
+            # Extra dimensionless group
+            response = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4, g**(-1)*v**2*h"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
+            # Undefined symbol
+            response = "q*g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["UNKNOWN_SYMBOL"] in result["feedback"], True)
+            # Sum with independent terms instead of set of groups
+            response = "g**(-2)*v**4*h*l**3+g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["SUM_WITH_INDEPENDENT_TERMS"] in result["feedback"], True)
+
     def test_MECH50010_set_5(self):
         # Dimensional homogeneity a)
         params = {"strict_syntax": False,

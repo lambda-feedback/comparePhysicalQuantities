@@ -110,19 +110,16 @@ def determine_validity(reference_set, reference_symbols, reference_original_numb
                 valid = False
                 feedback.append(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", C.rank(), D.rank()))
         else:
-            dimensionless_groups = set()
             valid = False
             if len(candidate_set) == 1:
                 dimensionless_groups = candidate_set
             else:
+                dimensionless_groups = set()
                 for i in range(len(candidate_set)):
-                    Ci = C.copy()
-                    exponents = Ci.row(i)
-                    Ci.row_del(i)
-                    Di = R.col_join(Ci)
+                    exponents = C.row(i)
+                    Di = R.col_join(exponents)
                     if R.rank() != Di.rank():
                         dimensionless_groups.add(create_power_product(exponents, symbols))
-            #if len(dimensionless_groups) > 0:
             feedback.append(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](dimensionless_groups))
     else:
         feedback.append(buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](candidate_symbols.difference(reference_symbols)))
