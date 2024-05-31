@@ -515,7 +515,7 @@ class TestEvaluationFunction(unittest.TestCase):
             True
         )
 
-    def test_buckingham_pi_two_groups(self):
+    def test_buckingham_pi_two_groups_with_custom_feedback(self):
         # For this test we use the following quantities
         #  [g] = L/T**2
         #  [v] = L/T
@@ -532,22 +532,62 @@ class TestEvaluationFunction(unittest.TestCase):
         # pi1 = g**(p1-q1) * v**(2*q1-2*p1) * h**(p1) * l**(q1)
         # pi2 = g**(p2-q2) * v**(2*q2-2*p2) * h**(p2) * l**(q2)
         # The two groups are independent unless p1/p2 = q1/q2
-        params = {"comparison": "buckinghamPi", "strict_syntax": False,
-                  "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]]}
-        # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
-        answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
-        # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
-        response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
-        self.assertEqual_input_variations(response, answer, params, True)
-        # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
-        response = "h*l, h**2*l**2"
-        self.assertEqual_input_variations(response, answer, params, False)
-        # This does not correspond to any consistent values of p1, p2, q1 and q2
-        response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
-        self.assertEqual_input_variations(response, answer, params, False)
+        params = {
+            "comparison": "buckinghamPi",
+            "strict_syntax": False,
+            "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]],
+            "custom_feedback": {
+                "VALID_CANDIDATE_SET": "Your list of power products satisfies the Buckingham Pi theorem.",
+                "NOT_DIMENSIONLESS": "At least one power product is not dimensionless.",
+                "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more power products than necessary.",
+                "CANDIDATE_GROUPS_NOT_INDEPENDENT": "Power products in response are not independent.",
+                "TOO_FEW_INDEPENDENT_GROUPS": "Candidate set contains too few independent groups.",
+                "UNKNOWN_SYMBOL": "One of the prower products contains an unkown symbol.",
+                "SUM_WITH_INDEPENDENT_TERMS": "The candidate set contains an expression which contains more independent terms that there are groups in total. The candidate set should ideally only contain expressions written as power products."
+            }
+        }
+        with self.subTest(tag="Valid response"):
+            # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
+            answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
+            response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
+            self.assertEqual_input_variations(response, answer, params, True)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["VALID_CANDIDATE_SET"] in result["feedback"], True)
+        with self.subTest(tag="Too few independent groups"):
+            # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
+            response = "h*l, h**2*l**2"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["CANDIDATE_GROUPS_NOT_INDEPENDENT"] in result["feedback"], True)
+            self.assertEqual(params["custom_feedback"]["TOO_FEW_INDEPENDENT_GROUPS"] in result["feedback"], True)
+        with self.subTest(tag="Not dimensionless"):
+            # This does not correspond to any consistent values of p1, p2, q1 and q2
+            response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["NOT_DIMENSIONLESS"] in result["feedback"], True)
+            self.assertEqual_input_variations(response, answer, params, False)
+        with self.subTest(tag="Extra dimensionless group"):
+            # This adds an extra dimensionless group
+            response = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4, g**(-1)*v**2*h"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
+        with self.subTest(tag="Undefined symbol"):
+            # This is a response with an undefined symbol added
+            response = "q*g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["UNKNOWN_SYMBOL"] in result["feedback"], True)
+        with self.subTest(tag="Sum with independent terms instead of set of groups"):
+            # This is a response with the two groups in a valid set in sum instead of a comma-separated list
+            response = "g**(-2)*v**4*h*l**3+g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["SUM_WITH_INDEPENDENT_TERMS"] in result["feedback"], True)
 
     def test_buckingham_pi_too_many_groups(self):
-        # This test uses the same groups as 'test_buckingham_pi_two_groups'
+        # This test uses the same groups as 'test_buckingham_pi_two_groups_with_custom_feedback'
         params = {"comparison": "buckinghamPi", "strict_syntax": False,
                   "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]]}
         answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"

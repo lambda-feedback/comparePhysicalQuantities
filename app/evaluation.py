@@ -11,14 +11,6 @@ except ImportError:
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
     from preview import preview_function
 
-
-def feedback_not_dimensionless(groups):
-    groups = list(groups)
-    if len(groups) == 1:
-        return f"The group {str(groups[0])} is not dimensionless."
-    else:
-        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+" and "+str(groups[-1])+"are not dimensionless."
-
 parsing_feedback_responses = {
     "PARSE_ERROR_WARNING": lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed.",
     "PER_FOR_DIVISION": "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous.",
@@ -26,6 +18,14 @@ parsing_feedback_responses = {
     "QUANTITIES_NOT_WRITTEN_CORRECTLY": "List of quantities not written correctly.",
     "SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY": "List of substitutions not written correctly.",
 }
+
+
+def feedback_not_dimensionless(groups):
+    groups = list(groups)
+    if len(groups) == 1:
+        return f"The group {str(groups[0])} is not dimensionless."
+    else:
+        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+" and "+str(groups[-1])+" are not dimensionless."
 
 buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
@@ -135,6 +135,24 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Function that provides some basic dimensional analysis functionality.
     """
+
+    def wrap_feedback_function(output):
+        def wrapped_function(*args):
+            return output
+        return wrapped_function
+
+    custom_feedback = params.get("custom_feedback", None)
+    if custom_feedback is not None:
+        feedback_responses_list = [parsing_feedback_responses, buckingham_pi_feedback_responses]
+        for feedback_responses in feedback_responses_list:
+            for key in custom_feedback.keys():
+                if key in feedback_responses.keys():
+                    if isinstance(feedback_responses[key], str):
+                        feedback_responses[key] = custom_feedback[key]
+                    elif callable(feedback_responses[key]):
+                        feedback_responses[key] = wrap_feedback_function(custom_feedback[key])
+                    else:
+                        raise Exception("Cannot handle given costum feedback for "+key)
 
     if params.get("is_latex", False):
         response = preview_function(response, params)["preview"]["sympy"]
