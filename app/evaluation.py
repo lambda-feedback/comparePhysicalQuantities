@@ -1,6 +1,5 @@
-from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
-from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify, prod
+from sympy.parsing.sympy_parser import parse_expr
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, pi, posify, prod
 import sys, re
 
 try:
@@ -12,14 +11,13 @@ except ImportError:
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
     from preview import preview_function
 
-parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
 
 def feedback_not_dimensionless(groups):
     groups = list(groups)
     if len(groups) == 1:
         return f"The group {str(groups[0])} is not dimensionless."
     else:
-        return f"The groups "+", ".join([str(g) for g in groups[0:-1]])+"and"+str(groups[-1])+"are not dimensionless."
+        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+"and"+str(groups[-1])+"are not dimensionless."
 
 parsing_feedback_responses = {
     "PARSE_ERROR_WARNING": lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed.",
@@ -33,11 +31,12 @@ buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
     "NOT_DIMENSIONLESS": feedback_not_dimensionless,
     "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more groups than necessary.",
-    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent groups and contains {n} groups." ,
+    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent groups and contains {n} groups.",
     "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent products and needs at least {n} independent groups.",
     "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
     "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
 }
+
 
 def get_exponent_matrix(expressions, symbols):
     exponents_list = []
@@ -46,16 +45,17 @@ def get_exponent_matrix(expressions, symbols):
         for symbol in symbols:
             exponent = expression.as_coeff_exponent(symbol)[1]
             if exponent == 0:
-                exponent = -expression.subs(symbol,1/symbol).as_coeff_exponent(symbol)[1]
+                exponent = -expression.subs(symbol, 1/symbol).as_coeff_exponent(symbol)[1]
             exponents.append(exponent)
         exponents_list.append(exponents)
     return Matrix(exponents_list)
+
 
 def string_to_expressions(string):
     beta = Symbol("beta")
     gamma = Symbol("gamma")
     zeta = Symbol("zeta")
-    #e = E
+    # e = E
     E = Symbol("E")
     I = Symbol("I")
     O = Symbol("O")
@@ -81,22 +81,23 @@ def string_to_expressions(string):
         symbols = symbols.union(expression.free_symbols)
     return expressions, symbols
 
-def create_power_product(exponents, symbols):
-    return prod([s**i for (s,i) in zip(symbols, exponents)])
 
-def determine_validity(reference_set, reference_symbols, candidate_set, candidate_symbols):
+def create_power_product(exponents, symbols):
+    return prod([s**i for (s, i) in zip(symbols, exponents)])
+
+
+def determine_validity(reference_set, reference_symbols, reference_original_number_of_groups, candidate_set, candidate_symbols, candidate_original_number_of_groups):
     symbols = set(reference_symbols).union(set(candidate_symbols))
     R = get_exponent_matrix(reference_set, symbols)
     C = get_exponent_matrix(candidate_set, symbols)
     D = R.col_join(C)
-    valid = True
     feedback = []
-    more_groups_than_reference_set = len(reference_set) > len(candidate_set)
-    candidate_groups_independent = C.rank() == len(candidate_set)
+    more_groups_than_reference_set = reference_original_number_of_groups < candidate_original_number_of_groups
+    candidate_groups_independent = C.rank() == candidate_original_number_of_groups
     rank_R_equal_to_rank_D = R.rank() == D.rank()
     rank_C_equal_to_rank_D = C.rank() == D.rank()
     if candidate_symbols.issubset(reference_symbols):
-        valid = valid and not more_groups_than_reference_set
+        valid = not more_groups_than_reference_set
         if more_groups_than_reference_set:
             feedback.append(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"])
         valid = valid and candidate_groups_independent
@@ -110,28 +111,32 @@ def determine_validity(reference_set, reference_symbols, candidate_set, candidat
                 feedback.append(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", C.rank(), D.rank()))
         else:
             dimensionless_groups = set()
-            for i in range(len(candidate_set)):
-                Ci = C.copy()
-                exponents = Ci.row(i)
-                Ci.row_del(i)
-                Di = R.col_join(Ci)
-                if R.rank() != Di.rank():
-                    dimensionless_groups.add(create_power_product(exponents, symbols))
-            if len(dimensionless_groups) > 0:
-                feedback.append(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](dimensionless_groups))
-                valid = False
+            valid = False
+            if len(candidate_set) == 1:
+                dimensionless_groups = candidate_set
+            else:
+                for i in range(len(candidate_set)):
+                    Ci = C.copy()
+                    exponents = Ci.row(i)
+                    Ci.row_del(i)
+                    Di = R.col_join(Ci)
+                    if R.rank() != Di.rank():
+                        dimensionless_groups.add(create_power_product(exponents, symbols))
+            #if len(dimensionless_groups) > 0:
+            feedback.append(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](dimensionless_groups))
     else:
         feedback.append(buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](candidate_symbols.difference(reference_symbols)))
         valid = False
     feedback = [elem.strip() for elem in feedback if len(elem.strip()) > 0]
     return valid, "<br>".join(feedback)
 
+
 def evaluation_function(response, answer, params) -> dict:
     """
     Function that provides some basic dimensional analysis functionality.
     """
 
-    if params.get("is_latex",False):
+    if params.get("is_latex", False):
         response = preview_function(response, params)["preview"]["sympy"]
 
     feedback = {}
@@ -145,18 +150,17 @@ def evaluation_function(response, answer, params) -> dict:
     parameters.update(params)
 
     remark = ""
-    if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
+    if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols", [])], []):
         if (" per " in response):
             remark += parsing_feedback_responses["PER_FOR_DIVISION"]
         if (" per " in answer):
             raise Exception(parsing_feedback_responses["PER_FOR_DIVISION"])
-        answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
-        response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
+        answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ", "/")])[0:-1]
+        response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ", "/")])[0:-1]
 
-
-    if not isinstance(answer,str):
+    if not isinstance(answer, str):
         raise Exception("No answer was given.")
-    if not isinstance(response,str):
+    if not isinstance(response, str):
         return {"is_correct": False, "feedback": "No response submitted."}
 
     answer = answer.strip()
@@ -166,7 +170,7 @@ def evaluation_function(response, answer, params) -> dict:
     if len(response) == 0:
         return {"is_correct": False, "feedback": "No response submitted."}
 
-    answer, response = preprocess_expression([answer, response],parameters)
+    answer, response = preprocess_expression([answer, response], parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
     if parameters["strict_syntax"]:
@@ -185,15 +189,17 @@ def evaluation_function(response, answer, params) -> dict:
         separator = "" if len(remark) == 0 else "\n"
         for res in response_strings:
             try:
-                expr = parse_expression(res,parsing_params).simplify()
+                expr = parse_expression(res, parsing_params).simplify()
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
                 return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
-            if isinstance(expr,Add):
+            if isinstance(expr, Add):
                 response_groups += list(expr.args)
+                response_number_of_groups += len(list(expr.args))
             else:
                 response_groups.append(expr)
+                response_number_of_groups += 1
         response_latex = [latex(expr) for expr in response_groups]
 
         interp = {"response_latex": ", ".join(response_latex)}
@@ -207,11 +213,11 @@ def evaluation_function(response, answer, params) -> dict:
         answer_original_number_of_groups = 0
         for ans in answer_strings:
             try:
-                expr = parse_expression(ans,parsing_params).simplify()
+                expr = parse_expression(ans, parsing_params).simplify()
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 raise Exception(parsing_feedback_responses["PARSE_ERROR_WARNING"]("The answer")) from e
-            if isinstance(expr,Add):
+            if isinstance(expr, Add):
                 answer_groups += list(expr.args)
                 answer_number_of_groups += len(list(expr.args))
             else:
@@ -227,49 +233,50 @@ def evaluation_function(response, answer, params) -> dict:
             quantities = []
             index = quantities_strings.find("(")
             while index > -1:
-                index_match = find_matching_parenthesis(quantities_strings,index)
+                index_match = find_matching_parenthesis(quantities_strings, index)
                 try:
                     quantity_strings = eval(quantities_strings[index+1:index_match])
-                    quantity = tuple(map(lambda x: parse_expression(x,parsing_params),quantity_strings))
+                    quantity = tuple(map(lambda x: parse_expression(x, parsing_params), quantity_strings))
                     quantities.append(quantity)
                 except Exception as e:
                     raise Exception(parsing_feedback_responses["QUANTITIES_NOT_WRITTEN_CORRECTLY"])
-                index = quantities_strings.find('(',index_match+1)
+                index = quantities_strings.find('(', index_match+1)
             response_symbols = list(map(lambda x: x[0], quantities))
             answer_symbols = response_symbols
-    
+
             # Check how many dimensionless groups are needed
             dimension_symbols = set()
             for quantity in quantities:
                 dimension_symbols = dimension_symbols.union(quantity[1].free_symbols)
-            quantity_matrix = get_exponent_matrix([q[1] for q in quantities],dimension_symbols)
+            quantity_matrix = get_exponent_matrix([q[1] for q in quantities], dimension_symbols)
             number_of_groups = len(quantities)-quantity_matrix.rank()
-    
+
             if answer_groups == []:
                 # Compute answer groups
                 nullspace_basis = quantity_matrix.T.nullspace()
                 for basis_vector in nullspace_basis:
                     multiplier = 1
-                    for i in range(0,basis_vector.rows):
-                        if not isinstance(basis_vector[i,0],Integer):
-                            multiplier *= 1/basis_vector[i,0]
+                    for i in range(0, basis_vector.rows):
+                        if not isinstance(basis_vector[i, 0], Integer):
+                            multiplier *= 1/basis_vector[i, 0]
                     if multiplier != 1:
-                        for i in range(0,basis_vector.rows):
-                            basis_vector[i,0] = round(basis_vector[i,0]*multiplier)
+                        for i in range(0, basis_vector.rows):
+                            basis_vector[i, 0] = round(basis_vector[i, 0]*multiplier)
                 answer_groups = [1]*number_of_groups
-                for i in range(0,len(answer_groups)):
-                    for j in range(0,len(quantities)):
+                for i in range(0, len(answer_groups)):
+                    for j in range(0, len(quantities)):
                         answer_groups[i] *= quantities[j][0]**nullspace_basis[i][j]
 
             if answer == "-":
                 answer_number_of_groups = number_of_groups
+                answer_original_number_of_groups = number_of_groups
 
             # Analyse dimensions of answers and responses
             answer_dimensions = []
             for group in answer_groups:
                 dimension = group
                 for quantity in quantities:
-                    dimension = dimension.subs(quantity[0],quantity[1])
+                    dimension = dimension.subs(quantity[0], quantity[1])
                 answer_dimensions.append(posify(dimension)[0].simplify())
             
             # Check that answers are dimensionless
@@ -280,7 +287,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
             if answer_matrix.rank() < number_of_groups:
-                raise Exception(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Answer", answer_matrix.rank(),number_of_groups))
+                raise Exception(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Answer", answer_matrix.rank(), number_of_groups))
 
             response_symbols = set()
             for res in response_groups:
@@ -308,7 +315,7 @@ def evaluation_function(response, answer, params) -> dict:
         reference_symbols = set(answer_symbols)
         candidate_set = set(response_groups)
         candidate_symbols = set(response_symbols)
-        valid, feedback_string = determine_validity(reference_set, reference_symbols, candidate_set, candidate_symbols)
+        valid, feedback_string = determine_validity(reference_set, reference_symbols, answer_original_number_of_groups, candidate_set, candidate_symbols, response_original_number_of_groups)
         feedback.update({"feedback": feedback_string})
 
         # Check the special case where one groups expression contains several power products
@@ -320,21 +327,21 @@ def evaluation_function(response, answer, params) -> dict:
         if response_matrix.rank() > response_original_number_of_groups:
             return {"is_correct": False, "feedback": buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("response")+separator+remark, **interp}
 
-        return {"is_correct": valid, "feedback": feedback.get("feedback","")+separator+remark, **interp}
+        return {"is_correct": valid, "feedback": feedback.get("feedback", "")+separator+remark, **interp}
 
-    list_of_substitutions_strings = parameters.get("substitutions",[])
+    list_of_substitutions_strings = parameters.get("substitutions", [])
     if isinstance(list_of_substitutions_strings,str):
         list_of_substitutions_strings = [list_of_substitutions_strings]
 
     if "quantities" in parameters.keys():
         list_of_substitutions_strings = [parameters["quantities"]]+list_of_substitutions_strings
 
-    if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
+    if not (isinstance(list_of_substitutions_strings, list) and all(isinstance(element, str) for element in list_of_substitutions_strings)):
         raise Exception(parsing_feedback_responses["SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY"])
 
     try:
-        interp = {"response_latex": expression_to_latex(response,parameters,parsing_params,remark)}
-    except Exception as e:
+        interp = {"response_latex": expression_to_latex(response, parameters, parsing_params, remark)}
+    except Exception:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
 
@@ -344,13 +351,13 @@ def evaluation_function(response, answer, params) -> dict:
         sub_substitutions = []
         index = subs_strings.find('(')
         while index > -1:
-            index_match = find_matching_parenthesis(subs_strings,index)
+            index_match = find_matching_parenthesis(subs_strings, index)
             try:
                 sub_substitutions.append(eval(subs_strings[index:index_match+1]))
-            except Exception as e:
+            except Exception:
                 raise Exception(parsing_feedback_responses["SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY"])
-            index = subs_strings.find('(',index_match+1)
-            if index > -1 and subs_strings.find('|',index_match,index) > -1:
+            index = subs_strings.find('(', index_match+1)
+            if index > -1 and subs_strings.find('|', index_match, index) > -1:
                 # Substitutions are sorted so that the longest possible part of the original string will be substituted in each step
                 sub_substitutions.sort(key=lambda x: -len(x[0]))
                 substitutions.append(sub_substitutions)
@@ -359,7 +366,7 @@ def evaluation_function(response, answer, params) -> dict:
         substitutions.append(sub_substitutions)
 
     if "substitutions" not in parameters.keys():
-        if len(parameters.get("quantities",[])) > 0 or parameters.get("elementary_functions",False) == True:
+        if len(parameters.get("quantities", [])) > 0 or parameters.get("elementary_functions", False) is True:
             substitutions += convert_to_SI_base_units
         else:
             substitutions += convert_to_SI_base_units_short_form
@@ -378,16 +385,16 @@ def evaluation_function(response, answer, params) -> dict:
         match_group = re.match("0+(.0+)?\s", response)
         if match_group is not None:
             response = response[match_group.span()[1]:]
-        res = parse_expression(response,parsing_params)
+        res = parse_expression(response, parsing_params)
     except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
-        return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+        return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
 
     try:
         match_group = re.match("0+(.0+)?\s", answer)
         if match_group is not None:
             answer = answer[match_group.span()[1]:]
-        ans = parse_expression(answer,parsing_params)
+        ans = parse_expression(answer, parsing_params)
     except Exception as e:
         raise Exception(f"SymPy was unable to parse the answer {answer}") from e
 
@@ -407,21 +414,21 @@ def evaluation_function(response, answer, params) -> dict:
         # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
         # are other reserved symbols.
         if "atol" in parameters.keys() or "rtol" in parameters.keys():
-            ans = ans.subs(Symbol('pi'),float(pi))
-            res = res.subs(Symbol('pi'),float(pi))
+            ans = ans.subs(Symbol('pi'), float(pi))
+            res = res.subs(Symbol('pi'), float(pi))
         if res != 0:
             equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
         elif ans != 0:
             equal_up_to_multiplication = bool(simplify(res/ans).is_constant() and res != 0)
-        else: # This corresponds to res = ans = 0
+        else:  # This corresponds to res = ans = 0
             equal_up_to_multiplication = True
         error_below_atol = False
         error_below_rtol = False
         if equal_up_to_multiplication:
             if ans.free_symbols == res.free_symbols:
                 for symbol in ans.free_symbols:
-                    ans = ans.subs(symbol,1)
-                    res = res.subs(symbol,1)
+                    ans = ans.subs(symbol, 1)
+                    res = res.subs(symbol, 1)
             if "atol" in parameters.keys():
                 error_below_atol = bool(abs(float(ans-res)) < float(parameters["atol"]))
             else:
@@ -447,9 +454,10 @@ def evaluation_function(response, answer, params) -> dict:
 
     return {"is_correct": False, **interp, **feedback}
 
-def find_matching_parenthesis(string,index):
+
+def find_matching_parenthesis(string, index):
     depth = 0
-    for k in range(index,len(string)):
+    for k in range(index, len(string)):
         if string[k] == '(':
             depth += 1
             continue
@@ -459,45 +467,46 @@ def find_matching_parenthesis(string,index):
                 return k
     return -1
 
-def get_exponent_matrix(expressions,symbols):
+
+def get_exponent_matrix(expressions, symbols):
     exponents_list = []
     for expression in expressions:
         exponents = []
         for symbol in symbols:
             exponent = expression.as_coeff_exponent(symbol)[1]
             if exponent == 0:
-                exponent = -expression.subs(symbol,1/symbol).as_coeff_exponent(symbol)[1]
+                exponent = -expression.subs(symbol, 1/symbol).as_coeff_exponent(symbol)[1]
             exponents.append(exponent)
         exponents_list.append(exponents)
     return Matrix(exponents_list)
 
-def expression_to_latex(expression,parameters,parsing_params,remark):
-    do_transformations = parsing_params.get("do_transformations",False)
-    unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
-    symbol_dict = parsing_params.get("symbol_dict",{})
-    if not (len(parameters.get("quantities",[])) > 0 or parsing_params.get("elementary_functions",False) == True):
+
+def expression_to_latex(expression, parameters, parsing_params, remark):
+    unsplittable_symbols = parsing_params.get("unsplittable_symbols", ())
+    symbol_dict = parsing_params.get("symbol_dict", {})
+    if not (len(parameters.get("quantities", [])) > 0 or parsing_params.get("elementary_functions", False) is True):
         subs = convert_short_forms
-        expression = substitute(expression,subs)
+        expression = substitute(expression, subs)
     try:
-        expression_preview = parse_expression(expression,parsing_params)
-    except Exception as e:
+        expression_preview = parse_expression(expression, parsing_params)
+    except Exception:
         separator = "" if len(remark) == 0 else "\n"
-        return {"is_correct": False, "feedback": parse_error_warning(expression)+separator+remark}
+        return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](expression)+separator+remark}
 
     symbs_dic = {}
     symbol_names = {}
-    if not len(parameters.get("quantities",[])) > 0:
+    if not len(parameters.get("quantities", [])) > 0:
         symbs = expression_preview.atoms(Symbol)
-        symbs_dic = {str(x): Symbol(str(x),commutative=False) for x in symbs}
+        symbs_dic = {str(x): Symbol(str(x), commutative=False) for x in symbs}
         parsing_params_latex = parsing_params.copy()
         parsing_params_latex["symbol_dict"] = symbs_dic
-        expression_preview = parse_expression(expression,parsing_params_latex)
+        expression_preview = parse_expression(expression, parsing_params_latex)
         symbol_names = {}
         for x in symbs_dic.values():
             symbol_names.update({x: "~\\mathrm{"+str(x)+"}"})
-    latex_str = latex(expression_preview,symbol_names=symbol_names)
+    latex_str = latex(expression_preview, symbol_names=symbol_names)
     for symbol in symbs_dic.keys():
         if symbol not in symbol_dict.keys() and symbol not in unsplittable_symbols:
             if symbol in globals():
-                del(globals()[symbol])
+                del globals()[symbol]
     return latex_str
