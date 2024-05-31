@@ -89,22 +89,24 @@ def determine_validity(reference_set, reference_symbols, candidate_set, candidat
     R = get_exponent_matrix(reference_set, symbols)
     C = get_exponent_matrix(candidate_set, symbols)
     D = R.col_join(C)
-    valid = False
+    valid = True
     feedback = []
-    more_groups_than_reference_set = len(reference_set) >= len(candidate_set)
+    more_groups_than_reference_set = len(reference_set) > len(candidate_set)
     candidate_groups_independent = C.rank() == len(candidate_set)
     rank_R_equal_to_rank_D = R.rank() == D.rank()
     rank_C_equal_to_rank_D = C.rank() == D.rank()
     if candidate_symbols.issubset(reference_symbols):
-        if not more_groups_than_reference_set:
+        valid = valid and not more_groups_than_reference_set
+        if more_groups_than_reference_set:
             feedback.append(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"])
+        valid = valid and candidate_groups_independent
         if not candidate_groups_independent:
             feedback.append(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](C.rank(), len(candidate_set)))
         if rank_R_equal_to_rank_D:
             if rank_C_equal_to_rank_D:
-                valid = True
                 feedback.append(buckingham_pi_feedback_responses["VALID_CANDIDATE_SET"])
             else:
+                valid = False
                 feedback.append(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", C.rank(), D.rank()))
         else:
             dimensionless_groups = set()
@@ -117,8 +119,10 @@ def determine_validity(reference_set, reference_symbols, candidate_set, candidat
                     dimensionless_groups.add(create_power_product(exponents, symbols))
             if len(dimensionless_groups) > 0:
                 feedback.append(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](dimensionless_groups))
+                valid = False
     else:
         feedback.append(buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](candidate_symbols.difference(reference_symbols)))
+        valid = False
     feedback = [elem.strip() for elem in feedback if len(elem.strip()) > 0]
     return valid, "<br>".join(feedback)
 
