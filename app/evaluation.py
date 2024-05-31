@@ -31,8 +31,8 @@ buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
     "NOT_DIMENSIONLESS": feedback_not_dimensionless,
     "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more groups than necessary.",
-    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent groups and contains {n} groups.",
-    "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent products and needs at least {n} independent groups.",
+    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent group(s) and contains {n} groups.",
+    "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent group(s) and needs at least {n} independent groups.",
     "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
     "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
 }
