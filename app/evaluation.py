@@ -11,14 +11,6 @@ except ImportError:
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
     from preview import preview_function
 
-
-def feedback_not_dimensionless(groups):
-    groups = list(groups)
-    if len(groups) == 1:
-        return f"The group {str(groups[0])} is not dimensionless."
-    else:
-        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+"and"+str(groups[-1])+"are not dimensionless."
-
 parsing_feedback_responses = {
     "PARSE_ERROR_WARNING": lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed.",
     "PER_FOR_DIVISION": "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous.",
@@ -27,12 +19,20 @@ parsing_feedback_responses = {
     "SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY": "List of substitutions not written correctly.",
 }
 
+
+def feedback_not_dimensionless(groups):
+    groups = list(groups)
+    if len(groups) == 1:
+        return f"The group {str(groups[0])} is not dimensionless."
+    else:
+        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+" and "+str(groups[-1])+" are not dimensionless."
+
 buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
     "NOT_DIMENSIONLESS": feedback_not_dimensionless,
     "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more groups than necessary.",
-    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent groups and contains {n} groups.",
-    "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent products and needs at least {n} independent groups.",
+    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent group(s) and contains {n} groups.",
+    "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent group(s) and needs at least {n} independent groups.",
     "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
     "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
 }
@@ -136,6 +136,24 @@ def evaluation_function(response, answer, params) -> dict:
     Function that provides some basic dimensional analysis functionality.
     """
 
+    def wrap_feedback_function(output):
+        def wrapped_function(*args):
+            return output
+        return wrapped_function
+
+    custom_feedback = params.get("custom_feedback", None)
+    if custom_feedback is not None:
+        feedback_responses_list = [parsing_feedback_responses, buckingham_pi_feedback_responses]
+        for feedback_responses in feedback_responses_list:
+            for key in custom_feedback.keys():
+                if key in feedback_responses.keys():
+                    if isinstance(feedback_responses[key], str):
+                        feedback_responses[key] = custom_feedback[key]
+                    elif callable(feedback_responses[key]):
+                        feedback_responses[key] = wrap_feedback_function(custom_feedback[key])
+                    else:
+                        raise Exception("Cannot handle given costum feedback for "+key)
+
     if params.get("is_latex", False):
         response = preview_function(response, params)["preview"]["sympy"]
 
@@ -191,7 +209,7 @@ def evaluation_function(response, answer, params) -> dict:
             try:
                 expr = parse_expression(res, parsing_params).simplify()
                 expr = expr.expand(power_base=True, force=True)
-            except Exception as e:
+            except Exception:
                 separator = "" if len(remark) == 0 else "\n"
                 return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
             if isinstance(expr, Add):
@@ -238,7 +256,7 @@ def evaluation_function(response, answer, params) -> dict:
                     quantity_strings = eval(quantities_strings[index+1:index_match])
                     quantity = tuple(map(lambda x: parse_expression(x, parsing_params), quantity_strings))
                     quantities.append(quantity)
-                except Exception as e:
+                except Exception:
                     raise Exception(parsing_feedback_responses["QUANTITIES_NOT_WRITTEN_CORRECTLY"])
                 index = quantities_strings.find('(', index_match+1)
             response_symbols = list(map(lambda x: x[0], quantities))
@@ -278,14 +296,14 @@ def evaluation_function(response, answer, params) -> dict:
                 for quantity in quantities:
                     dimension = dimension.subs(quantity[0], quantity[1])
                 answer_dimensions.append(posify(dimension)[0].simplify())
-            
+
             # Check that answers are dimensionless
-            for k,dimension in enumerate(answer_dimensions):
+            for k, dimension in enumerate(answer_dimensions):
                 if not dimension.is_constant():
                     raise Exception(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]("$"+latex(answer_groups[k])+"$"))
 
             # Check that there is a sufficient number of independent groups in the answer
-            answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+            answer_matrix = get_exponent_matrix(answer_groups, answer_symbols)
             if answer_matrix.rank() < number_of_groups:
                 raise Exception(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Answer", answer_matrix.rank(), number_of_groups))
 
@@ -320,7 +338,7 @@ def evaluation_function(response, answer, params) -> dict:
 
         # Check the special case where one groups expression contains several power products
         separator = "" if len(remark) == 0 else "\n"
-        answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
+        answer_matrix = get_exponent_matrix(answer_groups, answer_symbols)
         if answer_matrix.rank() > answer_number_of_groups:
             raise Exception(buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("answer"))
         response_matrix = get_exponent_matrix(response_groups, answer_symbols)
@@ -330,7 +348,7 @@ def evaluation_function(response, answer, params) -> dict:
         return {"is_correct": valid, "feedback": feedback.get("feedback", "")+separator+remark, **interp}
 
     list_of_substitutions_strings = parameters.get("substitutions", [])
-    if isinstance(list_of_substitutions_strings,str):
+    if isinstance(list_of_substitutions_strings, str):
         list_of_substitutions_strings = [list_of_substitutions_strings]
 
     if "quantities" in parameters.keys():
@@ -466,19 +484,6 @@ def find_matching_parenthesis(string, index):
             if depth == 0:
                 return k
     return -1
-
-
-def get_exponent_matrix(expressions, symbols):
-    exponents_list = []
-    for expression in expressions:
-        exponents = []
-        for symbol in symbols:
-            exponent = expression.as_coeff_exponent(symbol)[1]
-            if exponent == 0:
-                exponent = -expression.subs(symbol, 1/symbol).as_coeff_exponent(symbol)[1]
-            exponents.append(exponent)
-        exponents_list.append(exponents)
-    return Matrix(exponents_list)
 
 
 def expression_to_latex(expression, parameters, parsing_params, remark):

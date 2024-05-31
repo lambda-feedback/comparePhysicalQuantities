@@ -10,16 +10,17 @@ except ImportError:
     from expression_utilities import elementary_functions_names, substitute
 
 # If evaluation_tests is run with the command line argument 'skip_resource_intensive_tests'
-# then tests marked with @unittest.skipIf(skip_resource_intensive_tests,message_on_skip)
+# then tests marked with @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
 # will be skipped. This can be used to avoid takes that take a long time when making several
 # small changes with most tests running between each change
 message_on_skip = "Test skipped to save on resources"
-skip_resource_intensive_tests = True # False
+skip_resource_intensive_tests = True  # False
 print(sys.argv)
 if "skip_resource_intensive_tests" in sys.argv:
     skip_resource_intensive_tests = True
     sys.argv.remove("skip_resource_intensive_tests")
 parse_error_warning = parsing_feedback_responses["PARSE_ERROR_WARNING"]
+
 
 class TestEvaluationFunction(unittest.TestCase):
     """
@@ -44,9 +45,9 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(response=response, answer=answer):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result.get("is_correct"), value)
-        variation_definitions = [lambda x : x.replace('**','^'),
-                                 lambda x : x.replace('**','^').replace('*',' '),
-                                 lambda x : x.replace('**','^').replace('*','')]
+        variation_definitions = [lambda x: x.replace('**', '^'),
+                                 lambda x: x.replace('**', '^').replace('*', ' '),
+                                 lambda x: x.replace('**', '^').replace('*', '')]
         for variation in variation_definitions:
             response_variation = variation(response)
             answer_variation = variation(answer)
@@ -58,14 +59,14 @@ class TestEvaluationFunction(unittest.TestCase):
                     result = evaluation_function(response, answer_variation, params)
                     self.assertEqual(result.get("is_correct"), value)
                 with self.subTest(response=response_variation, answer=answer_variation):
-                    result = evaluation_function(response_variation, answer_variation , params)
+                    result = evaluation_function(response_variation, answer_variation, params)
                     self.assertEqual(result.get("is_correct"), value)
 
     def test_invalid_user_expression(self):
         body = {"response": "3x*", "answer": "3*x"}
 
-        result = evaluation_function(body["response"],body["answer"],{})
-        self.assertEqual(result["feedback"],parse_error_warning(body["response"]))
+        result = evaluation_function(body["response"], body["answer"], {})
+        self.assertEqual(result["feedback"], parse_error_warning(body["response"]))
 
     def test_invalid_author_expression(self):
         body = {"response": "3*x", "answer": "3x*"}
@@ -79,68 +80,66 @@ class TestEvaluationFunction(unittest.TestCase):
         )
 
     def test_substitutions_replace_no_common_substrings(self):
-        body = {"response": "ab", 
-                "answer": "c", 
-                "substitutions": "('a','A') ('b','B') ('c','AB')"}
+        body = {"response": "ab",
+                "answer": "c",
+                "substitutions": "('a', 'A') ('b', 'B') ('c', 'AB')"}
 
-        response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
+        response = evaluation_function(body["response"], body["answer"], {k: v for k, v in body.items() if k not in ["response", "answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_replacement(self):
-        body = {"response": "ab", 
-                "answer": "c", 
-                "substitutions": "('a','b') ('b','d') ('c','bd')"}
+        body = {"response": "ab",
+                "answer": "c",
+                "substitutions": "('a', 'b') ('b', 'd') ('c', 'bd')"}
 
-        response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
+        response = evaluation_function(body["response"], body["answer"], {k: v for k, v in body.items() if k not in ["response", "answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_substitutions_replace_common_substrings_in_original(self):
-        body = {"response": "ab", 
-                "answer": "c", 
-                "substitutions": "('a','d') ('ab','e') ('c','e')"}
+        body = {"response": "ab",
+                "answer": "c",
+                "substitutions": "('a', 'd') ('ab', 'e') ('c', 'e')"}
 
-        response = evaluation_function(body["response"], body["answer"], {k:v for k,v in body.items() if k not in ["response","answer"]})
+        response = evaluation_function(body["response"], body["answer"], {k: v for k, v in body.items() if k not in ["response", "answer"]})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_compare_dimensions_with_substitution(self):
         response = "2*d**2/t**2+0.5*v**2"
         answer = "5*v**2"
-        params = { "comparison": "dimensions",
-                   "substitutions": "('d','(distance)') ('t','(time)') ('v','(distance/time)')",
-                   "input_symbols": [['distance',[]],['time',[]]],
-                   "strict_syntax": False}
+        params = {
+            "comparison": "dimensions",
+            "substitutions": "('d', '(distance)') ('t', '(time)') ('v', '(distance/time)')",
+            "input_symbols": [['distance', []], ['time', []]],
+            "strict_syntax": False
+        }
 
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_dimensions_with_defaults(self):
         answer = "length**2/time**2"
-        params = { "comparison": "dimensions",
-                   "strict_syntax": False}
-        responses = ["metre**2/second**2",
-                     "(centi*metre)**2/hour**2",
-                     "246*ohm/(kilo*gram)*coulomb**2/second"]
-        for response in responses:
-            self.assertEqual_input_variations(response, answer, params, True)
-
-    def test_compare_dimensions_with_defaults(self):
-        answer = "length**2/time**2"
-        params = { "comparison": "dimensions",
-                   "strict_syntax": False}
-        responses = ["m**2/s**2",
-                     "(c*m)**2/h**2",
-                     "246*O/(k*g)*C**2/s"]
+        params = {
+            "comparison": "dimensions",
+            "strict_syntax": False
+        }
+        responses = [
+            "m**2/s**2",
+            "(c*m)**2/h**2",
+            "246*O/(k*g)*C**2/s"
+        ]
         for response in responses:
             self.assertEqual_input_variations(response, answer, params, True)
 
     def test_dimensionless_quantities(self):
         answer = "1"
         params = {"strict_syntax": False}
-        responses = ["1",
-                     "s*Hz",
-                     "k*kat*m*s/mol"]
+        responses = [
+            "1",
+            "s*Hz",
+            "k*kat*m*s/mol"
+        ]
         for response in responses:
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
@@ -148,9 +147,11 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_wrong_dimensions(self):
         answer = "1"
         params = {"strict_syntax": False}
-        responses = ["m",
-                     "s",
-                     "s*m"]
+        responses = [
+            "m",
+            "s",
+            "s*m"
+        ]
         for response in responses:
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
@@ -162,30 +163,30 @@ class TestEvaluationFunction(unittest.TestCase):
         n = len(convert_alternative_names_to_standard)
         incorrect = []
         errors = []
-        for i in range(0,n):
-            for j in range(0,n):
+        for i in range(0, n):
+            for j in range(0, n):
                 answer = convert_alternative_names_to_standard[i][1]+"*"+convert_alternative_names_to_standard[j][1]
-                for prod in ["*"," ",""]:
+                for prod in ["*", " ", ""]:
                     left = convert_alternative_names_to_standard[i][0]
-                    if isinstance(left,tuple):
+                    if isinstance(left, tuple):
                         if len(prod) == 0:
                             left = convert_alternative_names_to_standard[i][1]
                         else:
                             left = left[0]
                     right = convert_alternative_names_to_standard[j][0]
-                    if isinstance(right,tuple):
+                    if isinstance(right, tuple):
                         right = right[0]
                     response = left+prod+right
                     try:
                         result = evaluation_function(response, answer, params)
-                    except:
-                        errors.append((answer,response))
+                    except Exception:
+                        errors.append((answer, response))
                         continue
                     if not result.get("is_correct"):
-                        incorrect.append((answer,response))
+                        incorrect.append((answer, response))
         log_details = False
         if log_details:
-            f = open("test_alternative_names_compound_units_log.txt","w")
+            f = open("test_alternative_names_compound_units_log.txt", "w")
             f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors]))
             f.close()
             print(f"{len(incorrect)}/{3*n*n} {len(errors)}/{3*n*n} {(len(errors)+len(incorrect))/(3*n*n)}")
@@ -204,30 +205,30 @@ class TestEvaluationFunction(unittest.TestCase):
         k = 0
         incorrect = []
         errors = []
-        for i in range(0,n):
-            for a in range(0,m):
+        for i in range(0, n):
+            for a in range(0, m):
                 answer = prefixes_long_forms[a]+"*"+long_forms[i]
-                for prod in ["*"," ",""]:
+                for prod in ["*", " ", ""]:
                     response = prefixes_short_forms[a]+prod+short_forms[i]
                     k += 1
                     try:
                         result = evaluation_function(response, answer, params)
-                    except:
-                        errors.append((answer,response))
+                    except Exception:
+                        errors.append((answer, response))
                         continue
                     if not result.get("is_correct"):
-                        incorrect.append((answer,response))
+                        incorrect.append((answer, response))
         self.assertEqual(len(errors)+len(incorrect), 0)
 
     @unittest.skipIf(skip_resource_intensive_tests, message_on_skip)
     def test_short_form_of_compound_units(self):
         # NOTE: Short forms for common units are not allowed
         units = list_of_SI_base_unit_dimensions\
-                +list_of_derived_SI_units_in_SI_base_units\
-                +list_of_very_common_units_in_SI
+            + list_of_derived_SI_units_in_SI_base_units\
+            + list_of_very_common_units_in_SI
         all_units = list_of_SI_base_unit_dimensions\
-                    +list_of_derived_SI_units_in_SI_base_units\
-                    +list_of_common_units_in_SI
+            + list_of_derived_SI_units_in_SI_base_units\
+            + list_of_common_units_in_SI
         all_long_forms = [x[0] for x in all_units]
         params = {"strict_syntax": False}
         prefixes_long_forms = [x[0] for x in list_of_SI_prefixes]
@@ -240,30 +241,30 @@ class TestEvaluationFunction(unittest.TestCase):
         does_not_match_convention = []
         incorrect = []
         errors = []
-        for i in range(0,n):
-            for j in range(0,n):
-                for a in range(0,m):
+        for i in range(0, n):
+            for j in range(0, n):
+                for a in range(0, m):
                     answer = prefixes_long_forms[a]+"*"+long_forms[i]+"*"+long_forms[j]
-                    for prod in ["*"," ",""]:
+                    for prod in ["*", " ", ""]:
                         response = prefixes_short_forms[a]+prod+short_forms[i]+prod+short_forms[j]
                         # Check if case matches convention
                         if short_forms[i] in prefixes_short_forms\
-                        or prefixes_short_forms[a]+prod+short_forms[i] in prefixes_short_forms\
-                        or short_forms[i]+prod+short_forms[j] in short_forms\
-                        or any([x in response for x in all_long_forms]):
-                            does_not_match_convention.append((answer,response))
+                            or prefixes_short_forms[a]+prod+short_forms[i] in prefixes_short_forms\
+                            or short_forms[i]+prod+short_forms[j] in short_forms\
+                            or any([x in response for x in all_long_forms]):
+                            does_not_match_convention.append((answer, response))
                             continue
                         k += 1
                         try:
                             result = evaluation_function(response, answer, params)
-                        except:
-                            errors.append((answer,response))
+                        except Exception:
+                            errors.append((answer, response))
                             continue
                         if not result.get("is_correct"):
-                            incorrect.append((answer,response))
+                            incorrect.append((answer, response))
         log_details = False
         if log_details:
-            f = open("test_short_form_of_compound_units_log.txt","w")
+            f = open("test_short_form_of_compound_units_log.txt", "w")
             f.write("Incorrect:\n"+"".join([str(x)+"\n" for x in incorrect])+"\nErrors:\n"+"".join([str(x)+"\n" for x in errors])+"\nDoes not match convention:\n"+"".join([str(x)+"\n" for x in does_not_match_convention]))
             f.close()
             print(f"{len(incorrect)}/{k} {len(errors)}/{k} {(len(errors)+len(incorrect))/k} {len(does_not_match_convention)}/{k+len(does_not_match_convention)} {len(does_not_match_convention)/(k+len(does_not_match_convention))}")
@@ -272,15 +273,15 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_compare_quantities_with_substitutions(self):
         response = "(d/t)**2/(3600**2)+v**2"
         answer = "2*v**2"
-        params = {"substitutions": "('d','(km)') ('t','(s)') ('v','(km/h)') | ('k','1000*') ('h','(60*60*s)')",
+        params = {"substitutions": "('d', '(km)') ('t', '(s)') ('v', '(km/h)') | ('k', '1000*') ('h', '(60*60*s)')",
                   "strict_syntax": False}
 
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_substitutions_short_form_strict(self):
-        derived_units = "('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')"
-        prefixes = "('M','10**6') ('k','10**3') ('h','10**2') ('da','10**1') ('d','10**(-1)') ('c','10**(-2)') ('mu','10**(-6)')"
-        milli_fix = "('mW','10**(-3)*W') ('mJ','10**(-3)*J') ('mPa','10**(-3)*Pa') ('mN','10**(-3)*N') ('mm','10**(-3)*m') ('mg','10**(-3)*g') ('ms','10**(-3)*s')"
+        derived_units = "('W', '(J/s)')|('J', '(N*m)') ('Pa', '(N/(m**2))')|('N', '(m*(k*g)/(s**2))')"
+        prefixes = "('M', '10**6') ('k', '10**3') ('h', '10**2') ('da', '10**1') ('d', '10**(-1)') ('c', '10**(-2)') ('mu', '10**(-6)')"
+        milli_fix = "('mW', '10**(-3)*W') ('mJ', '10**(-3)*J') ('mPa', '10**(-3)*Pa') ('mN', '10**(-3)*N') ('mm', '10**(-3)*m') ('mg', '10**(-3)*g') ('ms', '10**(-3)*s')"
         substitutions = milli_fix+"|"+derived_units+"|"+prefixes
         params = {"substitutions": substitutions, "strict_syntax": True}
         answer = "1.23*W"
@@ -301,9 +302,9 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual(result.get("is_correct"), True)
 
     def test_compare_quantities_with_substitutions_short_form(self):
-        derived_units = "('W','(J/s)')|('J','(N*m)') ('Pa','(N/(m**2))')|('N','(m*(k*g)/(s**2))')"
-        prefixes = "('M','(10**6)') ('k','(10**3)') ('h','(10**2)') ('da','(10**1)') ('d','(10**(-1))') ('c','(10**(-2))') ('mu','(10**(-6))')"
-        milli_fix = "('mW','(10**(-3))*W') ('mJ','(10**(-3))*J') ('mPa','(10**(-3))*Pa') ('mN','(10**(-3))*N') ('mm','(10**(-3))*m') ('mg','(10**(-3))*g') ('ms','(10**(-3))*s')"
+        derived_units = "('W', '(J/s)')|('J', '(N*m)') ('Pa', '(N/(m**2))')|('N', '(m*(k*g)/(s**2))')"
+        prefixes = "('M', '(10**6)') ('k', '(10**3)') ('h', '(10**2)') ('da', '(10**1)') ('d', '(10**(-1))') ('c', '(10**(-2))') ('mu', '(10**(-6))')"
+        milli_fix = "('mW', '(10**(-3))*W') ('mJ', '(10**(-3))*J') ('mPa', '(10**(-3))*Pa') ('mN', '(10**(-3))*N') ('mm', '(10**(-3))*m') ('mg', '(10**(-3))*g') ('ms', '(10**(-3))*s')"
         substitutions = milli_fix+"|"+derived_units+"|"+prefixes
         params = {"substitutions": substitutions, "strict_syntax": False}
         answer = "1.23*W"
@@ -324,10 +325,10 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_compare_costs_in_different_currencies_with_substitutions(self):
         # Based on Bank of England daily spot rates 01-08-2022
-        currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
+        currencies = "('EUR', '(1/1.1957)*GBP') ('USD', '(1/1.2283)*GBP') ('CNY', '(1/8.3104)*GBP') ('INR', '(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "input_symbols": [['GBP',[]],['EUR',[]],['USD',[]],['CNY',[]],['INR',[]]],
+                  "input_symbols": [['GBP', []], ['EUR', []], ['USD', []], ['CNY', []], ['INR', []]],
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -336,10 +337,10 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_compare_costs_in_different_currencies_with_substitutions_and_input_symbols(self):
         # Based on Bank of England daily spot rates 01-08-2022
-        currencies = "('EUR','(1/1.1957)*GBP') ('USD','(1/1.2283)*GBP') ('CNY','(1/8.3104)*GBP') ('INR','(1/96.9430)*GBP')"
+        currencies = "('EUR', '(1/1.1957)*GBP') ('USD', '(1/1.2283)*GBP') ('CNY', '(1/8.3104)*GBP') ('INR', '(1/96.9430)*GBP')"
         params = {"substitutions": currencies,
                   "atol": "0.005",
-                  "input_symbols": [['GBP',[]],['EUR',[]],['USD',[]],['CNY',[]],['INR',[]]],
+                  "input_symbols": [['GBP', []], ['EUR', []], ['USD', []], ['CNY', []], ['INR', []]],
                   "strict_syntax": False}
         answer = "10.00*GBP"
         responses = ["11.96*EUR", "12.28*USD", "83.10*CNY", "969.43*INR"]
@@ -349,24 +350,30 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_compare_quantities_with_defaults(self):
         response = "(d/t)**2*((1/3.6)**2)+v**2"
         answer = "2*v**2"
-        params = { "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
-                   "strict_syntax": False}
+        params = {
+            "quantities": "('d', '(metre)') ('t', '(second)') ('v', '(kilo*metre/hour)')",
+            "strict_syntax": False
+        }
 
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_defaults_exact(self):
         response = "(d/t)**2*((1/3.6)**2)+v**2"
         answer = "2*v**2"
-        params = {"comparison": "expressionExact", 
-                  "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
-                  "strict_syntax": False}
+        params = {
+            "comparison": "expressionExact",
+            "quantities": "('d', '(metre)') ('t', '(second)') ('v', '(kilo*metre/hour)')",
+            "strict_syntax": False
+        }
 
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_defaults_and_alternatives(self):
-        params = { "quantities": "('d','(metre)') ('t','(second)') ('v','(kilo*metre/hour)')",
-                   "input_symbols": [['d',['distance','D']],['t',['time','T']],['v',['velocity','speed','V']]],
-                   "strict_syntax": False}
+        params = {
+            "quantities": "('d', '(metre)') ('t', '(second)') ('v', '(kilo*metre/hour)')",
+            "input_symbols": [['d', ['distance', 'D']], ['t', ['time', 'T']], ['v', ['velocity', 'speed', 'V']]],
+            "strict_syntax": False
+        }
 
         response = "(distance/time)**2*((1/3.6)**2)+velocity**2"
         answer = "2*speed**2"
@@ -377,9 +384,11 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_defaults_and_short_alternatives(self):
-        params = { "quantities": "('distance','(metre)') ('time','(second)') ('velocity','(kilo*metre/hour)')",
-                   "input_symbols": [['distance',['d','D']],['time',['t','T']],['velocity',['v','speed','s']]],
-                   "strict_syntax": False}
+        params = {
+            "quantities": "('distance', '(metre)') ('time', '(second)') ('velocity', '(kilo*metre/hour)')",
+            "input_symbols": [['distance', ['d', 'D']], ['time', ['t', 'T']], ['velocity', ['v', 'speed', 's']]],
+            "strict_syntax": False
+        }
 
         response = "(distance/time)**2*((1/3.6)**2)+velocity**2"
         answer = "2*speed**2"
@@ -390,7 +399,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_compare_quantities_with_rtol(self):
-        for k in [1,2,3]:
+        for k in [1, 2, 3]:
             # Checks that sufficiently accurate responses are considered correct
             answer = "111111*metre"
             params = {"rtol": "0."+"0"*k+"1", "strict_syntax": False}
@@ -407,9 +416,7 @@ class TestEvaluationFunction(unittest.TestCase):
             self.assertEqual_input_variations(response, answer, params, False)
 
     def test_compare_quantities_with_rtol_short_form(self):
-        correct_results = []
-        incorrect_results = []
-        for k in [1,2,3]:
+        for k in [1, 2, 3]:
             # Checks that sufficiently accurate responses are considered correct
             response = "1"*(k+1)+"0"*(4-k)+"*da*m"
             answer = "111111*m"
@@ -477,7 +484,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_buckingham_pi_one_group(self):
         answer = "U*L/nu"
-        params = {"comparison": "buckinghamPi", "input_symbols": [['U',[]],['L',[]],['nu',[]]], "strict_syntax": False}
+        params = {"comparison": "buckinghamPi", "input_symbols": [['U', []], ['L', []], ['nu', []]], "strict_syntax": False}
         correct_responses = ["U*L/nu",
                              "L*U/nu",
                              "nu/U/L",
@@ -497,18 +504,18 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_buckingham_pi_unknown_symbols(self):
         answer = "a*b*c"
-        params = {"comparison": "buckinghamPi", "input_symbols": [['a',[]],['b',[]],['c',[]]], "strict_syntax": False}
+        params = {"comparison": "buckinghamPi", "input_symbols": [['a', []], ['b', []], ['c', []]], "strict_syntax": False}
         response = "a*b*c*p*q"
         self.assertEqual_input_variations(response, answer, params, False)
         result = evaluation_function(response, answer, params)
         self.assertEqual(
-            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["p","q"]) in result["feedback"]
+            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["p", "q"]) in result["feedback"]
             or
-            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["q","p"]) in result["feedback"],
+            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["q", "p"]) in result["feedback"],
             True
         )
 
-    def test_buckingham_pi_two_groups(self):
+    def test_buckingham_pi_two_groups_with_custom_feedback(self):
         # For this test we use the following quantities
         #  [g] = L/T**2
         #  [v] = L/T
@@ -525,24 +532,64 @@ class TestEvaluationFunction(unittest.TestCase):
         # pi1 = g**(p1-q1) * v**(2*q1-2*p1) * h**(p1) * l**(q1)
         # pi2 = g**(p2-q2) * v**(2*q2-2*p2) * h**(p2) * l**(q2)
         # The two groups are independent unless p1/p2 = q1/q2
-        params = {"comparison": "buckinghamPi", "strict_syntax": False,
-                  "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
-        # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
-        answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
-        # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
-        response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
-        self.assertEqual_input_variations(response, answer, params, True)
-        # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
-        response = "h*l, h**2*l**2"
-        self.assertEqual_input_variations(response, answer, params, False)
-        # This does not correspond to any consistent values of p1, p2, q1 and q2
-        response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
-        self.assertEqual_input_variations(response, answer, params, False)
+        params = {
+            "comparison": "buckinghamPi",
+            "strict_syntax": False,
+            "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]],
+            "custom_feedback": {
+                "VALID_CANDIDATE_SET": "Your list of power products satisfies the Buckingham Pi theorem.",
+                "NOT_DIMENSIONLESS": "At least one power product is not dimensionless.",
+                "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more power products than necessary.",
+                "CANDIDATE_GROUPS_NOT_INDEPENDENT": "Power products in response are not independent.",
+                "TOO_FEW_INDEPENDENT_GROUPS": "Candidate set contains too few independent groups.",
+                "UNKNOWN_SYMBOL": "One of the prower products contains an unkown symbol.",
+                "SUM_WITH_INDEPENDENT_TERMS": "The candidate set contains an expression which contains more independent terms that there are groups in total. The candidate set should ideally only contain expressions written as power products."
+            }
+        }
+        with self.subTest(tag="Valid response"):
+            # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
+            answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            # This corresponds to p1 = 3, p2 = 3, q1 = 2, q2 = 1
+            response = "g*v**(-2)*h**3*l**2, g**2*v**(-4)*h**3*l"
+            self.assertEqual_input_variations(response, answer, params, True)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["VALID_CANDIDATE_SET"] in result["feedback"], True)
+        with self.subTest(tag="Too few independent groups"):
+            # This corresponds to p1 = 1, p2 = 2, q1 = 1, q2 = 2
+            response = "h*l, h**2*l**2"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["CANDIDATE_GROUPS_NOT_INDEPENDENT"] in result["feedback"], True)
+            self.assertEqual(params["custom_feedback"]["TOO_FEW_INDEPENDENT_GROUPS"] in result["feedback"], True)
+        with self.subTest(tag="Not dimensionless"):
+            # This does not correspond to any consistent values of p1, p2, q1 and q2
+            response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["NOT_DIMENSIONLESS"] in result["feedback"], True)
+            self.assertEqual_input_variations(response, answer, params, False)
+        with self.subTest(tag="Extra dimensionless group"):
+            # This adds an extra dimensionless group
+            response = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4, g**(-1)*v**2*h"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
+        with self.subTest(tag="Undefined symbol"):
+            # This is a response with an undefined symbol added
+            response = "q*g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["UNKNOWN_SYMBOL"] in result["feedback"], True)
+        with self.subTest(tag="Sum with independent terms instead of set of groups"):
+            # This is a response with the two groups in a valid set in sum instead of a comma-separated list
+            response = "g**(-2)*v**4*h*l**3+g**(-2)*v**4*h**2*l**4"
+            self.assertEqual_input_variations(response, answer, params, False)
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(params["custom_feedback"]["SUM_WITH_INDEPENDENT_TERMS"] in result["feedback"], True)
 
     def test_buckingham_pi_too_many_groups(self):
-        # This test uses the same groups as 'test_buckingham_pi_two_groups'
+        # This test uses the same groups as 'test_buckingham_pi_two_groups_with_custom_feedback'
         params = {"comparison": "buckinghamPi", "strict_syntax": False,
-                  "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
+                  "input_symbols": [['g', []], ['v', []], ['h', []], ['l', []]]}
         answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
         response = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4, g**(-1)*v**2*h"
         self.assertEqual_input_variations(response, answer, params, False)
@@ -552,8 +599,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_buckingham_pi_two_groups_with_quantities(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
-                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
+                  "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                  "input_symbols": [['U', []], ['L', []], ['nu', []], ['f', []]]}
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -561,8 +608,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_buckingham_pi_two_groups_with_quantities_no_answer(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
-                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
+                  "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                  "input_symbols": [['U', []], ['L', []], ['nu', []], ['f', []]]}
         answer = "-"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertEqual_input_variations(response, answer, params, True)
@@ -572,8 +619,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_buckingham_pi_two_groups_with_quantities_not_dimensionless(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
-                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
+                  "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                  "input_symbols": [['U', []], ['L', []], ['nu', []], ['f', []]]}
         answer = "f*U*L/nu, f*L/U"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
@@ -586,13 +633,13 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, U*nu/(f*L**2)"
         result = evaluation_function(response, answer, params)
-        self.assertEqual(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]({"L*U/nu",}) in result["feedback"], True)
+        self.assertEqual(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]({"L*U/nu", }) in result["feedback"], True)
 
     def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_answer(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
-                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
+                  "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                  "input_symbols": [['U', []], ['L', []], ['nu', []], ['f', []]]}
         answer = "U*L/nu"
         response = "U*L/nu, nu/(f*L**2)"
         self.assertRaises(
@@ -615,8 +662,8 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_buckingham_pi_two_groups_with_quantities_with_dependent_groups_in_response(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
-                  "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
-                  "input_symbols": [['U',[]],['L',[]],['nu',[]],['f',[]]]}
+                  "quantities": "('U', '(length/time)') ('L', '(length)') ('nu', '(length**2/time)') ('f', '(1/time)')",
+                  "input_symbols": [['U', []], ['L', []], ['nu', []], ['f', []]]}
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
@@ -628,7 +675,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {
             "strict_syntax": False,
             "comparison": "buckinghamPi",
-            "quantities": "('f','(1/second)') ('l','(metre)') ('U','(metre/second)') ('h','(metre)') ('Re','(1)')",
+            "quantities": "('f', '(1/second)') ('l', '(metre)') ('U', '(metre/second)') ('h', '(metre)') ('Re', '(1)')",
             "symbols": {
                 "f": {"latex": r"\(f\)", "aliases": []},
                 "l": {"latex": r"\(l\)", "aliases": []},
@@ -637,8 +684,8 @@ class TestEvaluationFunction(unittest.TestCase):
                 "h": {"latex": r"\(h\)", "aliases": []},
             }
         }
-        answer = "f*l/U,h/l,1/Re"
-        response = "fl/U,h/l"
+        answer = "f*l/U, h/l, 1/Re"
+        response = "fl/U, h/l"
         self.assertEqual_input_variations(response, answer, params, False)
         result = evaluation_function(response, answer, params)
         self.assertEqual(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", 2, 3) in result["feedback"], True)
@@ -655,22 +702,23 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_empty_input_symbols_codes_and_alternatives(self):
         answer = '10*gamma km/s'
         response = '10*gamma km/s'
-        params = {'strict_syntax': False,
-                   'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
-                 }
+        params = {
+            'strict_syntax': False,
+            'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
+        }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
     def test_warning_inappropriate_symbol(self):
         answer = '2**4'
         response = '2^4'
-        params = {'strict_syntax': True }
+        params = {'strict_syntax': True}
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["feedback"], "Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
         answer = '2**4'
         response = '2^0.5'
-        params = {'strict_syntax': True }
+        params = {'strict_syntax': True}
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
@@ -711,7 +759,7 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="Correct response with per"):
             answer = "50*kilometre/hour"
             response = "50 kilometres per hour"
-            params = {"strict_syntax": False, "input_symbols": [["alpha",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            params = {"strict_syntax": False, "input_symbols": [["alpha", ["A"]], ["beta", ["b"]], ["gamma", ["g"]]]}
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
             self.assertEqual(per_warning in result["feedback"], True)
@@ -719,7 +767,7 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="Ambiguity in denominator"):
             answer = "50*kilometre/(hour*ampere)"
             response = "50 kilometres per hour ampere"
-            params = {"strict_syntax": False, "input_symbols": [["alpha",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            params = {"strict_syntax": False, "input_symbols": [["alpha", ["A"]], ["beta", ["b"]], ["gamma", ["g"]]]}
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
             self.assertEqual(per_warning in result["feedback"], True)
@@ -727,41 +775,41 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="With 'per' in input symbol"):
             answer = "50*kilometre/hour"
             response = "50 kilometres per hour"
-            params = {"strict_syntax": False, "input_symbols": [["per",["A"]],["beta",["b"]],["gamma",["g"]]]}
+            params = {"strict_syntax": False, "input_symbols": [["per", ["A"]], ["beta", ["b"]], ["gamma", ["g"]]]}
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            self.assertEqual(per_warning in result.get("feedback",""), False)
+            self.assertEqual(per_warning in result.get("feedback", ""), False)
 
         with self.subTest(tag="With 'per' in input symbol alternative"):
             answer = "50*kilometre/hour"
             response = "50 kilometres per hour"
-            params = {"strict_syntax": False, "input_symbols": [["A",["per"]],["beta",["b"]],["gamma",["g"]]]}
+            params = {"strict_syntax": False, "input_symbols": [["A", ["per"]], ["beta", ["b"]], ["gamma", ["g"]]]}
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            self.assertEqual(per_warning in result.get("feedback",""), False)
+            self.assertEqual(per_warning in result.get("feedback", ""), False)
 
     def test_error_inappropriate_symbol(self):
         answer = '0.5'
         response = '0,5'
-        params = {'strict_syntax': True }
+        params = {'strict_syntax': True}
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
         answer = '(0.002*6800*v)/1.2'
         response = '(0,002*6800*v)/1,2'
-        params = {'strict_syntax': False }
+        params = {'strict_syntax': False}
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
         answer = '-inf'
         response = '-∞'
-        params = {'strict_syntax': False }
+        params = {'strict_syntax': False}
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
         answer = 'x*y'
         response = 'x.y'
-        params = {'strict_syntax': False }
+        params = {'strict_syntax': False}
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
@@ -808,18 +856,18 @@ class TestEvaluationFunction(unittest.TestCase):
 
         params = {"strict_syntax": False,
                   "comparison": "buckinghamPi",
-                  "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
-                  "input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]]}
+                  "quantities": "('F', '(gram*metre*second**(-2))') ('U', '(metre/second)') ('rho', '(gram/(metre**3))') ('D', '(metre)') ('omega', '(second**(-1))')",
+                  "input_symbols": [["F", []], ["U", []], ["rho", []], ["D", []], ["omega", []]]}
 
         with self.subTest(tag="two groups, one is sum of valid terms"):
             answer = "-"
-            response = "U/(omega*D),U/(omega*D)+F/(rho*D**4*omega**2)"
+            response = "U/(omega*D), U/(omega*D)+F/(rho*D**4*omega**2)"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
 
         with self.subTest(tag="two groups, one has an invalid terms"):
             answer = "-"
-            response = "U/(omega*D),U/(omega*D)+1/(rho*D**4*omega**2)"
+            response = "U/(omega*D), U/(omega*D)+1/(rho*D**4*omega**2)"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
@@ -843,7 +891,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {
             "strict_syntax": False,
             "comparison": "buckinghamPi",
-            "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
+            "quantities": "('F', '(gram*metre*second**(-2))') ('U', '(metre/second)') ('rho', '(gram/(metre**3))') ('D', '(metre)') ('omega', '(second**(-1))')",
             "symbols": {
                 "F": {"latex": r"\(F\)", "aliases": []},
                 "U": {"latex": r"\(U\)", "aliases": []},
@@ -853,11 +901,11 @@ class TestEvaluationFunction(unittest.TestCase):
             }
         }
         answer = "-"
-        response = "U/(omega*D),F/(rho*D**4*omega**2)"
+        response = "U/(omega*D), F/(rho*D**4*omega**2)"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
-        response = "U/(omega*D),F/(rho*D**2*U**2)"
+        response = "U/(omega*D), F/(rho*D**2*U**2)"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
@@ -866,29 +914,34 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(result["is_correct"], False)
 
         # Comparing to actual solutions b)
-        params = {'rtol': 0.05,
-                  'strict_syntax': False, 
-                  'cases': [{'answer': '3.1415926', 'feedback': '', 'mark': 1, 'params': {}}],
-                  'input_symbols': [['pi', ['Pi', 'PI', 'π']]]
-                  }
+        params = {
+            'rtol': 0.05,
+            'strict_syntax': False,
+            'cases': [{'answer': '3.1415926', 'feedback': '', 'mark': 1, 'params': {}}],
+            'input_symbols': [['pi', ['Pi', 'PI', 'π']]]
+        }
         answer = "pi"
         response = "3.14"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
-        
+
         # Drag on a ship a)
-        params = {"strict_syntax": False,
-                  "comparison": "buckinghamPi",
-                  "quantities": "('mu','(gram/metre/second)') ('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('l','(metre)') ('B','(metre)') ('g','(metre*second**(-2))') ",
-                  "input_symbols": [["F",["FD","fd","Fd","F_D","F_d"]],["U",["u"]],["l",["L"]],["B",["b","w","W","width","beam"]],["rho",["r","Rho","rho"]],["g",["G"]],["mu",["m"]]]}
+        params = {
+            "strict_syntax": False,
+            "comparison": "buckinghamPi",
+            "quantities": "('mu', '(gram/metre/second)') ('F', '(gram*metre*second**(-2))') ('U', '(metre/second)') ('rho', '(gram/(metre**3))') ('l', '(metre)') ('B', '(metre)') ('g', '(metre*second**(-2))') ",
+            "input_symbols": [["F", ["FD", "fd", "Fd", "F_D", "F_d"]], ["U", ["u"]], ["l", ["L"]], ["B", ["b", "w", "W", "width", "beam"]], ["rho", ["r", "Rho", "rho"]], ["g", ["G"]], ["mu", ["m"]]]
+        }
         answer = "-"
-        response = "U*(rho)^(1/3) / (mu*g)^(1/3) "
+        response = "U*(rho)^(1/3) / (mu*g)^(1/3)"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], False)
 
     def test_PHYS40003_1_1_b(self):
-        params = {"strict_syntax": False,
-                  "comparison": "expression"}
+        params = {
+            "strict_syntax": False,
+            "comparison": "expression"
+        }
         answer = "0 m/s"
         response = "0 s"
         result = evaluation_function(response, answer, params)
@@ -897,21 +950,21 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
-    def assertEqual_elementary_function_aliases(self,answer,response,params,value):
+    def assertEqual_elementary_function_aliases(self, answer, response, params, value):
         with self.subTest(alias_tag="name"):
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], value)
         names = []
         alias_substitutions = []
-        for (name,alias) in elementary_functions_names:
+        for (name, alias) in elementary_functions_names:
             if name in answer or name in response:
                 names.append(name)
-                alias_substitutions += [(name,x) for x in alias]
+                alias_substitutions += [(name, x) for x in alias]
         alias_substitutions.sort(key=lambda x: -len(x[0]))
         for substitution in alias_substitutions:
             with self.subTest(alias_tag=substitution):
-                subs_answer = substitute(answer,alias_substitutions)
-                subs_response = substitute(response,alias_substitutions)
+                subs_answer = substitute(answer, alias_substitutions)
+                subs_response = substitute(response, alias_substitutions)
                 result = evaluation_function(subs_response, subs_answer, params)
                 self.assertEqual(result["is_correct"], value)
 
@@ -920,143 +973,143 @@ class TestEvaluationFunction(unittest.TestCase):
         with self.subTest(tag="sin"):
             answer = "0"
             response = "Bsin(pi)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sinc"):
             answer = "B"
             response = "Bsinc(0)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="csc"):
             answer = "B"
             response = "Bcsc(pi/2)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="cos"):
             answer = "0"
             response = "Bcos(pi/2)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sec"):
             answer = "B"
             response = "Bsec(0)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="tan"):
             answer = "B"
             response = "Btan(pi/4)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="cot"):
             answer = "B"
             response = "Bcot(pi/4)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="asin"):
             answer = "B*pi/2"
             response = "Basin(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="acsc"):
             answer = "B*pi/2"
             response = "Bacsc(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="acos"):
             answer = "0"
             response = "Bacos(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="asec"):
             answer = "0"
             response = "Basec(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="atan"):
             answer = "B*pi/4"
             response = "Batan(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="acot"):
             answer = "B*pi/4"
             response = "Bacot(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="atan2"):
             answer = "B*pi/4"
-            response = "Batan2(1,1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            response = "Batan2(1, 1)"
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sinh"):
             answer = "B*exp(x)"
             response = "Bsinh(x)+Bcosh(x)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="cosh"):
             answer = "B*cosh(-1)"
             response = "Bcosh(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="tanh"):
             answer = "B*tanh(2*x)"
             response = "B*2*tanh(x)/(1+tanh(x)^2)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="csch"):
             answer = "B/sinh(x)"
             response = "Bcsch(x)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sech"):
             answer = "B/cosh(x)"
             response = "Bsech(x)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="asinh"):
             answer = "B"
             response = "Basinh(sinh(1))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="acosh"):
             answer = "B"
             response = "Bacosh(cosh(1))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="atanh"):
             answer = "B"
             response = "Batanh(tanh(1))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="asech"):
             answer = "B"
             response = "Bsech(asech(1))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="exp"):
             answer = "B*exp(2*x)"
             response = "Bexp(x)*exp(x)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="exp2"):
             answer = "a+b*exp(2)"
             response = "a+b*E^2"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="log"):
             answer = "10B"
             response = "Bexp(log(10))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sqrt"):
             answer = "2B"
             response = "Bsqrt(4)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="sign"):
             answer = "B"
             response = "Bsign(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="Abs"):
             answer = "2B"
             response = "BAbs(-2)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="Max"):
             answer = "B"
-            response = "BMax(0,1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            response = "BMax(0, 1)"
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="Min"):
             answer = "B"
-            response = "BMin(1,2)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            response = "BMin(1, 2)"
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="arg"):
             answer = "0"
             response = "Barg(1)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="ceiling"):
             answer = "B"
             response = "Bceiling(0.6)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="floor"):
             answer = "0"
             response = "Bfloor(0.6)"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
         with self.subTest(tag="MECH50001_7.2"):
             answer = "fs/(1-M*cos(theta))"
             response = "fs/(1-Mcos(theta))"
-            self.assertEqual_elementary_function_aliases(answer,response,params,True)
+            self.assertEqual_elementary_function_aliases(answer, response, params, True)
 
     def test_eval_function_can_handle_latex_input(self):
         response = r"\sin x + x^{7} + \mathrm{x} + \text { x }"
@@ -1067,7 +1120,7 @@ class TestEvaluationFunction(unittest.TestCase):
             "is_latex": True
         }
         result = evaluation_function(response, answer, params)
-        self.assertEqual( result["is_correct"],True)
+        self.assertEqual(result["is_correct"], True)
 
     def test_eval_function_can_handle_latex_input_with_comma(self):
         response = r"\frac{m}{\left(\rho l^{3}\right)}, \frac{v t}{l}"
@@ -1083,11 +1136,11 @@ class TestEvaluationFunction(unittest.TestCase):
                 "t": {"latex": r"\(t\)", "aliases": []},
                 "v": {"latex": r"\(v\)", "aliases": []},
             },
-            "quantities": "('m','(mass)') ('l','(length)') ('rho','(mass/(length**3))') ('v','(length/time)') ('t','(time)')",
+            "quantities": "('m', '(mass)') ('l', '(length)') ('rho', '(mass/(length**3))') ('v', '(length/time)') ('t', '(time)')",
         }
         result = evaluation_function(response, answer, params)
-        self.assertEqual( result["is_correct"],True)
+        self.assertEqual(result["is_correct"], True)
+
 
 if __name__ == "__main__":
     unittest.main()
-
