@@ -1,11 +1,11 @@
 import unittest, sys
 
 try:
-    from .evaluation import evaluation_function, parse_error_warning
+    from .evaluation import evaluation_function, parse_error_warning, buckingham_pi_feedback_responses, parsing_feedback_responses
     from .static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions, list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
     from .expression_utilities import elementary_functions_names, substitute
 except ImportError:
-    from evaluation import evaluation_function, parse_error_warning
+    from evaluation import evaluation_function, parse_error_warning, buckingham_pi_feedback_responses, parsing_feedback_responses
     from static_unit_conversion_arrays import list_of_SI_prefixes, list_of_SI_base_unit_dimensions,  list_of_derived_SI_units_in_SI_base_units, list_of_very_common_units_in_SI, list_of_common_units_in_SI, convert_alternative_names_to_standard
     from expression_utilities import elementary_functions_names, substitute
 
@@ -494,7 +494,36 @@ class TestEvaluationFunction(unittest.TestCase):
         for response in incorrect_responses:
             self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_buckingham_pi_unknown_symbols(self):
+        answer = "a*b*c"
+        params = {"comparison": "buckinghamPi", "input_symbols": [['a',[]],['b',[]],['c',[]]], "strict_syntax": False}
+        response = "a*b*c*p*q"
+        self.assertEqual_input_variations(response, answer, params, False)
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(
+            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["p","q"]) in result["feedback"]
+            or
+            buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](["q","p"]) in result["feedback"],
+            True
+        )
+
     def test_buckingham_pi_two_groups(self):
+        # For this test we use the following quantities
+        #  [g] = L/T**2
+        #  [v] = L/T
+        #  [h] = L
+        #  [l] = L
+        # This gives dimensional matrix
+        #     --  --
+        #     |1 -2|
+        #     |1 -1|
+        # A = |1  0|
+        #     |1  0|
+        #     --  --
+        # This matrix has rank 2 and the two groups can be written on the form
+        # pi1 = g**(p1-q1) * v**(2*q1-2*p1) * h**(p1) * l**(q1)
+        # pi2 = g**(p2-q2) * v**(2*q2-2*p2) * h**(p2) * l**(q2)
+        # The two groups are independent unless p1/p2 = q1/q2
         params = {"comparison": "buckinghamPi", "strict_syntax": False,
                   "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
         # This corresponds to p1 = 1, p2 = 2, q1 = 3, q2 = 4
@@ -508,6 +537,16 @@ class TestEvaluationFunction(unittest.TestCase):
         # This does not correspond to any consistent values of p1, p2, q1 and q2
         response = "g**1*v**2*h**3*l**4, g**4*v**3*h**2*l**1"
         self.assertEqual_input_variations(response, answer, params, False)
+
+    def test_buckingham_pi_too_many_groups(self):
+        # This test uses the same groups as 'test_buckingham_pi_two_groups'
+        params = {"comparison": "buckinghamPi", "strict_syntax": False,
+                  "input_symbols": [['g',[]],['v',[]],['h',[]],['l',[]]]}
+        answer = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4"
+        response = "g**(-2)*v**4*h*l**3, g**(-2)*v**4*h**2*l**4, g**(-1)*v**2*h"
+        self.assertEqual_input_variations(response, answer, params, False)
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
 
     def test_buckingham_pi_two_groups_with_quantities(self):
         params = {"comparison": "buckinghamPi",
@@ -546,7 +585,7 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, U*nu/(f*L**2)"
         result = evaluation_function(response, answer, params)
-        self.assertIn("feedback",result)
+        self.assertEqual(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]({"L*U/nu",}) in result["feedback"], True)
 
     def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_answer(self):
         params = {"comparison": "buckinghamPi",
@@ -572,7 +611,7 @@ class TestEvaluationFunction(unittest.TestCase):
             params,
         )
 
-    def test_buckingham_pi_two_groups_with_quantities_too_few_independent_groups_in_response(self):
+    def test_buckingham_pi_two_groups_with_quantities_with_dependent_groups_in_response(self):
         params = {"comparison": "buckinghamPi",
                   "strict_syntax": False,
                   "quantities": "('U','(length/time)') ('L','(length)') ('nu','(length**2/time)') ('f','(1/time)')",
@@ -580,6 +619,28 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "U*L/nu, f*L/U"
         response = "U*L/nu, (U*L/nu)**2"
         self.assertEqual_input_variations(response, answer, params, False)
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](1, 2) in result["feedback"], True)
+        self.assertEqual(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", 1, 2) in result["feedback"], True)
+
+    def test_buckingham_pi_three_groups_with_quantities_with_too_few_independent_groups_in_response(self):
+        params = {
+            "strict_syntax": False,
+            "comparison": "buckinghamPi",
+            "quantities": "('f','(1/second)') ('l','(metre)') ('U','(metre/second)') ('h','(metre)') ('Re','(1)')",
+            "symbols": {
+                "f": {"latex": r"\(f\)", "aliases": []},
+                "l": {"latex": r"\(l\)", "aliases": []},
+                "U": {"latex": r"\(U\)", "aliases": []},
+                "Re": {"latex": r"\(\mathrm{Re}\)", "aliases": []},
+                "h": {"latex": r"\(h\)", "aliases": []},
+            }
+        }
+        answer = "f*l/U,h/l,1/Re"
+        response = "fl/U,h/l"
+        self.assertEqual_input_variations(response, answer, params, False)
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", 2, 3) in result["feedback"], True)
 
     def test_buckingham_pi_sum_with_dimensional_term(self):
         params = {
@@ -645,7 +706,7 @@ class TestEvaluationFunction(unittest.TestCase):
             )
 
     def test_per(self):
-        per_warning = "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous."
+        per_warning = parsing_feedback_responses["PER_FOR_DIVISION"]
         with self.subTest(tag="Correct response with per"):
             answer = "50*kilometre/hour"
             response = "50 kilometres per hour"
@@ -766,6 +827,7 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "U/(omega*D)+F/(rho*D**4*omega**2)"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
+            self.assertEqual(buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("response") in result["feedback"], True)
 
     def test_MECH50010_set_5(self):
         # Dimensional homogeneity a)
@@ -781,7 +843,6 @@ class TestEvaluationFunction(unittest.TestCase):
             "strict_syntax": False,
             "comparison": "buckinghamPi",
             "quantities": "('F','(gram*metre*second**(-2))') ('U','(metre/second)') ('rho','(gram/(metre**3))') ('D','(metre)') ('omega','(second**(-1))')",
-            #"input_symbols": [["F",[]],["U",[]],["rho",[]],["D",[]],["omega",[]]],
             "symbols": {
                 "F": {"latex": r"\(F\)", "aliases": []},
                 "U": {"latex": r"\(U\)", "aliases": []},

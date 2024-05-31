@@ -1,6 +1,6 @@
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify
+from sympy import simplify, latex, Matrix, Symbol, Integer, Add, Subs, pi, posify, prod
 import sys, re
 
 try:
@@ -13,6 +13,114 @@ except ImportError:
     from preview import preview_function
 
 parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
+
+def feedback_not_dimensionless(groups):
+    groups = list(groups)
+    if len(groups) == 1:
+        return f"The group {str(groups[0])} is not dimensionless."
+    else:
+        return f"The groups "+", ".join([str(g) for g in groups[0:-1]])+"and"+str(groups[-1])+"are not dimensionless."
+
+parsing_feedback_responses = {
+    "PARSE_ERROR_WARNING": lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed.",
+    "PER_FOR_DIVISION": "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous.",
+    "STRICT_SYNTAX_EXPONENTIATION": "Note that `^` cannot be used to denote exponentiation, use `**` instead.",
+    "QUANTITIES_NOT_WRITTEN_CORRECTLY": "List of quantities not written correctly.",
+    "SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY": "List of substitutions not written correctly.",
+}
+
+buckingham_pi_feedback_responses = {
+    "VALID_CANDIDATE_SET": "",
+    "NOT_DIMENSIONLESS": feedback_not_dimensionless,
+    "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more groups than necessary.",
+    "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent groups and contains {n} groups." ,
+    "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent products and needs at least {n} independent groups.",
+    "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
+    "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
+}
+
+def get_exponent_matrix(expressions, symbols):
+    exponents_list = []
+    for expression in expressions:
+        exponents = []
+        for symbol in symbols:
+            exponent = expression.as_coeff_exponent(symbol)[1]
+            if exponent == 0:
+                exponent = -expression.subs(symbol,1/symbol).as_coeff_exponent(symbol)[1]
+            exponents.append(exponent)
+        exponents_list.append(exponents)
+    return Matrix(exponents_list)
+
+def string_to_expressions(string):
+    beta = Symbol("beta")
+    gamma = Symbol("gamma")
+    zeta = Symbol("zeta")
+    #e = E
+    E = Symbol("E")
+    I = Symbol("I")
+    O = Symbol("O")
+    N = Symbol("N")
+    Q = Symbol("Q")
+    S = Symbol("S")
+    symbol_dict = {
+        "beta": beta,
+        "gamma": gamma,
+        "zeta": zeta,
+        "I": I,
+        "N": N,
+        "O": O,
+        "Q": Q,
+        "S": S,
+        "E": E
+    }
+    expressions = [parse_expr(expr, local_dict=symbol_dict).expand(power_base=True, force=True) for expr in string.split(',')]
+    symbols = set()
+    for expression in expressions:
+        expr = expression.simplify()
+        expr = expr.expand(power_base=True, force=True)
+        symbols = symbols.union(expression.free_symbols)
+    return expressions, symbols
+
+def create_power_product(exponents, symbols):
+    return prod([s**i for (s,i) in zip(symbols, exponents)])
+
+def determine_validity(reference_set, reference_symbols, candidate_set, candidate_symbols):
+    symbols = set(reference_symbols).union(set(candidate_symbols))
+    R = get_exponent_matrix(reference_set, symbols)
+    C = get_exponent_matrix(candidate_set, symbols)
+    D = R.col_join(C)
+    valid = False
+    feedback = []
+    more_groups_than_reference_set = len(reference_set) >= len(candidate_set)
+    candidate_groups_independent = C.rank() == len(candidate_set)
+    rank_R_equal_to_rank_D = R.rank() == D.rank()
+    rank_C_equal_to_rank_D = C.rank() == D.rank()
+    if candidate_symbols.issubset(reference_symbols):
+        if not more_groups_than_reference_set:
+            feedback.append(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"])
+        if not candidate_groups_independent:
+            feedback.append(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](C.rank(), len(candidate_set)))
+        if rank_R_equal_to_rank_D:
+            if rank_C_equal_to_rank_D:
+                valid = True
+                feedback.append(buckingham_pi_feedback_responses["VALID_CANDIDATE_SET"])
+            else:
+                feedback.append(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Response", C.rank(), D.rank()))
+        else:
+            dimensionless_groups = set()
+            for i in range(len(candidate_set)):
+                Ci = C.copy()
+                exponents = Ci.row(i)
+                Ci.row_del(i)
+                Di = R.col_join(Ci)
+                if R.rank() != Di.rank():
+                    dimensionless_groups.add(create_power_product(exponents, symbols))
+            if len(dimensionless_groups) > 0:
+                feedback.append(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](dimensionless_groups))
+    else:
+        feedback.append(buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](candidate_symbols.difference(reference_symbols)))
+    feedback = [elem.strip() for elem in feedback if len(elem.strip()) > 0]
+    return valid, "<br>".join(feedback)
 
 def evaluation_function(response, answer, params) -> dict:
     """
@@ -35,9 +143,9 @@ def evaluation_function(response, answer, params) -> dict:
     remark = ""
     if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols",[])],[]):
         if (" per " in response):
-            remark += "Note that 'per' was interpreted as '/'. This can cause ambiguities. It is recommended to use parentheses to make your entry unambiguous."
+            remark += parsing_feedback_responses["PER_FOR_DIVISION"]
         if (" per " in answer):
-            raise Exception("Note that 'per' is interpreted as '/'. This can cause ambiguities. Use '/' and parenthesis and ensure the answer is unambiguous.")
+            raise Exception(parsing_feedback_responses["PER_FOR_DIVISION"])
         answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
         response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ","/")])[0:-1]
 
@@ -60,22 +168,24 @@ def evaluation_function(response, answer, params) -> dict:
     if parameters["strict_syntax"]:
         if "^" in response:
             separator = "" if len(remark) == 0 else "\n"
-            remark += separator+"Note that `^` cannot be used to denote exponentiation, use `**` instead."
+            remark += separator+parsing_feedback_responses["STRICT_SYNTAX_EXPONENTIATION"]
         if "^" in answer:
-            raise Exception("Note that `^` cannot be used to denote exponentiation, use `**` instead.")
+            raise Exception(parsing_feedback_responses["STRICT_SYNTAX_EXPONENTIATION"])
 
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
         response_number_of_groups = len(response_strings)
+        response_original_number_of_groups = len(response_strings)
         response_groups = []
+        separator = "" if len(remark) == 0 else "\n"
         for res in response_strings:
             try:
                 expr = parse_expression(res,parsing_params).simplify()
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
                 separator = "" if len(remark) == 0 else "\n"
-                return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+                return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
             if isinstance(expr,Add):
                 response_groups += list(expr.args)
             else:
@@ -88,18 +198,22 @@ def evaluation_function(response, answer, params) -> dict:
             answer_strings = []
         else:
             answer_strings = answer.split(',')
-            answer_number_of_groups = len(answer_strings)
         answer_groups = []
+        answer_number_of_groups = 0
+        answer_original_number_of_groups = 0
         for ans in answer_strings:
             try:
                 expr = parse_expression(ans,parsing_params).simplify()
                 expr = expr.expand(power_base=True, force=True)
             except Exception as e:
-                raise Exception("SymPy was unable to parse the answer") from e
+                raise Exception(parsing_feedback_responses["PARSE_ERROR_WARNING"]("The answer")) from e
             if isinstance(expr,Add):
                 answer_groups += list(expr.args)
+                answer_number_of_groups += len(list(expr.args))
             else:
                 answer_groups.append(expr)
+                answer_number_of_groups += 1
+            answer_original_number_of_groups += 1
 
         remark = ""
 
@@ -115,7 +229,7 @@ def evaluation_function(response, answer, params) -> dict:
                     quantity = tuple(map(lambda x: parse_expression(x,parsing_params),quantity_strings))
                     quantities.append(quantity)
                 except Exception as e:
-                    raise Exception("List of quantities not written correctly.")
+                    raise Exception(parsing_feedback_responses["QUANTITIES_NOT_WRITTEN_CORRECTLY"])
                 index = quantities_strings.find('(',index_match+1)
             response_symbols = list(map(lambda x: x[0], quantities))
             answer_symbols = response_symbols
@@ -157,12 +271,12 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that answers are dimensionless
             for k,dimension in enumerate(answer_dimensions):
                 if not dimension.is_constant():
-                    raise Exception(f"Answer ${latex(answer_groups[k])}$ is not dimensionless.")
-            
+                    raise Exception(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]("$"+latex(answer_groups[k])+"$"))
+
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
             if answer_matrix.rank() < number_of_groups:
-                raise Exception(f"Answer contains too few independent groups. It has {answer_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups.")
+                raise Exception(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Answer", answer_matrix.rank(),number_of_groups))
 
             response_symbols = set()
             for res in response_groups:
@@ -171,29 +285,9 @@ def evaluation_function(response, answer, params) -> dict:
             for ans in answer_groups:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
-                feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
+                feedback.update({"feedback": buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](response_symbols.difference(answer_symbols))})
                 return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
-
-            # Check that responses are dimensionless
-            response_dimensions = []
-            for group in response_groups:
-                dimension = group
-                for quantity in quantities:
-                    dimension = dimension.subs(quantity[0],quantity[1])
-                response_dimensions.append(posify(dimension)[0].simplify())
-            for k,dimension in enumerate(response_dimensions):
-                if not dimension.is_constant():
-                    feedback.update({"feedback": f"Response ${response_latex[k]}$ is not dimensionless."})
-                    return {"is_correct": False, **feedback, **interp}
-    
-            # Check that there is a sufficient number of independent groups in the response
-            response_matrix = get_exponent_matrix(response_groups,response_symbols)
-            if response_matrix.rank() < number_of_groups:
-                feedback.update({"feedback": f"Response contains too few independent groups. It has {response_matrix.rank()} independent groups and needs at least {number_of_groups} independent groups."})
-                return {"is_correct": False, **feedback, **interp}
-            if response_matrix.rank()  > number_of_groups or response_number_of_groups > number_of_groups:
-                remark = "Response has more groups than necessary."
         else:
             response_symbols = set()
             for res in response_groups:
@@ -202,23 +296,27 @@ def evaluation_function(response, answer, params) -> dict:
             for ans in answer_groups:
                 answer_symbols = answer_symbols.union(ans.free_symbols)
             if not response_symbols.issubset(answer_symbols):
-                feedback.update({"feedback": f"The following symbols in the response were not expected {response_symbols.difference(answer_symbols)}."})
+                feedback.update({"feedback": buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](response_symbols.difference(answer_symbols))})
                 return {"is_correct": False, **feedback, **interp}
             answer_symbols = list(answer_symbols)
-    
-        # Extract exponents from answers and responses and compare matrix ranks
-        sum_add_independent = lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
+
+        reference_set = set(answer_groups)
+        reference_symbols = set(answer_symbols)
+        candidate_set = set(response_groups)
+        candidate_symbols = set(response_symbols)
+        valid, feedback_string = determine_validity(reference_set, reference_symbols, candidate_set, candidate_symbols)
+        feedback.update({"feedback": feedback_string})
+
+        # Check the special case where one groups expression contains several power products
         separator = "" if len(remark) == 0 else "\n"
         answer_matrix = get_exponent_matrix(answer_groups,answer_symbols)
         if answer_matrix.rank() > answer_number_of_groups:
-            raise Exception(sum_add_independent("answer"))
-        response_matrix = get_exponent_matrix(response_groups,answer_symbols)
-        if response_matrix.rank() > response_number_of_groups:
-            return {"is_correct": False, "feedback": sum_add_independent("response")+separator+remark, **interp}
-        enhanced_matrix = answer_matrix.col_join(response_matrix)
-        if answer_matrix.rank() == enhanced_matrix.rank() and response_matrix.rank() == enhanced_matrix.rank():
-            return {"is_correct": True, "feedback": feedback.get("feedback","")+separator+remark, **interp}
-        return {"is_correct": False, "feedback": feedback.get("feedback","")+separator+remark, **interp}
+            raise Exception(buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("answer"))
+        response_matrix = get_exponent_matrix(response_groups, answer_symbols)
+        if response_matrix.rank() > response_original_number_of_groups:
+            return {"is_correct": False, "feedback": buckingham_pi_feedback_responses["SUM_WITH_INDEPENDENT_TERMS"]("response")+separator+remark, **interp}
+
+        return {"is_correct": valid, "feedback": feedback.get("feedback","")+separator+remark, **interp}
 
     list_of_substitutions_strings = parameters.get("substitutions",[])
     if isinstance(list_of_substitutions_strings,str):
@@ -228,13 +326,13 @@ def evaluation_function(response, answer, params) -> dict:
         list_of_substitutions_strings = [parameters["quantities"]]+list_of_substitutions_strings
 
     if not (isinstance(list_of_substitutions_strings,list) and all(isinstance(element,str) for element in list_of_substitutions_strings)):
-        raise Exception("List of substitutions not written correctly.")
+        raise Exception(parsing_feedback_responses["SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY"])
 
     try:
         interp = {"response_latex": expression_to_latex(response,parameters,parsing_params,remark)}
     except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
-        return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+        return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
 
     substitutions = []
     for subs_strings in list_of_substitutions_strings:
@@ -246,7 +344,7 @@ def evaluation_function(response, answer, params) -> dict:
             try:
                 sub_substitutions.append(eval(subs_strings[index:index_match+1]))
             except Exception as e:
-                raise Exception("List of substitutions not written correctly.")
+                raise Exception(parsing_feedback_responses["SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY"])
             index = subs_strings.find('(',index_match+1)
             if index > -1 and subs_strings.find('|',index_match,index) > -1:
                 # Substitutions are sorted so that the longest possible part of the original string will be substituted in each step
