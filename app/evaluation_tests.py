@@ -901,7 +901,7 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "8*U*L/nu"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
-            # A group with an unknown symbol 
+            # A group with an unknown symbol
             response = "q*U*L/nu"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
@@ -910,7 +910,7 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "U*L/nu, nu/U/L"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
-            self.assertEqual(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](1,2) in result["feedback"], True)
+            self.assertEqual(buckingham_pi_feedback_responses["CANDIDATE_GROUPS_NOT_INDEPENDENT"](1, 2) in result["feedback"], True)
             self.assertEqual(buckingham_pi_feedback_responses["MORE_GROUPS_THAN_REFERENCE_SET"] in result["feedback"], True)
             # group that is not dimensionless
             response = "U*L"

@@ -19,13 +19,13 @@ parsing_feedback_responses = {
     "SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY": "List of substitutions not written correctly.",
 }
 
-
 def feedback_not_dimensionless(groups):
     groups = list(groups)
     if len(groups) == 1:
         return f"The group {str(groups[0])} is not dimensionless."
     else:
         return "The groups "+", ".join([str(g) for g in groups[0:-1]])+" and "+str(groups[-1])+" are not dimensionless."
+
 
 buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
@@ -36,6 +36,8 @@ buckingham_pi_feedback_responses = {
     "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
     "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
 }
+
+feedback_responses_list = [parsing_feedback_responses, buckingham_pi_feedback_responses]
 
 
 def get_exponent_matrix(expressions, symbols):
@@ -87,6 +89,9 @@ def create_power_product(exponents, symbols):
 
 
 def determine_validity(reference_set, reference_symbols, reference_original_number_of_groups, candidate_set, candidate_symbols, candidate_original_number_of_groups):
+    '''
+    Analyses if the given candidate set satisfies the Buckingham Pi theorem assuming that the given reference set does.
+    '''
     symbols = set(reference_symbols).union(set(candidate_symbols))
     R = get_exponent_matrix(reference_set, symbols)
     C = get_exponent_matrix(candidate_set, symbols)
@@ -133,14 +138,19 @@ def evaluation_function(response, answer, params) -> dict:
     Function that provides some basic dimensional analysis functionality.
     """
 
+    # Utility function that wraps a string in a function that takes an
+    # arbitrary number of arguments
     def wrap_feedback_function(output):
         def wrapped_function(*args):
             return output
         return wrapped_function
 
+    # Take custom feedback string given by task author and
+    # replace the corresponding entries in the feedback response
+    # dictionaries, wrapping pure stings in a function that takes
+    # an arbitrary number of arguments when necessary
     custom_feedback = params.get("custom_feedback", None)
     if custom_feedback is not None:
-        feedback_responses_list = [parsing_feedback_responses, buckingham_pi_feedback_responses]
         for feedback_responses in feedback_responses_list:
             for key in custom_feedback.keys():
                 if key in feedback_responses.keys():
@@ -151,19 +161,27 @@ def evaluation_function(response, answer, params) -> dict:
                     else:
                         raise Exception("Cannot handle given costum feedback for "+key)
 
+    # Uses the preview function to translate latex input to  a
+    # sympy compatible representation
     if params.get("is_latex", False):
         response = preview_function(response, params)["preview"]["sympy"]
 
     feedback = {}
     default_rtol = 1e-12
+
+    # If substitutions are set, default unit and dimension names are
+    # deactivated
     if "substitutions" in params.keys():
         unsplittable_symbols = tuple()
     else:
         unsplittable_symbols = names_of_prefixes_units_and_dimensions
 
+    # Set default parameters if not already set
     parameters = {"comparison": "expression", "strict_syntax": True}
     parameters.update(params)
 
+    # Check if `per` is ised for division and add relevant remark to
+    # feedback if so
     remark = ""
     if "per" not in sum([[x[0]]+x[1] for x in parameters.get("input_symbols", [])], []):
         if (" per " in response):
@@ -173,6 +191,7 @@ def evaluation_function(response, answer, params) -> dict:
         answer = substitute(answer+" ", convert_alternative_names_to_standard+[(" per ", "/")])[0:-1]
         response = substitute(response+" ", convert_alternative_names_to_standard+[(" per ", "/")])[0:-1]
 
+    # Raise exceptions when answer or response is missing from input
     if not isinstance(answer, str):
         raise Exception("No answer was given.")
     if not isinstance(response, str):
@@ -185,9 +204,11 @@ def evaluation_function(response, answer, params) -> dict:
     if len(response) == 0:
         return {"is_correct": False, "feedback": "No response submitted."}
 
+    # Preprocess answer and response to prepare for parsing by sympy
     answer, response = preprocess_expression([answer, response], parameters)
     parsing_params = create_sympy_parsing_params(parameters, unsplittable_symbols=unsplittable_symbols)
 
+    # Remark on syntax if necessary
     if parameters["strict_syntax"]:
         if "^" in response:
             separator = "" if len(remark) == 0 else "\n"
@@ -195,6 +216,7 @@ def evaluation_function(response, answer, params) -> dict:
         if "^" in answer:
             raise Exception(parsing_feedback_responses["STRICT_SYNTAX_EXPONENTIATION"])
 
+    # Perform buckinghamPi comparison
     if parameters["comparison"] == "buckinghamPi":
         # Parse expressions for groups in response and answer
         response_strings = response.split(',')
@@ -266,8 +288,9 @@ def evaluation_function(response, answer, params) -> dict:
             quantity_matrix = get_exponent_matrix([q[1] for q in quantities], dimension_symbols)
             number_of_groups = len(quantities)-quantity_matrix.rank()
 
+            # If answer groups are not given, generate a valid set of groups to use as answer
             if answer_groups == []:
-                # Compute answer groups
+                # Compute answer groups from defined quantities
                 nullspace_basis = quantity_matrix.T.nullspace()
                 for basis_vector in nullspace_basis:
                     multiplier = 1
@@ -304,28 +327,19 @@ def evaluation_function(response, answer, params) -> dict:
             if answer_matrix.rank() < number_of_groups:
                 raise Exception(buckingham_pi_feedback_responses["TOO_FEW_INDEPENDENT_GROUPS"]("Answer", answer_matrix.rank(), number_of_groups))
 
-            response_symbols = set()
-            for res in response_groups:
-                response_symbols = response_symbols.union(res.free_symbols)
-            answer_symbols = set()
-            for ans in answer_groups:
-                answer_symbols = answer_symbols.union(ans.free_symbols)
-            if not response_symbols.issubset(answer_symbols):
-                feedback.update({"feedback": buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](response_symbols.difference(answer_symbols))})
-                return {"is_correct": False, **feedback, **interp}
-            answer_symbols = list(answer_symbols)
-        else:
-            response_symbols = set()
-            for res in response_groups:
-                response_symbols = response_symbols.union(res.free_symbols)
-            answer_symbols = set()
-            for ans in answer_groups:
-                answer_symbols = answer_symbols.union(ans.free_symbols)
-            if not response_symbols.issubset(answer_symbols):
-                feedback.update({"feedback": buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](response_symbols.difference(answer_symbols))})
-                return {"is_correct": False, **feedback, **interp}
-            answer_symbols = list(answer_symbols)
+        # Compare symbols used in answer and response
+        response_symbols = set()
+        for res in response_groups:
+            response_symbols = response_symbols.union(res.free_symbols)
+        answer_symbols = set()
+        for ans in answer_groups:
+            answer_symbols = answer_symbols.union(ans.free_symbols)
+        if not response_symbols.issubset(answer_symbols):
+            feedback.update({"feedback": buckingham_pi_feedback_responses["UNKNOWN_SYMBOL"](response_symbols.difference(answer_symbols))})
+            return {"is_correct": False, **feedback, **interp}
+        answer_symbols = list(answer_symbols)
 
+        # Check ing the given response is a valid set of groups
         reference_set = set(answer_groups)
         reference_symbols = set(answer_symbols)
         candidate_set = set(response_groups)
@@ -360,6 +374,7 @@ def evaluation_function(response, answer, params) -> dict:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
 
+    # Perform substitutions
     substitutions = []
     for subs_strings in list_of_substitutions_strings:
         # Parsing list of substitutions
@@ -401,7 +416,7 @@ def evaluation_function(response, answer, params) -> dict:
         if match_group is not None:
             response = response[match_group.span()[1]:]
         res = parse_expression(response, parsing_params)
-    except Exception as e:
+    except Exception:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parsing_feedback_responses["PARSE_ERROR_WARNING"](response)+separator+remark}
 
