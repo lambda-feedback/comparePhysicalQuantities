@@ -1,7 +1,10 @@
 # ComparePhysicalQuantities
-This is an **EXPERIMENTAL** evaluation function with some dimensional analysis functionality.
 
-This function lacks a nice GUI, can be quite brittle, and will likely change significantly in the near future.
+Evaluation function which proveds some basic some dimensional analysis functionality.
+
+- **DEPRECATED** Comparing physical quantities **RECOMMENDED ALTERNATIVE:** CompareExpressions with the `physical_quantity` parameter set to `true`
+- Substitutions of symbols before comparison of expressions is done
+- Checking if a comma separated list of expressions can be interpreted as a set groups that satisfies the Buckingham Pi theorem
 
 **Note:** When the `quantities` grading parameter is set, this function cannot handle short form symbols for units. Thus when defining quantities all units must be given with full names in lower-case letters. For example `Nm/s` or `Newton*metre/SECOND` will not be handled correctly, but `newton*metre/second` will.
 
@@ -23,6 +26,29 @@ This function lacks a nice GUI, can be quite brittle, and will likely change sig
 All input parameters need to be supplied via the **Grading parameters** panel.
 
 There are seven optional parameters that can be set: `elementary_functions`, `substitutions`, `quantities`, `strict_syntax`, `rtol`, `atol` and `comparison`.
+
+## `custom_feedback`
+
+Custom feedback can be set on a per-task basis. **Note:** Custom feedback only supports fixed strings, this means that for some situations the custom feedback cannot be as detailed as the default feedback.
+
+The parameter must be set as a dictionary with keys from the feedback tags listed below. The value for each key can be any string.
+
+### Feedback tags for all comparisons
+- `PARSE_ERROR_WARNING` Response cannot be parsed as an expression or physical quantity.
+- `PER_FOR_DIVISION` Warns about risk of ambiguity when using `per` instead `/` for division.
+- `STRICT_SYNTAX_EXPONENTIATION` Warns that `^` cannot be used for exponentiation when `strict_syntax` is set to `true`.
+- `QUANTITIES_NOT_WRITTEN_CORRECTLY` Text in error message that appears if list of quantities could not be parsed.
+- `SUBSTITUTIONS_NOT_WRITTEN_CORRECTLY` Text in error message that appears if list of substitutions could not be parsed.
+
+### Feedback tags for `buckinghamPi` comparison
+
+- `VALID_CANDIDATE_SET` Message that is displayed when a response is found to be a valid set of groups. **Note:** setting this will not affect the Correct/Incorrect message, it will only add further text.
+- `NOT_DIMENSIONLESS` Message displayed when at least one groups is not dimensionless.
+- `MORE_GROUPS_THAN_REFERENCE_SET` Message displayed when the response contains more groups than necessary.
+- `CANDIDATE_GROUPS_NOT_INDEPENDENT` Message displayed when the groups in the response are not independent.
+- `TOO_FEW_INDEPENDENT_GROUPS` Message displayed when the response contains fewer groups than necessary.
+- `UNKNOWN_SYMBOL` Message displayed when the response contains some undefined symbol.
+- `SUM_WITH_INDEPENDENT_TERMS`  Message displayed when the response has too few groups but one (or more) of the groups is a sum with independent terms.
 
 ## `elementary_functions`
 
@@ -240,6 +266,10 @@ Implemented versions of these examples can be found in the module 'Examples: Eva
 
 ### 1 Checking the dimensions of an expression or physical quantity
 
+**DEPRECATED**
+
+**RECOMMENDED ALTERNATIVE:** CompareExpressions with the `physical_quantity` parameter set to `true`
+
 This example will check if the response has dimensions $\frac{\mathrm{length}^2}{\mathrm{time}^2}$.
 
 #### a)
@@ -290,6 +320,10 @@ In the example given in the example problem set, the following responses are tes
 
 
 ### 2 Checking the value of an expression or a physical quantity
+
+**DEPRECATED**
+
+**RECOMMENDED ALTERNATIVE:** CompareExpressions with the `physical_quantity` parameter set to `true`
 
 This examples checks if your expression is equal to $2~\frac{\mathrm{kilometre}}{\mathrm{hour}}$.
 
@@ -398,7 +432,16 @@ Suppose we are studying water waves that move under the influence of gravity. We
 
 For this problem two dimensionless groups are needed, see the worked solution for a terse solution that gives the general form of the dimensionless quantities.
 
-For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']` was used (this corresponds to $p_1 = 1$, $p_2 = 2$, $q_1 = 3$, $q_2 = 4$ in the worked solution).
+For this example a TEXT response area is used with `comparison` set to `buckinghamPi` and then give a list of correct group expressions formatted as the code for a python list. For this example the answer `['g**(-2)*v**4*h*l**3', 'g**(-2)*v**4*h**2*l**4']` was used (this corresponds to $p_1 = 1$, $p_2 = 2$, $q_1 = 3$, $q_2 = 4$ in the worked solution). The feedback was costumized by setting the `custom_feedback` parameter too:
+`"custom_feedback": {
+    "VALID_CANDIDATE_SET": "Your list of power products satisfies the Buckingham Pi theorem.",
+    "NOT_DIMENSIONLESS": "At least one power product is not dimensionless.",
+    "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more power products than necessary.",
+    "CANDIDATE_GROUPS_NOT_INDEPENDENT": "Power products in response are not independent.",
+    "TOO_FEW_INDEPENDENT_GROUPS": "Candidate set contains too few independent groups.",
+    "UNKNOWN_SYMBOL": "One of the prower products contains an unkown symbol.",
+    "SUM_WITH_INDEPENDENT_TERMS": "The candidate set contains an expression which contains more independent terms that there are groups in total. The candidate set should ideally only contain expressions written as power products."
+}`
 
 With default settings it is required to put `*` (or `/`) between each part of the response and answer. To remove this requirement the grading parameter `strict_syntax` is set to false. Since `nu` is a multicharacter symbol it needs to be added as an input symbol.
 
