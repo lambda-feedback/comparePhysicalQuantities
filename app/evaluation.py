@@ -22,10 +22,15 @@ parsing_feedback_responses = {
 def feedback_not_dimensionless(groups):
     groups = list(groups)
     if len(groups) == 1:
-        return f"The group {str(groups[0])} is not dimensionless."
+        return f"The group {convert_to_latex(groups[0])} is not dimensionless."
     else:
-        return "The groups "+", ".join([str(g) for g in groups[0:-1]])+" and "+str(groups[-1])+" are not dimensionless."
+        return "The groups "+", ".join([convert_to_latex(g) for g in groups[0:-1]])+" and "+convert_to_latex(groups[-1])+" are not dimensionless."
 
+def convert_to_latex(expr):
+    if isinstance(expr, str):
+        return expr
+    else:
+        return "$"+latex(expr)+"$"
 
 buckingham_pi_feedback_responses = {
     "VALID_CANDIDATE_SET": "",
@@ -33,8 +38,8 @@ buckingham_pi_feedback_responses = {
     "MORE_GROUPS_THAN_REFERENCE_SET": "Response has more groups than necessary.",
     "CANDIDATE_GROUPS_NOT_INDEPENDENT": lambda r, n: f"Groups in response are not independent. It has {r} independent group(s) and contains {n} groups.",
     "TOO_FEW_INDEPENDENT_GROUPS": lambda name, r, n: f"{name} contains too few independent groups. It has {r} independent group(s) and needs at least {n} independent groups.",
-    "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([str(s) for s in symbols])+".",
-    "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {s} group contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
+    "UNKNOWN_SYMBOL": lambda symbols: "Unknown symbol(s): "+", ".join([convert_to_latex(s) for s in symbols])+".",
+    "SUM_WITH_INDEPENDENT_TERMS": lambda s: f"Sum in {convert_to_latex(s)} contains more independent terms that there are groups in total. Group expressions should ideally be written as a comma-separated list where each item is an entry of the form `q_1**c_1*q_2**c_2*...*q_n**c_n`."
 }
 
 feedback_responses_list = [parsing_feedback_responses, buckingham_pi_feedback_responses]
@@ -320,7 +325,7 @@ def evaluation_function(response, answer, params) -> dict:
             # Check that answers are dimensionless
             for k, dimension in enumerate(answer_dimensions):
                 if not dimension.is_constant():
-                    raise Exception(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"]("$"+latex(answer_groups[k])+"$"))
+                    raise Exception(buckingham_pi_feedback_responses["NOT_DIMENSIONLESS"](answer_groups[k]))
 
             # Check that there is a sufficient number of independent groups in the answer
             answer_matrix = get_exponent_matrix(answer_groups, answer_symbols)
