@@ -426,6 +426,13 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "1"*k+"0"*(5-k)+"*m"
             self.assertEqual_input_variations(response, answer, params, False)
 
+    def test_compare_quantities_with_rtol_and_different_unit_systems(self):
+        answer = "1.0*kilo*gram"
+        params = {"rtol": "0.05", "strict_syntax": False}
+        responses = ["1.02*kilo*gram", "2.2*pound"]
+        for response in responses:
+            self.assertEqual_input_variations(response, answer, params, True)
+
     def test_compare_quantities_with_atol(self):
         answer = "1.0*metre"
         params = {"atol": "0.05", "strict_syntax": False}
