@@ -19,9 +19,9 @@ This evaluation function compares physical quantities submitted by students agai
 app/
     __init__.py
     evaluation.py              # Main evaluation function
-    evaluation_test.py         # Unit tests
+    evaluation_tests.py        # Unit tests
     preview.py                 # Preview function
-    preview_test.py            # Preview tests
+    preview_tests.py           # Preview tests
     expression_utilities.py    # Expression parsing utilities
     unit_system_conversions.py # Unit conversion logic
     static_unit_conversion_arrays.py  # Pre-generated conversion data
